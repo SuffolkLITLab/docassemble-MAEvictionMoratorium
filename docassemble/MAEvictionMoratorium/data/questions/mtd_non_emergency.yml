@@ -1,0 +1,232 @@
+---
+include:
+  - docassemble.MAVirtualCourt:basic-questions.yml
+---
+comment: |
+  Predefine some variables we need
+code: |
+  allowed_courts = [
+      "Housing Court",    
+      "Boston Municipal Court",
+      "District Court",
+      ]
+  preferred_court = "Housing Court"
+  other_parties.there_are_any = True
+  interview_presets = True
+---
+mandatory: True
+id: interview order
+code: |
+  interview_presets
+  basic_questions_intro_screen
+  mtd_intro
+  if eviction_choice == "yes":
+    kick_out
+  other_parties[0].name.first
+  users[0].address.address
+  users[0].mobile_number
+  courts[0]
+  preview_screen
+  basic_questions_signature_flow
+  if ready_to_serve:
+    service_method
+  download
+---
+id: eviction address
+question: |
+  What is the address you are being evicted from?
+fields:
+  - Street address: users[0].address.address
+    address autocomplete: True
+  - Unit: users[0].address.unit
+    required: False
+  - City: users[0].address.city
+  - State: users[0].address.state
+    code: states_list()
+  - Zip: users[0].address.zip 
+---
+id: contact information
+question: |
+  Contact information
+subquestion: |
+  Put at least one way for the court to reach you below.
+
+  You will have a chance to request this contact information
+  to be kept private later.
+fields:
+  - Mobile number: users[0].mobile_number
+    required: False
+  - Other phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - Contact notes: users[0].other_contact_method
+    input type: area
+    required: False
+    help: |
+      If you do not have a phone number or email the court can use, provide
+      specific contact instructions. For example, use a friend's phone number.
+      But the friend must be someone you can trust to tell you the court is
+      trying to reach you.
+validation code: |
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."))
+help: |
+  You _must_ provide contact information so the court can reach you.
+  
+  You will have a chance to tell the court that you need to keep your address, phone,
+  and email confidential, so that only court staff can see this information. 
+
+  
+---
+id: eviction mtd covid intro screen
+question: |
+  Motion to Dismiss - Eviction Moratorium
+subquestion: |  
+  Massachusetts has an eviction moratorium. Most people cannot get evicted in Massachusetts before: 
+  
+  * August 18, 2020, or 
+  *	until 45 days after the Governor lifts the state of emergency,
+  whichever comes first.  This is called the eviction moratorium.
+  
+  But you can get evicted if you risk the health and safety of someone else by:
+  
+  *	getting involved in criminal activity, or,
+  *	violating your lease.
+  
+  This interview helps you defend against an eviction that should not have
+  been filed against you.
+continue button field: mtd_intro
+---
+question: |
+  Do you agree that you risked someone else's health and safety?
+subquestion: |
+  If you were involved in criminal activity, or broke your lease in a way
+  that risked the health and safety of yourself, health care workers, or
+  the general public, answer "Yes". Otherwise, answer "No."
+fields:
+  - no label: eviction_choice
+    datatype: radio
+    choices:
+      - No, I did not risk someone's health and safety: no
+      - Yes, I did risk someone's health and safety: yes
+---
+event: kick_out
+question: |
+  This interview isn't for you
+subquestion: |
+  This interview can help you fight against an eviction that violates
+  the eviction moratorium. You said your eviction was filed because
+  you risked someone's health and safety.
+  
+  You can still win your eviction case. File an answer using [MADE](https://www.gbls.org/MADE).
+buttons:
+  - Restart: restart
+  - File an Answer with MADE: exit
+    url: https://www.gbls.org/MADE
+---
+id: court question
+sets:
+  - courts[0].name
+question: |
+  What court is your case being heard in?
+subquestion: |
+  Look at your Summons and Complaint to find the name of the court
+  your case was filed in.
+fields:
+  - Court name: courts[0]
+    datatype: object
+    choices: macourts.filter_courts(allowed_courts)
+    default: local_housing_court
+continue button field: ask_court_question    
+---
+question: |
+  Are you ready to serve ${other_parties}?
+subquestion: |
+  You need to deliver a copy of your form to ${other_parties}.
+  
+  Do you know how and when you will do that?
+yesno: ready_to_serve
+---
+question: |
+  Service on ${other_parties}
+fields:
+  - When will you serve ${other_parties.familiar()}?: service_date
+    datatype: date
+  - How will you serve them?: service_method
+    datatype: radio
+    choices:
+      - By email: electronic mail
+      - By mail (with postage paid by me): first class mail, postage prepaid
+---
+question: |
+  Docket Number
+subquestion: |
+  If you know the docket number for this case, enter it below
+fields:
+  - I do not know the docket number: dont_know_docket_number
+    datatype: yesno
+  - Docket number: docket_numbers[0]
+    hide if:  dont_know_docket_number
+help: |
+  label: What's that?
+  content: |
+    The docket number is a number that the court assigns to track your case.
+    It may be written on the notice you got from your landlord. If you don't
+    have one, you can leave this blank.
+validation code: |
+  # docket_numbers.there_are_any = not dont_know_docket_number
+  if dont_know_docket_number:
+    docket_numbers[0] = ' '
+  docket_numbers.there_is_another = False
+---
+event: download
+question: |
+  Your form is ready
+subquestion: |
+  Look over the form below.
+  
+  1. If it looks correct, download or email it to yourself.
+  2. You still need to deliver it to the ${courts[0]} and to your
+  landlord. You may be able to get help with delivery if you call
+  the court's emergency help line.
+  3. Your hearing will probably be over the phone. But the address
+  of your court is ${courts[0].address.on_one_line()}.
+
+
+  Court's emergency help line:    
+  833-91-COURT (833-912-6878)  
+  Monday-Friday  
+  8:30am - 4:30pm
+  
+  ${ final_form }
+attachment code: motion_to_dismiss_for_non_essential_eviction  
+---
+question: |
+  Preview your form
+subquestion: |
+  Click the form below to open it in a new window.
+  
+  Look it over carefully. If you have any corrections, use "Back"
+  to fix the mistakes.
+  
+  ${form_to_sign }
+continue button field: preview_screen
+---
+code: |
+  form_to_sign = pdf_concatenate(preview_doc)
+---
+attachment:
+  docx template file: motion_to_dismiss_for_non-essential_eviction.docx
+  variable name: preview_doc
+---
+code: |
+  final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction)
+---
+attachment: 
+  docx template file: motion_to_dismiss_for_non-essential_eviction.docx
+  variable name: motion_to_dismiss_for_non_essential_eviction  
