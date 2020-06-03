@@ -306,15 +306,17 @@ subquestion: |
 continue button field: preview_screen
 ---
 code: |
-  form_to_sign = pdf_concatenate(preview_doc)
+  form_to_sign = pdf_concatenate(preview_doc, filename="preview.pdf")
 ---
 attachment:
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx
   variable name: preview_doc
 ---
 code: |
-  final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction)
+  final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction, filename="dismiss-non-emergency-eviction.pdf")
 ---
 attachment: 
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx
   variable name: motion_to_dismiss_for_non_essential_eviction  
+  filename: dismiss-non-emergency-eviction
+  name: Motion to Dismiss - Non-Emergency Eviction
