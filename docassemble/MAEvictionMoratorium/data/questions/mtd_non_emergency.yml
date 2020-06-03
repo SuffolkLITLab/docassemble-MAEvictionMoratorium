@@ -81,9 +81,6 @@ question: |
   Contact information
 subquestion: |
   Put at least one way for the court to reach you below.
-
-  You will have a chance to request this contact information
-  to be kept private later.
 fields:
   - Mobile number: users[0].mobile_number
     required: False
@@ -108,11 +105,6 @@ validation code: |
     validation_error(word("You need to provide at least one contact method."))
 help: |
   You _must_ provide contact information so the court can reach you.
-  
-  You will have a chance to tell the court that you need to keep your address, phone,
-  and email confidential, so that only court staff can see this information. 
-
-  
 ---
 id: eviction mtd covid intro screen
 question: |
@@ -208,12 +200,13 @@ fields:
     datatype: yesno
   - Docket number: docket_numbers[0]
     hide if:  dont_know_docket_number
-help: |
-  label: What's that?
+help:
+  label: |
+    What's a docket number?
   content: |
     The docket number is a number that the court assigns to track your case.
     It may be written on the notice you got from your landlord. If you don't
-    have one, you can leave this blank.
+    know what it is, you can leave this blank.
 validation code: |
   # docket_numbers.there_are_any = not dont_know_docket_number
   if dont_know_docket_number:
@@ -231,7 +224,7 @@ subquestion: |
   2. You still need to deliver it to the ${courts[0]} and to your
   landlord. You may be able to get help with delivery if you call
   the court clerk's office. The clerk of the ${courts[0]} may be reached 
-  at ${courts[0].phone}.
+  at <a href="tel:${courts[0].phone}">${courts[0].phone}</a>.
   3. Your hearing will probably be over the phone. But the address
   of your court is ${courts[0].address.on_one_line()}.  
   4. Have you filed an Answer yet? If not, you may want to fill one out
@@ -239,6 +232,7 @@ subquestion: |
   
   ${ final_form }
 attachment code: motion_to_dismiss_for_non_essential_eviction  
+progress: 100
 ---
 id: preview
 question: |
