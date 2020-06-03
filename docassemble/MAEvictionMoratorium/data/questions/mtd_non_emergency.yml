@@ -18,7 +18,7 @@ mandatory: True
 id: interview order
 code: |
   interview_presets
-  basic_questions_intro_screen
+  download_only_intro_screen
   mtd_intro
   if eviction_choice == "yes":
     kick_out
@@ -31,6 +31,37 @@ code: |
   if ready_to_serve:
     service_method
   download
+---
+id: basic questions intro screen
+question: |
+  Mass Access Project
+subquestion: |
+ 
+  This interview can help you complete and _download_ court forms in 3 steps:
+  
+  Step 1. Answer questions to prefill your forms.  
+  Step 2. Review the completed forms.  
+  Step 3. Download the form and file on your own.
+  
+  This interview **does not** deliver the form for you. You must do
+  that on your own.
+  
+  % if chat_partners_available().help:
+  Live help is currently available in this interview. Click the speech bubble
+  (:comment-alt:) in the navigation bar to connect to a live advocate for help.
+  % endif
+
+fields:
+  - To continue, please read the [terms of use](https://massaccess.suffolklitlab.org/privacy/): acknowledged_information_use
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I accept the terms of use.
+    validation messages:
+      minlength: |
+        You cannot continue unless you agree to the terms of use.        
+continue button field: download_only_intro_screen
 ---
 id: eviction address
 question: |
@@ -102,6 +133,7 @@ subquestion: |
   been filed against you.
 continue button field: mtd_intro
 ---
+id: agree risked health and safety
 question: |
   Do you agree that you risked someone else's health and safety?
 subquestion: |
@@ -115,6 +147,7 @@ fields:
       - No, I did not risk someone's health and safety: no
       - Yes, I did risk someone's health and safety: yes
 ---
+id: kick out
 event: kick_out
 question: |
   This interview isn't for you
@@ -144,6 +177,7 @@ fields:
     default: local_housing_court
 continue button field: ask_court_question    
 ---
+id: ready to serve
 question: |
   Are you ready to serve ${other_parties}?
 subquestion: |
@@ -152,6 +186,7 @@ subquestion: |
   Do you know how and when you will do that?
 yesno: ready_to_serve
 ---
+id: service
 question: |
   Service on ${other_parties}
 fields:
@@ -163,6 +198,7 @@ fields:
       - By email: electronic mail
       - By mail (with postage paid by me): first class mail, postage prepaid
 ---
+id: docket number
 question: |
   Docket Number
 subquestion: |
@@ -184,6 +220,7 @@ validation code: |
     docket_numbers[0] = ' '
   docket_numbers.there_is_another = False
 ---
+id: download
 event: download
 question: |
   Your form is ready
@@ -193,19 +230,17 @@ subquestion: |
   1. If it looks correct, download or email it to yourself.
   2. You still need to deliver it to the ${courts[0]} and to your
   landlord. You may be able to get help with delivery if you call
-  the court's emergency help line.
+  the court clerk's office. The clerk of the ${courts[0]} may be reached 
+  at ${courts[0].phone}.
   3. Your hearing will probably be over the phone. But the address
-  of your court is ${courts[0].address.on_one_line()}.
-
-
-  Court's emergency help line:    
-  833-91-COURT (833-912-6878)  
-  Monday-Friday  
-  8:30am - 4:30pm
+  of your court is ${courts[0].address.on_one_line()}.  
+  4. Have you filed an Answer yet? If not, you may want to fill one out
+  now via [MADE](https://gbls.org/MADE).
   
   ${ final_form }
 attachment code: motion_to_dismiss_for_non_essential_eviction  
 ---
+id: preview
 question: |
   Preview your form
 subquestion: |
