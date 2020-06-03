@@ -27,10 +27,17 @@ code: |
   users[0].mobile_number
   courts[0]
   preview_screen
+  update_signature_fields
   basic_questions_signature_flow
   if ready_to_serve:
     service_method
   download
+---
+code: |
+  signature_fields = []
+  for index, user in enumerate(users):
+    signature_fields.append('users[' + str(index) + '].signature')
+  update_signature_fields = True
 ---
 id: basic questions intro screen
 question: |
@@ -62,6 +69,40 @@ fields:
       minlength: |
         You cannot continue unless you agree to the terms of use.        
 continue button field: download_only_intro_screen
+---
+id: names of landlords
+question: |
+  Please list the name of your landlord(s) below,
+  the same way they appear on the notice that told you to
+  go to court.
+subquestion: |
+  Click "${word("Add another")}" to add more.
+list collect: True
+fields:
+  - Are they a person, or a business?: other_parties[i].person_type
+    input type: radio
+    choices:
+      - Business or organization: business
+      - Person: individual
+  - First name: other_parties[i].name.first
+    show if:
+      variable: other_parties[i].person_type
+      is: "individual"
+  - Last name: other_parties[i].name.last
+    show if:
+      variable: other_parties[i].person_type      
+      is: "individual"
+  - Suffix: other_parties[i].name.suffix
+    code: |
+      name_suffix()
+    show if:
+      variable: other_parties[i].person_type      
+      is: "individual"
+    required: False      
+  - Name of organization or business: other_parties[i].name.first
+    show if:
+      variable: other_parties[i].person_type
+      is: business
 ---
 id: eviction address
 question: |
@@ -173,10 +214,23 @@ id: ready to serve
 question: |
   Are you ready to serve ${other_parties}?
 subquestion: |
-  You need to deliver a copy of your form to ${other_parties}.
+  You need to deliver a copy of your form to ${other_parties} at the same
+  time you get a copy to the court.
   
-  Do you know how and when you will do that?
+  Getting a copy to your landlord is called "service".
+  During the pandemic, you are [allowed](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under)
+  to get a copy to your landlord or their attorney by email.
+  
+  Do you know how and when you will get a copy to your landlord?
 yesno: ready_to_serve
+help:
+  label: What are my options?
+  content: |
+    If your landlord has an attorney, you need to get a copy to the
+    attorney. If they do not, you need to get it to the landlord.
+    You likely can deliver it by email.
+    
+    Read more about your [options to deliver by email](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under).    
 ---
 id: service
 question: |
@@ -189,6 +243,11 @@ fields:
     choices:
       - By email: electronic mail
       - By mail (with postage paid by me): first class mail, postage prepaid
+      - other: other
+  - Other method: service_method
+    show if:
+      variable: service_method
+      is: other
 ---
 id: docket number
 question: |
