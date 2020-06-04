@@ -59,7 +59,7 @@ subquestion: |
   % endif
 
 fields:
-  - To continue, please read the [terms of use](https://massaccess.suffolklitlab.org/privacy/): acknowledged_information_use
+  - To continue, read the [terms of use](https://massaccess.suffolklitlab.org/privacy/): acknowledged_information_use
     datatype: checkboxes
     none of the above: False    
     minlength: 1
@@ -72,7 +72,7 @@ continue button field: download_only_intro_screen
 ---
 id: names of landlords
 question: |
-  Please list the name of your landlord(s) below,
+  List the name of your landlord(s) below,
   the same way they appear on the notice that told you to
   go to court.
 subquestion: |
@@ -149,15 +149,15 @@ help: |
 ---
 id: eviction mtd covid intro screen
 question: |
-  Motion to Dismiss - Eviction Moratorium
+  Motion to Dismiss - Essential Eviction
 subquestion: |  
   Massachusetts has an eviction moratorium. Most people cannot get evicted in Massachusetts before: 
   
-  * August 18, 2020, or 
-  *	until 45 days after the Governor lifts the state of emergency,
-  whichever comes first.  This is called the eviction moratorium.
+  * August 18, 2020, or, 
+  *	Until 45 days after the Governor lifts the state of emergency,
+  whichever comes first.  
   
-  But you can get evicted if you risk the health and safety of someone else by:
+  This is called the eviction moratorium. But you **can** get evicted if you risk the health and safety of someone else by:
   
   *	getting involved in criminal activity, or,
   *	violating your lease.
@@ -168,22 +168,25 @@ continue button field: mtd_intro
 ---
 id: agree risked health and safety
 question: |
-  Do you agree that you risked someone else's health and safety?
+  Are you risking someone's health and safety?
 subquestion: |
-  If you were involved in criminal activity, or broke your lease in a way
-  that risked the health and safety of yourself, health care workers, or
-  the general public, answer "Yes". Otherwise, answer "No."
+  Are you:
+  
+  * Involved in criminal activity, or 
+  * Breaking your lease,
+
+  in a way that risks someone's health and safety. 
 fields:
   - no label: eviction_choice
     datatype: radio
     choices:
-      - No, I did not risk someone's health and safety: no
-      - Yes, I did risk someone's health and safety: yes
+      - No, I am not risking someone's health and safety: no
+      - Yes, I am risking someone's health and safety: yes
 ---
 id: kick out
 event: kick_out
 question: |
-  This interview isn't for you
+  This interview is not for you
 subquestion: |
   This interview can help you fight against an eviction that violates
   the eviction moratorium. You said your eviction was filed because
@@ -217,18 +220,18 @@ subquestion: |
   You need to deliver a copy of your form to ${other_parties} at the same
   time you get a copy to the court.
   
-  Getting a copy to your landlord is called "service".
-  During the pandemic, you are [allowed](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under)
-  to get a copy to your landlord or their attorney by email.
+  Getting a copy to ${other_parties} is called "service".
+  During the pandemic, you are [allowed to email the motion](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under)
+  to ${other_parties} or their lawyer.
   
-  Do you know how and when you will get a copy to your landlord?
+  Do you know how and when you will get a copy to ${other_parties}?
 yesno: ready_to_serve
 help:
   label: What are my options?
   content: |
-    If your landlord has an attorney, you need to get a copy to the
-    attorney. If they do not, you need to get it to the landlord.
-    You likely can deliver it by email.
+    If your landlord has a lawyer, you need to get a copy to the
+    lawyer. If they do not, you need to get it to the landlord.
+    You can email the motion.
     
     Read more about your [options to deliver by email](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under).    
 ---
@@ -251,7 +254,7 @@ fields:
 ---
 id: docket number
 question: |
-  Docket Number
+  Docket number
 subquestion: |
   If you know the docket number for this case, enter it below
 fields:
@@ -277,16 +280,19 @@ event: download
 question: |
   Your form is ready
 subquestion: |
-  Look over the form below.
+  Look over your form below.
   
   1. If it looks correct, download or email it to yourself.
-  2. You still need to deliver it to the ${courts[0]} and to your
-  landlord. You may be able to get help with delivery if you call
-  the court clerk's office. The clerk of the ${courts[0]} may be reached 
-  at <a href="tel:${courts[0].phone}">${courts[0].phone}</a>.
-  3. Your hearing will probably be over the phone. But the address
+  2. You still need to deliver it to:
+
+  * The ${courts[0]}, and,
+  * ${other_parties}. 
+
+  3. Call the ${courts[0]}'s clerk:  
+  <a href="tel:${courts[0].phone}">${courts[0].phone}</a> to find out how they want you to send them the motion.
+  4. Your hearing will probably be over the phone. But the address
   of your court is ${courts[0].address.on_one_line()}.  
-  4. Have you filed an Answer yet? If not, you may want to fill one out
+  5. Have you filed an Answer yet? If not, you may want to fill one out
   now via [MADE](https://gbls.org/MADE).
   
   ${ final_form }
@@ -299,8 +305,7 @@ question: |
 subquestion: |
   Click the form below to open it in a new window.
   
-  Look it over carefully. If you have any corrections, use "Back"
-  to fix the mistakes.
+  Use the "Back" button to find the screen to fix mistakes.
   
   ${form_to_sign }
 continue button field: preview_screen
@@ -313,10 +318,10 @@ attachment:
   variable name: preview_doc
 ---
 code: |
-  final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction, filename="dismiss-non-emergency-eviction.pdf")
+  final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction, filename="dismiss-non-essential-eviction.pdf")
 ---
 attachment: 
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx
   variable name: motion_to_dismiss_for_non_essential_eviction  
-  filename: dismiss-non-emergency-eviction
-  name: Motion to Dismiss - Non-Emergency Eviction
+  filename: dismiss-non-essential-eviction
+  name: Motion to Dismiss - Non-Essential Eviction
