@@ -181,11 +181,13 @@ event: kick_out
 question: |
   This interview is not for you
 subquestion: |
-  This interview can help you fight against an eviction that violates
-  the eviction moratorium. You said your eviction was filed because
-  you risked someone's health and safety.
+  You said your eviction was filed because you risked someone's health and safety.
   
-  You can still win your eviction case. File an answer using [MADE](https://www.gbls.org/MADE).
+  In some cases, you can still get the eviction dismissed even if you think you are risking someone's health or safety. 
+  
+  But talk to a lawyer because this makes it complicated.
+
+  If you cannot file this motion or [talk to a lawyer](https://masslegalhelp.org/find-legal-aid), you can still fight your eviction case. Create an answer using [this free guided interview tool](https://www.gbls.org/MADE).
 buttons:
   - Restart: restart
   - File an Answer with MADE: exit

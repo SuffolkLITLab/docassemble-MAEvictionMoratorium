@@ -43,7 +43,7 @@ def find_package_data(where='.', package='', exclude=standard_exclude, exclude_d
     return out
 
 setup(name='docassemble.MAEvictionMoratorium',
-      version='0.0.9.2',
+      version='0.0.9.3',
       description=('A docassemble extension.'),
       long_description='# docassemble.MAEvictionMoratorium\r\n\r\nA docassemble extension. This is a Motion to Dismiss an Essential Eviction during the COVID-19 housing moratorium in Massachusetts. \r\n\r\n## Author\r\n\r\nSystem Administrator, admin@admin.com\r\n\r\n',
       long_description_content_type='text/markdown',
