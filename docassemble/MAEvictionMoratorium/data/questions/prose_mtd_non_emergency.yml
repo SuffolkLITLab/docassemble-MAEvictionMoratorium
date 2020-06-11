@@ -6,7 +6,7 @@ modules:
   - docassemble.base.util
 ---
 objects:
-  - other_parties: DAList.using(ask_number=True)
+  - other_parties: PeopleList.using(ask_number=True)
 ---
 comment: |
   Predefine some variables we need
@@ -32,6 +32,7 @@ code: |
   other_parties.gather()
   users[0].address.address
   users[0].mobile_number
+  users.gather()
   courts[0]
   preview_screen
   update_signature_fields
@@ -87,6 +88,7 @@ subquestion: |
 fields: 
   - no label: other_parties.target_number
     datatype: integer
+    min: 1
 ---  
 question: |
   % if other_parties.target_number == 1:
@@ -192,6 +194,18 @@ buttons:
   - Restart: restart
   - File an Answer with MADE: exit
     url: https://www.gbls.org/MADE
+---
+id: other users names
+question: |
+  Who else is filing with you?
+fields:
+  - First Name: users[i].name.first
+  - Middle Name: users[i].name.middle
+    required: False
+  - Last Name: users[i].name.last
+    required: False
+  - Suffix: users[i].name.suffix
+    required: False
 ---
 id: court question
 sets:
