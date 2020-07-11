@@ -1,0 +1,385 @@
+metadata:
+  title: Multiple signatures
+  short: Signature
+  documentation: https://docassemble.org/docs/recipes.html#multisignature
+  example start: 1
+  example end: 37
+---
+modules:  
+  - docassemble.VirtualCourtToolbox.shortenURL
+---
+objects:
+  - users[0]: Person
+  - witnesses: DAList.using(object_type=Person, there_are_any=True, complete_attribute='complete')
+  - signatories: DADict.using(auto_gather=False)
+---
+mandatory: True
+code: |
+  multi_user = True
+---
+mandatory: True
+code: |
+  users[0].agrees_to_sign
+  users[0].signature
+  witnesses.gather()
+  log("1", "console")
+  emails_sent
+  log("2", "console")
+  told_to_wait
+  log("3", "console")
+  multiuser = True
+---
+code: |
+  told_to_wait = True
+  force_ask('users[0].status')
+---
+code: |
+  log("4", "console")
+  users[0].code
+  log("5", "console")
+  signatories.gather()
+  log("6", "console")
+  background_action('send_out_for_signature')
+  #result = send_out_for_signature.get()
+  #log(result, "console")
+  log("7", "console")
+  emails_sent = True
+---
+code: |
+  y = shortenMe(witnesses[i].sign_url)
+---
+code: |
+  send_sms(task='send signature link', to=users[0].mobile_number,template=witnesses[i].sms_template)
+---
+code: |
+  log("12", "console")
+  if witnesses[i].email_or_text == 'text': 
+    log("13", "console")
+    send_sms(task='send witness signature link', to=witnesses[i].xxx,template=witnesses[i].sms_template)
+    log("14", "console")
+    witnesses[i].notified = True
+    log("15", "console")
+  else:
+    send_email(to=witnesses, template=witnesses[i].email_template)
+    witnesses[i].notified = True
+---
+template: witnesses[i].sms_template
+content: |
+  Dear ${ witnesses[i] },
+  Your signature needed on a document for ${ users[0] }.  
+  ${ y.shortenedURL }
+---
+mandatory: True
+code: |
+  process_action()
+  force_ask('unauthorized')
+---
+# question: |
+#   What is your name, e-mail address and mobile number?
+# fields:
+#   - Name: users[0].name.text
+#   - User E-mail: users[0].email
+#   - Mobile number: users[0].mobile_number
+---
+question: |
+  What is your favorite fruit?
+fields:
+  - Fruit: users[0].favorite_fruit
+---
+question: |
+  If you attest that your
+  favorite fruit is
+  ${ users[0].favorite_fruit },
+  press Continue.
+subquestion: |
+  On the next page, you will sign
+  your name to an attestation
+  to this effect.
+continue button field: users[0].agrees_to_sign
+---
+question: |
+  What is the name and e-mail
+  address
+  % if i == 0:
+  of a
+  % else:
+  of the ${ ordinal(i) }
+  % endif
+  witness who can attest that
+  you like
+  ${ users[0].favorite_fruit }?
+fields:
+  - Name: witnesses[i].name.text
+  - Do you want to email or text: witnesses[i].email_or_text
+    choices:
+      - Witness email: email
+      - Witness text: text
+  - Email: witnesses[i].email 
+    js show if: |
+      val("witnesses[i].email_or_text") == "email"
+  - Mobile number: witnesses[i].xxx
+    js show if: |
+      val("witnesses[i].email_or_text") == "text"
+---
+question: |
+  Besides ${ witnesses }, can anyone
+  else attest that you like
+  ${ users[0].favorite_fruit }?
+yesno: witnesses.there_is_another
+---
+code: |
+  witnesses[i].name.text
+  witnesses[i].signed
+  witnesses[i].signature
+  witnesses[i].signature_date
+  witnesses[i].complete = True
+---
+generic object: Person
+code: |
+  import random
+  import string
+  x.code = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+---
+code: |
+  import random
+  import string
+  users[0].code = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+---
+code: |
+  witnesses[i].sign_url = interview_url_action('request_signature', code=witnesses[i].code)
+---
+code: |
+  log("8", "console")
+  for witness in witnesses:
+    log("9", "console")
+    signatories[witness.code] = witness
+    log("10", "console")
+  log("11", "console")
+  signatories.gathered = True
+---
+event: send_out_for_signature
+code: |
+  for witness in witnesses:
+    witness.notified
+  users[0].notified
+  placeholder_to_send_for_signature = True
+  background_response()
+---
+code: |
+  send_email(to=users[0], template=initial_email_template)
+  users[0].notified = True
+---
+template: initial_email_template
+subject: |
+  Your Declaration of Favorite Fruit is out for signature.
+content: |
+  ${ users[0] },
+
+  % if witnesses.number() == 1:
+  I have e-mailed your
+  witness to request a
+  signature on the
+  Declaration of Favorite Fruit.
+
+  I will e-mail you when
+  the witness has signed,
+  but in the meantime you can
+  [check the status].
+  % else:
+  I have e-mailed your
+  witnesses
+  to request that they sign the
+  Declaration of Favorite Fruit.
+
+  I will e-mail you when
+  all the witnesses have
+  signed.  You can
+  [check the status] of your
+  document to see who still has
+  not signed.
+  % endif
+
+  [check the status]: ${ interview_url_action('status_page', code=users[0].code) }
+---
+template: witnesses[i].email_template
+subject: |
+  Your signature needed on
+  a document for ${ users[0] }
+content: |
+  Dear ${ witnesses[i] },
+
+  You are requested to
+  witness a sworn statement
+  attesting that ${ users[0] }
+  likes
+  ${ users[0].favorite_fruit }.
+
+  Please [click here] to
+  view the document you are
+  being asked to sign.
+
+  [click here]: ${ witnesses[i].sign_url }
+---
+event: unauthorized
+code: |
+  response('Page not found', response_code=404)
+---
+event: status_page
+code: |
+  if action_argument('code') != users[0].code:
+    force_ask('unauthorized')
+  force_ask('users[0].status')
+---
+event: request_signature
+code: |
+  if action_argument('code') not in signatories:
+    force_ask('unauthorized')
+  witness = signatories[action_argument('code')]
+  if witness.signed:
+    force_ask(witness.instanceName + '.thanked')
+  force_ask(witness.instanceName + '.willing_to_sign',
+            witness.instanceName + '.signature',
+            { 'recompute': [ witness.instanceName + '.signature_obtained' ] },
+            witness.instanceName + '.thanked')
+---
+# if signature_choice =='this device':
+#       for signature in signature_fields:
+#         value(signature)    
+#     # Check for Branch 2 or 3
+#     elif signature_choice == 'phone':
+#       saw_signature_qrcode
+#       # User will click next. users[0].mobile_number will only be defined if they chose the texting option
+#       if defined('users[0].mobile_number') and users[0].mobile_number and task_not_yet_performed('send signature link'): 
+#         # They used the text option
+#         send_sms(task='send signature link', to=users[0].mobile_number,template=interview_link)
+#         signature_wait_screen
+#         for signature in signature_fields:
+#           value(signature)
+#       else: # Branch 3: They used the QR Code. No special screen, just continue
+#         for signature in signature_fields:
+#           value(signature)
+#       # Show the follow-up either way
+#       if device().is_mobile:
+#         #signed = False
+#         #while not signed:
+#         #  for signature in signature_fields:
+#         #    signed = defined(signature) & signed
+#         signature_phone_followup
+#   basic_questions_signature_flow = True
+# ---
+# code: |
+#   users[0]_signature_verification = users[0].signature
+# ---
+# id: basic questions intro screen
+---
+reconsider: form_to_send
+question: |
+  Are you willing to sign a
+  statement attesting that
+  ${ users[0] } likes
+  ${ users[0].favorite_fruit }?
+subquestion: |
+  You can
+  [preview the statement](${ form_to_send.pdf.url_for() })
+  now.
+
+  If you are willing to sign,
+  press Continue.  On
+  the next screen, you will
+  provide your signature.
+continue button field: witnesses[i].willing_to_sign
+---
+generic object: Person
+question: |
+  Sign your name
+signature: x.signature
+under: |
+  ${ x }
+---
+code: |
+  for witness in witnesses:
+    if not witness.signed:
+      all_signatures_in = False
+      break
+  else:
+    final_email_sent
+    all_signatures_in = True
+---
+code: |
+  background_action('send_final_email')
+  final_email_sent = True
+---
+event: send_final_email
+code: |
+  send_email(to=users[0], template=final_email_template, attachments=form_to_send)
+  background_response()
+---
+template: final_email_template
+subject: Your Declaration of Favorite Fruit has been signed by all parties
+content: |
+  ${ users[0] },
+
+  Your Declaration of Favorite
+  Fruit has now been signed by
+  all of your witnesses.
+  Please see attached.
+---
+code: |
+  users[0].signature_date = today()
+---
+only sets: witnesses[i].signature_obtained
+code: |
+  witnesses[i].signed = True
+  witnesses[i].signature_date = today()
+  witnesses[i].signature_obtained = True
+---
+code: |
+  witnesses[i].signed = False
+---
+code: |
+  witnesses[i].signature_date = "_________________"
+---
+code: |
+  witnesses[i].signature = "____________________________"
+---
+event: users[0].status
+reconsider:
+  - all_signatures_in
+  - form_to_send
+question: |
+  % if all_signatures_in:
+  Your Declaration has been signed.
+  % else:
+  Your Declaration is out for signature.
+  % endif
+subquestion: |
+  % if not all_signatures_in:
+    % for witness in witnesses:
+      % if witness.signed:
+  ${ witness } has signed.
+
+      % else:
+  ${ witness } has not signed yet.
+
+      % endif
+    % endfor
+  % endif
+attachment code: form_to_send
+---
+event: witnesses[i].thanked
+reconsider:
+  - all_signatures_in
+  - form_to_send
+question: |
+  Thank you for witnessing
+  ${ users[0].possessive('Declaration of Favorite Fruit') }
+subquestion: |
+  If you would like a signed
+  copy for your records, you
+  may download it below.
+
+  % if not all_signatures_in:
+  Please note that not everyone
+  has signed the document yet.
+  % endif
+attachment code: form_to_send
