@@ -7,8 +7,8 @@ modules:
   - docassemble.VirtualCourtToolbox.shortenURL
 ---
 objects:
-  - other_parties: PeopleList.using(ask_number=True)
-  - codefendants: PeopleList.using(there_are_any=True, complete_attribute='complete')
+  - other_parties: PeopleList.using(ask_number=True)  # Can they be businesses? Does it matter?
+  - codefendants: PeopleList.using(there_are_any=True, complete_attribute='complete')  # Can they be businesses?
   - signatories: DADict.using(auto_gather=False)
 ---
 comment: |
@@ -23,36 +23,51 @@ code: |
   other_parties.there_are_any = True
   interview_presets = True
 ---
+# TODO: Use more basic questions?
 mandatory: True
 id: interview order
 code: |
-  # codefendants.gather()
-  # background_action('send_signature_request')
-  # interview_presets
-  # download_only_intro_screen
-  # mtd_intro
-  # if eviction_choice == "yes":
-  #   kick_out
-  # other_parties.target_number
-  # other_parties.gather()
+  interview_presets
+  download_only_intro_screen
+  mtd_intro
+  if eviction_choice == "yes":
+    kick_out
+  users[0].name.first
   users[0].address.address
   users[0].mobile_number
-  users.gather()
-  multiuser
+  other_parties.target_number
+  other_parties.gather()
+  users.gathered = True
+  users.there_is_another = False
+  codefendants.gather()
   courts[0]
+  docket_numbers[0]
   preview_screen
-  placeholder_to_send_for_signature
-  # update_signature_fields
-  # basic_questions_signature_flow
-  # if not service_method == "not_know":
-  #   service_date
-  # download
+  # Do you want to send this to C to sign or did you get permission to sign it for them?
+  for codefendant in codefendants:
+    #if codefentant.need_signature:
+      # how to send
+      codefendant.send_method
+  ready_to_serve
+  basic_questions_signature_flow
+  #(no longer needed?) update_signature_fields
+  if not service_method == "not_know":
+    service_date
+  #download
+  send_for_codefendant_signatures
 ---
 code: |
-  signature_fields = []
-  for index, user in enumerate(users):
-    signature_fields.append('users[' + str(index) + '].signature')
-  update_signature_fields = True
+  download_titles = ['dismiss-non-essential-eviction.pdf']
+---
+code: |
+  all_signers = users + codefendants
+---
+comment: |
+  code: |
+    signature_fields = []
+    for index, user in enumerate(users):
+      signature_fields.append('users[' + str(index) + '].signature')
+    update_signature_fields = True
 ---
 comment: |
   id: codefendant name
@@ -109,7 +124,8 @@ fields:
   - no label: other_parties.target_number
     datatype: integer
     min: 1
----  
+---
+id: plaintiff names
 question: |
   % if other_parties.target_number == 1:
     What is the plaintiff's name?
@@ -236,8 +252,9 @@ fields:
   - Suffix: codefendants[i].name.suffix
     required: False
 ---
+id: how to send to codefendant
 question: |
-  Do you want to send this to them by email or text?
+  Do you want to send this to ${ codefendants[i] } by email or text?
 fields:
   - no label: codefendants[i].send_method
     datatype: radio
@@ -254,7 +271,7 @@ fields:
 id: get codefendant info
 code: |
   codefendants[i].name.first
-  codefendants[i].send_method
+  #codefendants[i].send_method
   #codefendants[i].signature
   #codefendants[i].signature_date
   codefendants[i].complete = True
@@ -263,28 +280,6 @@ id: placeholder
 template: placeholder_message
 content: |
   We won!
----
-event: send_signature_request
-code: |
-  for codefendant in codefendants:
-    codefendant.notified
-  #user.notified
-  background_response()
----
-code: |
-  if codefendants[i].send_method == 'text':
-    send_sms(task='send codefendant signature link', to=codefendants[i].phone_number, template=placeholder_message)
-  #else:
-    #send_email(to=codefendants, template=placeholder_message)
-  
-  codefendants[i].notified = True
-
-  #if witnesses[i].email_or_text == 'text': 
-  #  send_sms(task='send witness signature link', to=witnesses[i].link_cell,template=witnesses[i].sms_template)
-  #  witnesses[i].notified = True
-  #else:
-  #  send_email(to=witnesses, template=witnesses[i].email_template)
-  #  witnesses[i].notified = True
 ---
 id: court question
 sets:
@@ -357,7 +352,7 @@ fields:
   - I do not know the docket number: dont_know_docket_number
     datatype: yesno
   - Docket number: docket_numbers[0]
-    hide if:  dont_know_docket_number
+    hide if: dont_know_docket_number
 help:
   label: |
     What is a docket number?
@@ -390,7 +385,7 @@ subquestion: |
   5. Have you filed an Answer yet? If not, you may want to fill one out
   now via [MADE](https://gbls.org/MADE).
   
-  ${ final_form }
+  ${ motion_to_dismiss_for_non_essential_eviction }
 attachment code: motion_to_dismiss_for_non_essential_eviction  
 progress: 100
 ---
@@ -402,14 +397,11 @@ subquestion: |
   
   Use the "Back" button to find the screen to fix mistakes.
   
-  ${form_to_sign }
+  ${ form_to_sign }
 continue button field: preview_screen
 ---
 code: |
   form_to_sign = pdf_concatenate(preview_doc, filename="preview.pdf")
----
-code: |
-  form_to_send = form_to_sign
 ---
 attachment:
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx

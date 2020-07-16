@@ -8,64 +8,43 @@ metadata:
 modules:  
   - docassemble.VirtualCourtToolbox.shortenURL
 ---
-objects:
-  - users[0]: Person
-  - witnesses: DAList.using(object_type=Person, there_are_any=True, complete_attribute='complete')
-  - signatories: DADict.using(auto_gather=False)
----
 mandatory: True
 code: |
   multi_user = True
 ---
-mandatory: True
 code: |
-  users[0].agrees_to_sign
-  users[0].signature
-  witnesses.gather()
-  log("1", "console")
   emails_sent
-  log("2", "console")
   told_to_wait
-  log("3", "console")
-  multiuser = True
+  send_for_codefendant_signatures = True
 ---
 code: |
   told_to_wait = True
   force_ask('users[0].status')
 ---
 code: |
-  log("4", "console")
   users[0].code
-  log("5", "console")
   signatories.gather()
-  log("6", "console")
   background_action('send_out_for_signature')
-  #result = send_out_for_signature.get()
-  #log(result, "console")
-  log("7", "console")
   emails_sent = True
 ---
 code: |
-  y = shortenMe(witnesses[i].sign_url)
+  send_sms(task='send signature link', to=users[0].mobile_number,template=codefendants[i].sms_template)
 ---
 code: |
-  send_sms(task='send signature link', to=users[0].mobile_number,template=witnesses[i].sms_template)
----
-code: |
-  log("12", "console")
-  if witnesses[i].email_or_text == 'text': 
-    log("13", "console")
-    send_sms(task='send witness signature link', to=witnesses[i].xxx,template=witnesses[i].sms_template)
-    log("14", "console")
-    witnesses[i].notified = True
-    log("15", "console")
+  log('sending something', 'console')
+  if codefendants[i].send_method == 'text': 
+    log('sending text', 'console')
+    message_sent_success = send_sms(task='send codefendant signature link', to=codefendants[i].phone_number,template=codefendants[i].sms_template)
+    codefendants[i].notified = True
   else:
-    send_email(to=witnesses, template=witnesses[i].email_template)
-    witnesses[i].notified = True
+    log('sending email', 'console')
+    message_sent_success = send_email(to=codefendants[i], template=codefendants[i].email_template)
+    codefendants[i].notified = True
 ---
-template: witnesses[i].sms_template
+id: sms template multiuser
+template: codefendants[i].sms_template
 content: |
-  Dear ${ witnesses[i] },
+  Dear ${ codefendants[i] },
   Your signature needed on a document for ${ users[0] }.  
   ${ y.shortenedURL }
 ---
@@ -74,175 +53,113 @@ code: |
   process_action()
   force_ask('unauthorized')
 ---
-# question: |
-#   What is your name, e-mail address and mobile number?
-# fields:
-#   - Name: users[0].name.text
-#   - User E-mail: users[0].email
-#   - Mobile number: users[0].mobile_number
----
-question: |
-  What is your favorite fruit?
-fields:
-  - Fruit: users[0].favorite_fruit
----
-question: |
-  If you attest that your
-  favorite fruit is
-  ${ users[0].favorite_fruit },
-  press Continue.
-subquestion: |
-  On the next page, you will sign
-  your name to an attestation
-  to this effect.
-continue button field: users[0].agrees_to_sign
----
-question: |
-  What is the name and e-mail
-  address
-  % if i == 0:
-  of a
-  % else:
-  of the ${ ordinal(i) }
-  % endif
-  witness who can attest that
-  you like
-  ${ users[0].favorite_fruit }?
-fields:
-  - Name: witnesses[i].name.text
-  - Do you want to email or text: witnesses[i].email_or_text
-    choices:
-      - Witness email: email
-      - Witness text: text
-  - Email: witnesses[i].email 
-    js show if: |
-      val("witnesses[i].email_or_text") == "email"
-  - Mobile number: witnesses[i].xxx
-    js show if: |
-      val("witnesses[i].email_or_text") == "text"
----
-question: |
-  Besides ${ witnesses }, can anyone
-  else attest that you like
-  ${ users[0].favorite_fruit }?
-yesno: witnesses.there_is_another
----
-code: |
-  witnesses[i].name.text
-  witnesses[i].signed
-  witnesses[i].signature
-  witnesses[i].signature_date
-  witnesses[i].complete = True
----
-generic object: Person
+id: set code for individual
+generic object: Individual
 code: |
   import random
   import string
   x.code = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
 ---
+id: set user code
 code: |
   import random
   import string
   users[0].code = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
 ---
+id: codefendant signature url
 code: |
-  witnesses[i].sign_url = interview_url_action('request_signature', code=witnesses[i].code)
+  codefendants[i].sign_url = interview_url_action('request_signature', code=codefendants[i].code)
 ---
+id: shorten codefendant url
 code: |
-  log("8", "console")
-  for witness in witnesses:
-    log("9", "console")
-    signatories[witness.code] = witness
-    log("10", "console")
-  log("11", "console")
+  y = shortenMe(codefendants[i].sign_url)
+---
+id: set signatories
+code: |
+  for codefendant in codefendants:
+    signatories[codefendant.code] = codefendant
   signatories.gathered = True
 ---
+id: send request for signatures
 event: send_out_for_signature
 code: |
-  for witness in witnesses:
-    witness.notified
+  for codefendant in codefendants:
+    codefendant.notified
   users[0].notified
   placeholder_to_send_for_signature = True
+  background_response_action('email_success_or_not', success=message_sent_success)
+---
+event: email_success_or_not
+code: |
+  debug_msg = action_argument('success')
+  log( 'hello', 'info' )
+  log( debug_msg, 'info' )
   background_response()
 ---
+id: send user email
 code: |
   send_email(to=users[0], template=initial_email_template)
   users[0].notified = True
 ---
+id: user email
 template: initial_email_template
 subject: |
-  Your Declaration of Favorite Fruit is out for signature.
+  Your Eviction Moratorium is out for signature.
 content: |
   ${ users[0] },
 
-  % if witnesses.number() == 1:
-  I have e-mailed your
-  witness to request a
-  signature on the
-  Declaration of Favorite Fruit.
+  % if codefendants.number() == 1:
+  We have e-mailed your codefendant to ask for a signature on the Eviction Moratorium.
 
-  I will e-mail you when
-  the witness has signed,
-  but in the meantime you can
-  [check the status].
+  We will e-mail you when the codefendant has signed, but in the meantime you can [check the status].
+  
   % else:
-  I have e-mailed your
-  witnesses
-  to request that they sign the
-  Declaration of Favorite Fruit.
+  I have e-mailed your codefendants to request that they sign the Eviction Moratorium.
 
-  I will e-mail you when
-  all the witnesses have
-  signed.  You can
-  [check the status] of your
-  document to see who still has
-  not signed.
+  We will e-mail you when all the codefendants have signed.  You can [check the status] of your document to see who still has not signed.
   % endif
 
-  [check the status]: ${ interview_url_action('status_page', code=users[0].code) }
+  [Check the status of the signatures]: ${ interview_url_action('status_page', code=users[0].code) }
 ---
-template: witnesses[i].email_template
+id: codefendant email
+template: codefendants[i].email_template
 subject: |
-  Your signature needed on
-  a document for ${ users[0] }
+  Your signature needed on a document for ${ users[0] }
 content: |
-  Dear ${ witnesses[i] },
+  Dear ${ codefendants[i] },
 
-  You are requested to
-  witness a sworn statement
-  attesting that ${ users[0] }
-  likes
-  ${ users[0].favorite_fruit }.
+  You are requested to sign a sworn statement attesting that ${ users[0] } TODO: WHAT ARE THEY ATTESTING.
 
-  Please [click here] to
-  view the document you are
-  being asked to sign.
+  Please [tap hereabouts](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }) to view the document you are being asked to sign.
 
-  [click here]: ${ witnesses[i].sign_url }
+  [Tap here to sign the thing](${ codefendants[i].sign_url })
 ---
+id: 404
 event: unauthorized
 code: |
   response('Page not found', response_code=404)
 ---
+id: not sure
 event: status_page
 code: |
   if action_argument('code') != users[0].code:
     force_ask('unauthorized')
   force_ask('users[0].status')
 ---
+id: signatories flow
 event: request_signature
 code: |
   if action_argument('code') not in signatories:
     force_ask('unauthorized')
-  witness = signatories[action_argument('code')]
-  if witness.signed:
-    force_ask(witness.instanceName + '.thanked')
-  force_ask(witness.instanceName + '.willing_to_sign',
-            witness.instanceName + '.signature',
-            { 'recompute': [ witness.instanceName + '.signature_obtained' ] },
-            witness.instanceName + '.thanked')
+  codefendant = signatories[action_argument('code')]
+  if codefendant.signed:
+    force_ask(codefendant.instanceName + '.thanked')
+  force_ask(codefendant.instanceName + '.willing_to_sign',
+    codefendant.instanceName + '.signature',
+    { 'recompute': [ codefendant.instanceName + '.signature_obtained' ] },
+    codefendant.instanceName + '.thanked')
 ---
-# if signature_choice =='this device':
+# if signature_choice == 'this device':
 #       for signature in signature_fields:
 #         value(signature)    
 #     # Check for Branch 2 or 3
@@ -272,23 +189,20 @@ code: |
 # ---
 # id: basic questions intro screen
 ---
-reconsider: form_to_send
+id: codefendant willing to sign
+reconsider:
+  - all_signers
+  - motion_to_dismiss_for_non_essential_eviction
+  - final_form
 question: |
-  Are you willing to sign a
-  statement attesting that
-  ${ users[0] } likes
-  ${ users[0].favorite_fruit }?
+  Are you willing to sign a statement attesting that ${ users[0] } TODO: WHAT ARE THEY ATTESTING?
 subquestion: |
-  You can
-  [preview the statement](${ form_to_send.pdf.url_for() })
-  now.
+  You can [preview the statement](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }) now.
 
-  If you are willing to sign,
-  press Continue.  On
-  the next screen, you will
-  provide your signature.
-continue button field: witnesses[i].willing_to_sign
+  If you are willing to sign, tap to continue.  On the next screen, you will provide your signature.
+continue button field: codefendants[i].willing_to_sign
 ---
+id: Codefendant signature
 generic object: Person
 question: |
   Sign your name
@@ -296,9 +210,10 @@ signature: x.signature
 under: |
   ${ x }
 ---
+id: if all signed send email
 code: |
-  for witness in witnesses:
-    if not witness.signed:
+  for codef in codefendants:
+    if not codef.signed:
       all_signatures_in = False
       break
   else:
@@ -311,75 +226,88 @@ code: |
 ---
 event: send_final_email
 code: |
-  send_email(to=users[0], template=final_email_template, attachments=form_to_send)
+  send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
   background_response()
 ---
+id: all signed email template
+reconsider:
+  - all_signers
+  - final_form
 template: final_email_template
-subject: Your Declaration of Favorite Fruit has been signed by all parties
+subject: Your Eviction Moratorium has been signed by all parties
 content: |
   ${ users[0] },
 
-  Your Declaration of Favorite
-  Fruit has now been signed by
-  all of your witnesses.
-  Please see attached.
+  Your Eviction Moratorium has now been signed by all of your codefendants.
+  
+  You can [tap to see the signed document](${ final_form.pdf.url_for() })
+---
+#code: |
+#  users[0].signature_date = today()
+---
+only sets: codefendants[i].signature_obtained
+code: |
+  codefendants[i].signed = True
+  codefendants[i].signature_date = today()
+  codefendants[i].signature_obtained = True
 ---
 code: |
-  users[0].signature_date = today()
----
-only sets: witnesses[i].signature_obtained
-code: |
-  witnesses[i].signed = True
-  witnesses[i].signature_date = today()
-  witnesses[i].signature_obtained = True
+  codefendants[i].signed = False
 ---
 code: |
-  witnesses[i].signed = False
+  codefendants[i].signature_date = "_________________"
 ---
 code: |
-  witnesses[i].signature_date = "_________________"
+  codefendants[i].signature = "____________________________"
 ---
-code: |
-  witnesses[i].signature = "____________________________"
----
+id: signature status
 event: users[0].status
 reconsider:
   - all_signatures_in
-  - form_to_send
+  - all_signers
+  - motion_to_dismiss_for_non_essential_eviction
+  - final_form
 question: |
   % if all_signatures_in:
-  Your Declaration has been signed.
+  Your Eviction Moratorium has been signed.
   % else:
-  Your Declaration is out for signature.
+  Your Eviction Moratorium has not been signed by everyone yet.
   % endif
 subquestion: |
   % if not all_signatures_in:
-    % for witness in witnesses:
-      % if witness.signed:
-  ${ witness } has signed.
+    % for codef in codefendants:
+      % if codef.signed:
+  ${ codef } has signed.
 
       % else:
-  ${ witness } has not signed yet.
+  ${ codef } has not signed yet.
 
       % endif
     % endfor
+  % else:
+    % if len( codefendants ) > 1:
+    ${ comma_and_list( codefendants )} have signed.
+    % else:
+      ${ codefendants[0] } has signed.
+    % endif
   % endif
-attachment code: form_to_send
+attachment code: motion_to_dismiss_for_non_essential_eviction
 ---
-event: witnesses[i].thanked
+id: thank codefendants
+event: codefendants[i].thanked
 reconsider:
   - all_signatures_in
-  - form_to_send
+  - all_signers
+  - motion_to_dismiss_for_non_essential_eviction
+  - final_form
 question: |
-  Thank you for witnessing
-  ${ users[0].possessive('Declaration of Favorite Fruit') }
+  Thank you for signing ${ users[0].possessive('Eviction Moratorium') }
 subquestion: |
-  If you would like a signed
-  copy for your records, you
-  may download it below.
+  If you would like a signed copy for your records, you can download or email it below.
 
   % if not all_signatures_in:
-  Please note that not everyone
-  has signed the document yet.
+  Please note that not everyone has signed the document yet.
   % endif
-attachment code: form_to_send
+  
+  ${ motion_to_dismiss_for_non_essential_eviction }
+attachment code: motion_to_dismiss_for_non_essential_eviction
