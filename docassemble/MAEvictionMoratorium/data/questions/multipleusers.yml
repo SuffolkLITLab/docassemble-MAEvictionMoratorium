@@ -86,14 +86,6 @@ code: |
   for codefendant in codefendants:
     codefendant.notified
   users[0].notified
-  placeholder_to_send_for_signature = True
-  background_response_action('email_success_or_not', success=message_sent_success)
----
-event: email_success_or_not
-code: |
-  debug_msg = action_argument('success')
-  log( 'hello', 'info' )
-  log( debug_msg, 'info' )
   background_response()
 ---
 id: send user email
@@ -292,6 +284,9 @@ subquestion: |
     % endif
   % endif
 attachment code: motion_to_dismiss_for_non_essential_eviction
+# Causes the user to be unauthorized right now
+#buttons:
+#  - "Refresh": refresh
 ---
 id: thank codefendants
 event: codefendants[i].thanked
