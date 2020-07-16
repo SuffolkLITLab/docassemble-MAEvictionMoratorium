@@ -283,6 +283,8 @@ subquestion: |
       ${ codefendants[0] } has signed.
     % endif
   % endif
+  
+  ${ action_button_html('javascript:daRefreshSubmit()', label='Refresh', size='lg') }
 attachment code: motion_to_dismiss_for_non_essential_eviction
 # Causes the user to be unauthorized right now
 #buttons:
