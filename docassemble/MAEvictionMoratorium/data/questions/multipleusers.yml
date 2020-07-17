@@ -1,3 +1,6 @@
+# TODO:
+# - Many screens should be customizable
+# - Should allow a screen after the final screen, so don't use `force_ask()`
 metadata:
   title: Multiple signatures
   short: Signature
@@ -122,7 +125,7 @@ content: |
 
   You are requested to sign a sworn statement attesting that ${ users[0] } TODO: WHAT ARE THEY ATTESTING.
 
-  Please [tap hereabouts](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }) to view the document you are being asked to sign.
+  [Tap here to see the document you are being asked to sign](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }).
 
   [Tap here to sign the thing](${ codefendants[i].sign_url })
 ---
@@ -254,6 +257,7 @@ code: |
 ---
 id: signature status
 event: users[0].status
+prevent going back: True
 reconsider:
   - all_signatures_in
   - all_signers
@@ -286,9 +290,6 @@ subquestion: |
   
   ${ action_button_html('javascript:daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
 attachment code: motion_to_dismiss_for_non_essential_eviction
-# Causes the user to be unauthorized right now
-#buttons:
-#  - "Refresh": refresh
 ---
 id: thank codefendants
 event: codefendants[i].thanked
