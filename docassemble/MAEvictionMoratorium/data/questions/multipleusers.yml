@@ -284,7 +284,7 @@ subquestion: |
     % endif
   % endif
   
-  ${ action_button_html('javascript:daRefreshSubmit()', label='Refresh', size='lg') }
+  ${ action_button_html('javascript:daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
 attachment code: motion_to_dismiss_for_non_essential_eviction
 # Causes the user to be unauthorized right now
 #buttons:

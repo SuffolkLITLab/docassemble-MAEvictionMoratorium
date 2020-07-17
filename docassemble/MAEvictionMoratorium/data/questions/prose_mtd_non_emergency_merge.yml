@@ -48,6 +48,7 @@ code: |
     #if codefentant.need_signature:
       # how to send
       codefendant.send_method
+  set_undefined_signer_values
   ready_to_serve
   basic_questions_signature_flow
   #(no longer needed?) update_signature_fields
@@ -61,6 +62,10 @@ code: |
 ---
 code: |
   all_signers = users + codefendants
+---
+
+code: |
+  
 ---
 comment: |
   code: |
