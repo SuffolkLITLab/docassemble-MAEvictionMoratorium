@@ -67,7 +67,6 @@ event: users[0].status
 prevent going back: True
 reconsider:
   - all_signatures_in
-  - all_signers
   - motion_to_dismiss_for_non_essential_eviction
   - final_form
 question: |
@@ -165,12 +164,12 @@ code: |
 ---
 event: send_final_email
 code: |
-  send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+  if defined( 'users[0].email' ) and users[0].email:
+    send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
   background_response()
 ---
 id: all signed email template
 reconsider:
-  - all_signers
   - final_form
 template: final_email_template
 subject: Your Eviction Moratorium has been signed by all parties
@@ -193,7 +192,7 @@ comment: |
 # would not be set, but it would not cause a loop. It would error.
 code: |
   if codefendants[i].send_method == 'text': 
-    message_sent_success = send_sms(task='send codefendant signature link', to=codefendants[i].phone_number,template=codefendants[i].sms_template)
+    message_sent_success = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_phone,template=codefendants[i].sms_template)
     codefendants[i].notified = True
   else:
     message_sent_success = send_email(to=codefendants[i], template=codefendants[i].email_template)
@@ -253,7 +252,6 @@ code: |
 ---
 id: codefendant willing to sign
 reconsider:
-  - all_signers
   - motion_to_dismiss_for_non_essential_eviction
   - final_form
 question: |
@@ -276,7 +274,6 @@ id: thank codefendants
 event: codefendants[i].thanked
 reconsider:
   - all_signatures_in
-  - all_signers
   - motion_to_dismiss_for_non_essential_eviction
   - final_form
 question: |
