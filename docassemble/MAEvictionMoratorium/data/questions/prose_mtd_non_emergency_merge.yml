@@ -50,7 +50,6 @@ code: |
       codefendant.send_method
   ready_to_serve
   basic_questions_signature_flow
-  #(no longer needed?) update_signature_fields
   if not service_method == "not_know":
     service_date
   #download
@@ -86,7 +85,6 @@ id: basic questions intro screen
 question: |
   Mass Access Project
 subquestion: |
- 
   This interview can help you complete and download court forms in 3 steps:
   
   Step 1. Answer questions to fill your motion.  
@@ -264,7 +262,7 @@ fields:
   - What is their email?: codefendants[i].email
     js show if: |
       val("codefendants[i].send_method") == "email"
-  - What is their phone number?: codefendants[i].phone_number
+  - What is their phone number?: codefendants[i].mobile_phone
     js show if: |
       val("codefendants[i].send_method") == "text"
 ---
@@ -393,6 +391,7 @@ id: preview
 question: |
   Preview your motion
 subquestion: |
+
   Tap the motion below to open it in a new window.
   
   Use the "Back" button to find the screen to fix mistakes.
