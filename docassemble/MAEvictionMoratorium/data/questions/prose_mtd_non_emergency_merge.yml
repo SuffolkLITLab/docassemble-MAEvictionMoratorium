@@ -28,6 +28,21 @@ mandatory: True
 id: interview order
 code: |
   interview_presets
+  
+  # Skipping for tests
+  download_only_intro_screen = True
+  mtd_intro = True
+  eviction_choice = "no"
+  other_parties.target_number = '1'
+  codefendants[0].name.first = 'c'
+  codefendants[1].name.first = 'f'
+  codefendants[2].name.first = 's'
+  docket_numbers[0] = '111'
+  preview_screen = True
+  users[0].name.first = 'd'
+  users[0].name.last = 'd'
+  other_parties[0].name.first = 'f'
+  
   download_only_intro_screen
   mtd_intro
   if eviction_choice == "yes":
@@ -44,22 +59,42 @@ code: |
   docket_numbers[0]
   preview_screen
   # Do you want to send this to C to sign or did you get permission to sign it for them?
-  for codefendant in codefendants:
-    #if codefentant.need_signature:
-      # how to send
-      codefendant.send_method
+
+  local_signers
+  log( 'before send method, local_signers' )
+  log( local_signers )
+  for remote_signer in codefendants.difference(local_signers):
+    remote_signer.send_method
+
   ready_to_serve
-  basic_questions_signature_flow
   if not service_method == "not_know":
     service_date
-  #download
+
+  reset_local_signer_signatures
+  basic_questions_signature_flow # user
+  
+  remote_signers = codefendants.difference(local_signers)
+  log( 'remote_signers:' )
+  log( remote_signers, 'console' )
+  
   send_for_codefendant_signatures
+  
+  for local in local_signers:
+    local.signature
+    local.notified = True  # Not sure we need this
+  told_to_wait
+  #download
 ---
 code: |
   download_titles = ['dismiss-non-essential-eviction.pdf']
 ---
 code: |
   all_signers = users + codefendants
+---
+code: |
+  for local in local_signers:
+    undefine( local.instanceName + '.signature' )
+  reset_local_signer_signatures = True
 ---
 comment: |
   code: |
