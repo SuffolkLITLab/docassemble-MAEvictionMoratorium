@@ -15,11 +15,6 @@ mandatory: True
 code: |
   multi_user = True
 ---
-mandatory: True
-code: |
-  process_action()  # Makes the `background_action`s possible, I think
-  force_ask('unauthorized')
----
 code: |
   emails_sent
   send_for_codefendant_signatures = True
@@ -40,37 +35,18 @@ id: send request for signatures
 event: send_out_for_signature  # TODO: make plural
 code: |
   log( 'a' )
-  #for codefendant in codefendants.filter(is_local_signer=False):
-  #  log( 'b' )
-  #  if defined( codefendant.instanceName + '.send_method' ):
-  #    log( 'c' )
-  #    codefendant.notified
   for remote in remote_signers:
     log( 'b' )
-    #if defined( remote.instanceName + '.send_method' ):
-    #  log( 'c' )
     remote.notified
   log( 'd' )
   users[0].notified
   log( 'e' )
-  # Let the background_action know this background action is
-  # done. Don't do something else or send back any data.
   background_response()
 ---
 comment: |
   =============================
   USER
   =============================
----
-# Now set by the user outside of this flow
-#code: |
-#  users[0].signature_date = today()
----
-# The status page will currently just say to wait for others to sign
-code: |
-  told_to_wait = True
-  # Makes sure users[0].status is the only page the user can see.
-  force_ask('users[0].status')
 ---
 id: signature status
 event: users[0].status
@@ -196,63 +172,10 @@ comment: |
   =============================
 ---
 objects:
-  #- who_proxy_sign_for: PeopleList.using(auto_gather=False)
-  #- who_else_on_device: PeopleList.using(auto_gather=False)
   - local_signers: PeopleList.using(auto_gather=False)
----
-#code: |
-#  codefendants[i].is_proxy = False
-#---
-#code: |
-#  codefendants[i].will_use_same_device = False
-#---
-#code: |
-#  codefendants[i].is_local_signer = False
----
-#code: |
-#  # For users that will be signing on same device or who the user can sign for
-#  if len(codefendants) > 0 and will_proxy_sign:
-#    who_proxy_sign_for
-#    #for proxied in who_proxy_sign_for:
-#    #  proxied.is_proxy = True
-#    
-#  who_proxy_sign_for.gathered = True
-#  set_proxy_signers = True
----
-#code: |
-#  # codefendants are co-signers
-#  #---
-#  # who_proxy_sign_for (defined through object checkboxes)
-#  # codefendants the user has permission to sign for
-#  #---
-#  # who_else_on_device
-#  # codefendants minus who_proxy_sign_for will sign on the user's device
-#  #---
-#  # local_signers
-#  # A combo of the user and the two previous groups so we can collect all their signatures
-#  #---
-#  # remote_signers
-#  # People who the user needs to send a link to
-#---
-#code: |
-#  #  non_proxy = codefendants.filter( 'non_proxy', is_proxy = False )
-#  #if len(non_proxy) > 0 and exist_other_local_signers:
-#  #if len( codefendants.difference( who_proxy_sign_for )) > 0 and exist_other_local_signers:
-#  #  who_else_on_device
-#  #
-#  #who_else_on_device.gathered = True
-#  #
-#  #set_others_on_device = True
-##    for on_device in who_else_on_device:
-##      on_device.will_use_same_device = True
-##---
-##---
-##code: |
-##  who_else_on_device = codefendants.difference( who_proxy_sign_for )
 ---
 code: |
   local_signers_temp = DAList(auto_gather=False)
-  #local_signers = DAList(auto_gather=False)
   local_signers_temp.extend( users )
   
   if len( codefendants ) > 0:
@@ -266,29 +189,11 @@ code: |
   
   local_signers_temp.gathered = True
   local_signers = local_signers_temp
-  
-#  evaluate_what_other_signatures_will_be_on_this_device = True
-#---
-#code: |
-#  local_signers = users + who_proxy_sign_for + who_else_on_device
----
-#code: |
-#  non_proxy = codefendants.difference( who_proxy_sign_for )
----
-#code: |
-#  local_signers = users + codefendants.filter(is_proxy = True) + codefendants.filter(will_use_same_device = True)
-#  for local_signer in local_signers:
-#    log( "local_signer:", 'console' )
-#    log( local_signer, 'console' )
-#    local_signer.is_local_signer = True
-#  
-#  ask_for_local_signers = True
 ---
 id: proxy signer
 question: |
   Are you signing for any of the codefendants?
 yesno: will_proxy_sign
-#yesno: who_proxy_sign_for.there_are_any
 ---
 id: who will proxy
 question: |
@@ -321,11 +226,8 @@ fields:
 # an exception caused by an undefined variable, then .notified
 # would not be set, but it would not cause a loop. It would error.
 code: |
-  log( '1' )
   if codefendants[i].send_method == 'text':
-    log( '2' )
     message_sent_success = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_phone,template=codefendants[i].sms_template)
-    log( '3' )
     codefendants[i].notified = True
   else:
     message_sent_success = send_email(to=codefendants[i], template=codefendants[i].email_template)
@@ -372,7 +274,6 @@ code: |
 id: signatories flow
 event: request_signature
 code: |
-  log( 'here?' )
   # No new code gets run after a `force_ask`
   if action_argument('code') not in signatories:
     force_ask('unauthorized')
@@ -428,44 +329,7 @@ code: |
   codefendants[i].signature_date = today()
   codefendants[i].signature_obtained = True
 ---
-# if signature_choice == 'this device':
-#       for signature in signature_fields:
-#         value(signature)    
-#     # Check for Branch 2 or 3
-#     elif signature_choice == 'phone':
-#       saw_signature_qrcode
-#       # User will click next. users[0].mobile_number will only be defined if they chose the texting option
-#       if defined('users[0].mobile_number') and users[0].mobile_number and task_not_yet_performed('send signature link'): 
-#         # They used the text option
-#         send_sms(task='send signature link', to=users[0].mobile_number,template=interview_link)
-#         signature_wait_screen
-#         for signature in signature_fields:
-#           value(signature)
-#       else: # Branch 3: They used the QR Code. No special screen, just continue
-#         for signature in signature_fields:
-#           value(signature)
-#       # Show the follow-up either way
-#       if device().is_mobile:
-#         #signed = False
-#         #while not signed:
-#         #  for signature in signature_fields:
-#         #    signed = defined(signature) & signed
-#         signature_phone_followup
-#   basic_questions_signature_flow = True
-# ---
-# code: |
-#   users[0]_signature_verification = users[0].signature
-# ---
-# id: basic questions intro screen
----
 # Makes sure this is defined when the signer has not signed yet
 code: |
   codefendants[i].signed = False
 ---
-## TODO: Possibly replace with text that's useful, maybe underlined somehow
-#code: |
-#  codefendants[i].signature_date = "_________________"
-#---
-## TODO: Possibly replace with text that's useful, maybe underlined somehow
-#code: |
-#  codefendants[i].signature = "____________________________"

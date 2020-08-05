@@ -1,4 +1,7 @@
 ---
+# TODO: Use more basic questions?
+# TODO: Implement new multi-signature recipe: https://github.com/jhpyle/docassemble/blob/master/docassemble_demo/docassemble/demo/data/questions/examples/demo-multi-sign-2.yml
+---
 include:
   - docassemble.MAVirtualCourt:basic-questions.yml
 ---
@@ -23,25 +26,24 @@ code: |
   other_parties.there_are_any = True
   interview_presets = True
 ---
-# TODO: Use more basic questions?
 mandatory: True
 id: interview order
 code: |
   interview_presets
   
-  # Skipping for tests
-  download_only_intro_screen = True
-  mtd_intro = True
-  eviction_choice = "no"
-  other_parties.target_number = '1'
-  codefendants[0].name.first = 'c'
-  codefendants[1].name.first = 'f'
-  codefendants[2].name.first = 's'
-  docket_numbers[0] = '111'
-  preview_screen = True
-  users[0].name.first = 'd'
-  users[0].name.last = 'd'
-  other_parties[0].name.first = 'f'
+  # Skipping for speeding up tests
+  #download_only_intro_screen = True
+  #mtd_intro = True
+  #eviction_choice = "no"
+  #other_parties.target_number = '1'
+  #codefendants[0].name.first = 'c'
+  #codefendants[1].name.first = 'f'
+  #codefendants[2].name.first = 's'
+  #docket_numbers[0] = '111'
+  #preview_screen = True
+  #users[0].name.first = 'd'
+  #users[0].name.last = 'd'
+  #other_parties[0].name.first = 'f'
   
   download_only_intro_screen
   mtd_intro
@@ -60,41 +62,39 @@ code: |
   preview_screen
   # Do you want to send this to C to sign or did you get permission to sign it for them?
 
+  # Get signers that will sign on this device
   local_signers
-  log( 'before send method, local_signers' )
-  log( local_signers )
-  for remote_signer in codefendants.difference(local_signers):
+  
+  # Also used for sending out for signatures (multiuser code)
+  remote_signers = all_signers.difference(local_signers)
+  # Cleaner way to do this?
+  for remote_signer in remote_signers:
     remote_signer.send_method
 
   ready_to_serve
   if not service_method == "not_know":
     service_date
 
-  reset_local_signer_signatures
   basic_questions_signature_flow # user
   
-  remote_signers = codefendants.difference(local_signers)
-  log( 'remote_signers:' )
-  log( remote_signers, 'console' )
-  
   send_for_codefendant_signatures
+  # Can only include this code once per interview.
+  # Cannot be commented out.
+  # Sends the emails and does whatever other `background_action`s are queued up.
+  process_action()
   
   for local in local_signers:
     local.signature
-    local.notified = True  # Not sure we need this
-  told_to_wait
-  #download
+    local.notified = True  # Not sure we need this anymore
+  
+  # Makes sure users[0].status is the only page the user can see.
+  force_ask('users[0].status')
 ---
 code: |
   download_titles = ['dismiss-non-essential-eviction.pdf']
 ---
 code: |
   all_signers = users + codefendants
----
-code: |
-  for local in local_signers:
-    undefine( local.instanceName + '.signature' )
-  reset_local_signer_signatures = True
 ---
 comment: |
   code: |
