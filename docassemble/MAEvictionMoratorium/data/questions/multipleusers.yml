@@ -165,7 +165,7 @@ code: |
 event: send_final_email
 code: |
   if defined( 'users[0].email' ) and users[0].email:
-    send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+    final_email_result = send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
   background_response()
 ---
 id: all signed email template
@@ -178,7 +178,7 @@ content: |
 
   Your Eviction Moratorium has now been signed by all of your codefendants.
   
-  You can [tap to see the signed document](${ final_form.pdf.url_for() })
+  You can [tap to see the signed document](${ final_form.url_for(external=True) })
 ---
 comment: |
   =============================
@@ -191,11 +191,12 @@ comment: |
 # an exception caused by an undefined variable, then .notified
 # would not be set, but it would not cause a loop. It would error.
 code: |
+  # TODO: Tell user which messages were sent successfully and which weren't
   if codefendants[i].send_method == 'text': 
-    message_sent_success = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_number,template=codefendants[i].sms_template)
+    codefendants[i].message_result = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_phone,template=codefendants[i].sms_template)
     codefendants[i].notified = True
   else:
-    message_sent_success = send_email(to=codefendants[i], template=codefendants[i].email_template)
+    codefendants[i].message_result = send_email(to=codefendants[i], template=codefendants[i].email_template)
     codefendants[i].notified = True
 ---
 id: sms template multiuser
