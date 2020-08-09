@@ -192,7 +192,7 @@ comment: |
 # would not be set, but it would not cause a loop. It would error.
 code: |
   if codefendants[i].send_method == 'text': 
-    message_sent_success = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_phone,template=codefendants[i].sms_template)
+    message_sent_success = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_number,template=codefendants[i].sms_template)
     codefendants[i].notified = True
   else:
     message_sent_success = send_email(to=codefendants[i], template=codefendants[i].email_template)
