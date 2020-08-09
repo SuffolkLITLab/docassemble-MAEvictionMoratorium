@@ -193,7 +193,7 @@ comment: |
 code: |
   # TODO: Tell user which messages were sent successfully and which weren't
   if codefendants[i].send_method == 'text': 
-    codefendants[i].message_result = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_phone,template=codefendants[i].sms_template)
+    codefendants[i].message_result = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_number,template=codefendants[i].sms_template)
     codefendants[i].notified = True
   else:
     codefendants[i].message_result = send_email(to=codefendants[i], template=codefendants[i].email_template)
