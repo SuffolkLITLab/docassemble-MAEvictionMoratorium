@@ -262,7 +262,7 @@ fields:
   - What is their email?: codefendants[i].email
     js show if: |
       val("codefendants[i].send_method") == "email"
-  - What is their phone number?: codefendants[i].mobile_phone
+  - What is their phone number?: codefendants[i].mobile_number
     js show if: |
       val("codefendants[i].send_method") == "text"
 ---
