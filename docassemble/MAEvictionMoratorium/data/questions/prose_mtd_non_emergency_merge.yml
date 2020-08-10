@@ -297,7 +297,7 @@ fields:
   - What is their email?: codefendants[i].email
     js show if: |
       val("codefendants[i].send_method") == "email"
-  - What is their phone number?: codefendants[i].mobile_phone
+  - What is their phone number?: codefendants[i].mobile_number
     js show if: |
       val("codefendants[i].send_method") == "text"
 ---
@@ -435,7 +435,7 @@ subquestion: |
 continue button field: preview_screen
 ---
 code: |
-  form_to_sign = pdf_concatenate(preview_doc, filename="preview.pdf")
+  form_to_sign = pdf_concatenate(preview_doc, filename="dismiss-non-essential-eviction-preview.pdf")
 ---
 attachment:
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx
@@ -443,6 +443,7 @@ attachment:
 ---
 code: |
   final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction, filename="dismiss-non-essential-eviction.pdf")
+  final_form.set_attributes(private=False, persistent=True)
 ---
 attachment: 
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx
