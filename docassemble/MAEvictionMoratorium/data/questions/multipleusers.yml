@@ -175,12 +175,19 @@ code: |
   local_signers_temp.extend( users )
   
   if len( codefendants ) > 0:
+    log( 1, 'console' )
     if will_proxy_sign:
+      log( 2, 'console' )
       local_signers_temp.extend( who_proxy_sign_for )
 
+    log( 3, 'console' )
+    log( will_proxy_sign, 'console' )
     codefendants_remain = ( not will_proxy_sign or  
-        len( codefendants.difference( who_proxy_sign_for )) > 0)
+        len( codefendants.difference( local_signers_temp )) > 0)
+    log( 4, 'console' )
+    
     if codefendants_remain and exist_other_local_signers:
+      log( 5, 'console' )
       local_signers_temp.extend( who_else_on_device )
   
   local_signers_temp.gathered = True
@@ -214,7 +221,7 @@ fields:
     choices:
       - codefendants
     exclude:
-      - who_proxy_sign_for
+      - local_signers_temp
 ---
 # Triggered with codefendants[i].notified
 # TODO: put `.notified` outside of `if` statement
