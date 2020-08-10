@@ -136,7 +136,7 @@ id: if all signed send email
 # Is requested when people check on the status of the signatures
 code: |
   for codef in codefendants:
-    if not codef.signed:
+    if not defined( codef.instanceName + '.signature' ):
       all_signatures_in = False
       break
   else:
