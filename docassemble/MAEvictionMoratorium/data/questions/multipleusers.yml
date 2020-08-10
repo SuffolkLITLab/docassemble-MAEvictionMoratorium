@@ -34,13 +34,9 @@ code: |
 id: send request for signatures
 event: send_out_for_signature  # TODO: make plural
 code: |
-  log( 'a' )
   for remote in remote_signers:
-    log( 'b' )
     remote.notified
-  log( 'd' )
   users[0].notified
-  log( 'e' )
   background_response()
 ---
 comment: |
