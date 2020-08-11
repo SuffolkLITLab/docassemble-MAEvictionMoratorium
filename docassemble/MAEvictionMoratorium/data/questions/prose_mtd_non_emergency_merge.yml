@@ -184,13 +184,13 @@ subquestion: |
   Massachusetts has an eviction moratorium. Most people cannot get evicted in Massachusetts before: 
   
   * August 18, 2020, or, 
-  *	Until 45 days after the Governor lifts the state of emergency,
+  * Until 45 days after the Governor lifts the state of emergency,
   whichever comes first.  
   
   This is called the eviction moratorium. But you **can** get evicted if you risk the health and safety of someone else by:
   
-  *	Getting involved in criminal activity, or,
-  *	Violating your lease.
+  * Getting involved in criminal activity, or,
+  * Violating your lease.
   
   This interview helps defend against an eviction your landlord should not have filed.
 continue button field: mtd_intro
@@ -262,7 +262,7 @@ fields:
   - What is their email?: codefendants[i].email
     js show if: |
       val("codefendants[i].send_method") == "email"
-  - What is their phone number?: codefendants[i].mobile_number
+  - What is their phone number?: codefendants[i].mobile_phone
     js show if: |
       val("codefendants[i].send_method") == "text"
 ---
