@@ -1,0 +1,341 @@
+---
+include:
+  - docassemble.MAVirtualCourt:basic-questions.yml
+---
+modules:
+  - docassemble.base.util
+---
+objects:
+  - other_parties: PeopleList.using(ask_number=True)
+---
+comment: |
+  Predefine some variables we need
+code: |
+  allowed_courts = [
+      "Housing Court",    
+      "Boston Municipal Court",
+      "District Court",
+      ]
+  preferred_court = "Housing Court"
+  other_parties.there_are_any = True
+  interview_presets = True
+---
+mandatory: True
+id: interview order
+code: |
+  interview_presets
+  download_only_intro_screen
+  mtd_intro
+  if eviction_choice == "yes":
+    kick_out
+  other_parties.target_number
+  other_parties.gather()
+  users[0].address.address
+  users[0].mobile_number
+  users.gather()
+  courts[0]
+  preview_screen
+  update_signature_fields
+  basic_questions_signature_flow
+  if not service_method == "not_know":
+    service_date
+  download
+---
+code: |
+  signature_fields = []
+  for index, user in enumerate(users):
+    signature_fields.append('users[' + str(index) + '].signature')
+  update_signature_fields = True
+---
+id: basic questions intro screen
+question: |
+  Mass Access Project
+subquestion: |
+ 
+  This interview can help you complete and download court forms in 3 steps:
+  
+  Step 1. Answer questions to fill your motion.  
+  Step 2. Review the completed motion.  
+  Step 3. Download the motion and file it.
+  
+  This interview **does not** deliver the motion for you. You must do
+  that on your own.
+  
+  % if chat_partners_available().help:
+  Live help is currently available in this interview. Click the speech bubble
+  (:comment-alt:) in the navigation bar to connect to a live advocate for help.
+  % endif
+
+fields:
+  - To continue, read the [terms of use](https://massaccess.suffolklitlab.org/privacy/): acknowledged_information_use
+    datatype: checkboxes
+    none of the above: False    
+    minlength: 1
+    choices:
+      - I accept the terms of use.
+    validation messages:
+      minlength: |
+        You cannot continue unless you agree to the terms of use.        
+continue button field: download_only_intro_screen
+---
+id: number of landlords
+question:  |
+  How many names are on the PLAINTIFF/LANDLORD/OWNER line of your summons and complaint?
+subquestion: |
+  Look at your summons and complaint.
+
+  [FILE mtd_landlord_name.png]
+fields: 
+  - no label: other_parties.target_number
+    datatype: integer
+    min: 1
+---  
+question: |
+  % if other_parties.target_number == 1:
+    What is the plaintiff's name?
+  % elif i==0:
+    What is the first plaintiff's name?
+  % else:
+    What is the ${ordinal(i)} plaintiff's name?
+  % endif 
+fields:
+  - no label: other_parties[i].name.first
+---
+id: eviction address
+question: |
+  What is the address you are being evicted from?
+fields:
+  - Street address: users[0].address.address
+    address autocomplete: True
+  - Unit: users[0].address.unit
+    required: False
+  - City: users[0].address.city
+  - State: users[0].address.state
+    code: states_list()
+  - Zip: users[0].address.zip 
+---
+id: contact information
+question: |
+  Contact information
+subquestion: |
+  The court nees to be able to reach you about your case. Give them as many ways as you can for them to reach you.
+fields:
+  - Mobile number: users[0].mobile_number
+    required: False
+  - Other phone number: users[0].phone_number
+    required: False
+  - Email address: users[0].email    
+    datatype: email
+    required: False
+  - What is the best way for the court to reach you: users[0].other_contact_method
+    input type: area
+    help: |
+      If you do not have a phone number or email the court can use, provide
+      specific contact instructions. For example, use a friend's phone number.
+      But the friend must be someone you can trust to tell you the court is
+      trying to reach you.
+validation code: |
+  if (not showifdef('users[0].phone_number') and \
+      (not showifdef('users[0].mobile_number')) and \
+      (not showifdef('users[0].email')) and \
+      (not showifdef('users[0].other_contact_method'))):
+    validation_error(word("You need to provide at least one contact method."))
+help: |
+  You _must_ provide contact information so the court can reach you.
+---
+id: eviction mtd covid intro screen
+question: |
+  Motion to Dismiss - Essential Eviction
+subquestion: |  
+  Massachusetts has an eviction moratorium. Most people cannot get evicted in Massachusetts before: 
+  
+  * August 18, 2020, or, 
+  *	Until 45 days after the Governor lifts the state of emergency,
+  whichever comes first.  
+  
+  This is called the eviction moratorium. But you **can** get evicted if you risk the health and safety of someone else by:
+  
+  *	Getting involved in criminal activity, or,
+  *	Violating your lease.
+  
+  This interview helps defend against an eviction your landlord should not have filed.
+continue button field: mtd_intro
+---
+id: agree risked health and safety
+question: |
+  Are you risking someone's health and safety?
+subquestion: |
+  Are you:
+  
+  * Involved in criminal activity, or 
+  * Breaking your lease,
+
+  in a way that risks someone's health and safety. 
+fields:
+  - no label: eviction_choice
+    datatype: radio
+    choices:
+      - No, I am not risking someone's health and safety.: no
+      - Yes, I am risking someone's health and safety.: yes
+---
+id: kick out
+event: kick_out
+question: |
+  This interview is not for you
+subquestion: |
+  You said your eviction was filed because you risked someone's health and safety.
+  
+  In some cases, you can still get the eviction dismissed even if you think you are risking someone's health or safety. 
+  
+  But talk to a lawyer because this makes it complicated.
+
+  If you cannot file this motion or [talk to a lawyer](https://masslegalhelp.org/find-legal-aid), you can still fight your eviction case. Create an answer using [this free guided interview tool](https://www.gbls.org/MADE).
+buttons:
+  - Restart: restart
+  - File an Answer with MADE: exit
+    url: https://www.gbls.org/MADE
+---
+id: other users names
+question: |
+  Who else is filing with you?
+fields:
+  - First Name: users[i].name.first
+  - Middle Name: users[i].name.middle
+    required: False
+  - Last Name: users[i].name.last
+    required: False
+  - Suffix: users[i].name.suffix
+    required: False
+---
+id: court question
+sets:
+  - courts[0].name
+question: |
+  What court is your case being heard in?
+subquestion: |
+  Look at your Summons and Complaint to find the name of the court
+  your case was filed in.
+
+  [FILE court-names.png]
+fields:
+  - Court name: courts[0]
+    datatype: object
+    choices: macourts.filter_courts(allowed_courts)
+    default: local_housing_court
+continue button field: ask_court_question    
+---
+id: ready to serve
+question: |
+  Are you ready to serve ${other_parties}?
+subquestion: |
+  Giving a copy of the motion to ${other_parties} is called "service."
+  
+  You need to: 
+  
+  * Give a copy of your motion to ${other_parties} 
+  * File your motion with the ${courts[0].name}.
+  
+  During the pandemic, you can [email the motion](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under)
+  to ${other_parties} or their lawyer.
+fields:
+  - How will you serve ${other_parties}?: service_method
+    datatype: radio
+    choices:
+      - By email: electronic mail
+      - By mail (with postage paid by me): first class mail, postage prepaid
+      - other: other
+      - I do not know: not_know
+    show if:
+      how_to_serve
+  - Other method: service_method
+    show if:
+      variable: service_method
+      is: other
+help:
+  label: What are my options?
+  content: |
+    If your landlord has a lawyer, you need to get a copy to the
+    lawyer. If they do not, you need to get it to the landlord.
+    You can email the motion.
+    
+    Read more about your [options to deliver by email](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under).    
+---
+id: service
+question: |
+  Service on ${other_parties}
+fields:
+  - When will you serve ${other_parties.familiar()}?: service_date
+    datatype: date
+---
+id: docket number
+question: |
+  Docket number
+subquestion: |
+  If you know the docket number for this case, enter it below
+fields:
+  - I do not know the docket number: dont_know_docket_number
+    datatype: yesno
+  - Docket number: docket_numbers[0]
+    hide if:  dont_know_docket_number
+help:
+  label: |
+    What is a docket number?
+  content: |
+    The docket number is the number the court uses to track your case.
+    It may be on the notice you got from your landlord. 
+validation code: |
+  # docket_numbers.there_are_any = not dont_know_docket_number
+  if dont_know_docket_number:
+    docket_numbers[0] = ' '
+  docket_numbers.there_is_another = False
+---
+id: download
+event: download
+question: |
+  Your form is ready
+subquestion: |
+  Look over your form below.
+  
+  1. If it looks correct, download or email it to yourself.
+  2. You still need to deliver it to:
+
+  * The ${courts[0]}, and,
+  * ${other_parties}. 
+
+  3. Call the ${courts[0]}'s clerk:  
+  <a href="tel:${courts[0].phone}">${courts[0].phone}</a> to find out how they want you to send them the motion.
+  4. Your hearing will probably be over the phone. But the address
+  of your court is ${courts[0].address.on_one_line()}.  
+  5. Have you filed an Answer yet? If not, you may want to fill one out
+  now via [MADE](https://gbls.org/MADE).
+  
+  ${ final_form }
+attachment code: motion_to_dismiss_for_non_essential_eviction  
+progress: 100
+---
+id: preview
+question: |
+  Preview your motion
+subquestion: |
+  Tap the motion below to open it in a new window.
+  
+  Use the "Back" button to find the screen to fix mistakes.
+  
+  ${form_to_sign }
+continue button field: preview_screen
+---
+code: |
+  form_to_sign = pdf_concatenate(preview_doc, filename="preview.pdf")
+---
+attachment:
+  docx template file: motion_to_dismiss_for_non-essential_eviction.docx
+  variable name: preview_doc
+---
+code: |
+  final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction, filename="dismiss-non-essential-eviction.pdf")
+---
+attachment: 
+  docx template file: motion_to_dismiss_for_non-essential_eviction.docx
+  variable name: motion_to_dismiss_for_non_essential_eviction  
+  filename: dismiss-non-essential-eviction
+  name: Motion to Dismiss - Non-Essential Eviction
