@@ -5,6 +5,7 @@
 include:
   - docassemble.MAVirtualCourt:basic-questions.yml
   - sign_on_device.yml
+  - parent_interview_redis_handler.yml
 ---
 modules:
   - docassemble.base.util
@@ -37,14 +38,25 @@ code: |
   mtd_intro = True
   eviction_choice = "no"
   other_parties.target_number = '1'
-  codefendants[0].name.first = 'c'
-  #codefendants[1].name.first = 'f'
-  #codefendants[2].name.first = 's'
   docket_numbers[0] = '111'
   preview_screen = True
   users[0].name.first = 'd'
   users[0].name.last = 'd'
+  users[0].address.address = '12 Dudley Street'
+  users[0].address.unit = ''
+  users[0].address.city = 'Boston'
+  users[0].address.state = 'Massachusetts'
+  users[0].address.zip = '02127'
   other_parties[0].name.first = 'v'
+  codefendants[0].name.first = 'c'
+  #codefendants[1].name.first = 'f'
+  #codefendants[2].name.first = 's'
+  courts[0] = local_housing_court
+  ready_to_serve = True
+  service_method = 'first class mail, postage prepaid'
+  service_date = '12/12/2020'
+  will_proxy_sign = False
+  exist_other_local_signers = False
   
   download_only_intro_screen
   mtd_intro
@@ -62,6 +74,7 @@ code: |
   docket_numbers[0]
   preview_screen
   # Do you want to send this to C to sign or did you get permission to sign it for them?
+  form_to_sign.set_attributes(persistent=True, private=False)
 
   # Get signers that will sign on this device
   local_signers
@@ -100,6 +113,9 @@ code: |
 event: x.after_signature
 generic object: Individual
 code: |
+  custom_interview_redis_data
+  set_initial_redis_data
+
   if device() and device().is_pc:
     request_remote_signatures
     after_remote_signatures_requested
@@ -526,6 +542,26 @@ code: |
   # Whatever info you want to be able to use for the co-signers' interview
   custom_interview_redis_data = { 'user_names': str(users) } #, 'signed_doc': signature_doc, }  #'no doc given' } # signature_doc, } #'preview': signature_doc }
 ---
+id: sms template multiuser
+template: codefendants[i].sms_template
+content: |
+  Dear ${ codefendants[i] },
+  Your signature needed on a document for ${ users[0] }.  
+  ${ codefendants[i].cosigner_url }
+---
+id: codefendant email
+template: codefendants[i].email_template
+subject: |
+  Your signature needed on a document for ${ users[0] }
+content: |
+  Dear ${ codefendants[i] },
+
+  You are requested to sign a sworn statement attesting that ${ users[0] } TODO: WHAT ARE THEY ATTESTING.
+
+  [Tap here to see the document you are being asked to sign](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }).
+
+  [Tap here to sign the thing](${ codefendants[i].cosigner_url })
+---
 id: send user email
 code: |
   users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
@@ -596,10 +632,22 @@ signature: x.signature
 under: |
   ${ x }
 ---
+id: if all signed send email
+# Is requested when people check on the status of the signatures
+code: |
+  for codef in codefendants:
+    if not defined( codef.instanceName + '.signature' ):
+      all_signatures_in = False
+      break
+  else:
+    final_email_sent
+    all_signatures_in = True
+---
 id: signature status
 event: users[0].status
 prevent going back: True
 reconsider:
+  - get_stored_signatures
   - all_signatures_in
   - motion_to_dismiss_for_non_essential_eviction
   - final_form
@@ -628,6 +676,6 @@ subquestion: |
     % endif
   % endif
   
-  ${ action_button_html('javascript:daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
+  ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
 attachment code: motion_to_dismiss_for_non_essential_eviction
 ---
