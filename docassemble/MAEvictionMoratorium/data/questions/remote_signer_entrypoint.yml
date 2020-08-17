@@ -35,16 +35,16 @@ event: get_remote_signature
 code: |
   #devices[0] = devices.appendObject()
   data = None
-  if action_argument() and action_argument('interview_data_id'):
+  if action_argument() and action_argument('signature_data_id'):
     data = {
-      'interview_data_id': action_argument('interview_data_id'),
+      'signature_data_id': action_argument('signature_data_id'),
       'party_id': action_argument('party_id')
     }
-  elif 'interview_data_id' in url_args:
+  elif 'signature_data_id' in url_args:
     data = url_args
 
   if data:
-    interview_data_id = data['interview_data_id']
+    signature_data_id = data['signature_data_id']
     party_data = get_signer( data )
     if party_data:
       signer.id = data['party_id']
@@ -83,7 +83,7 @@ code: |
   x.after_unwilling_to_sign_saved
 ---
 code: |
-  long_device_choice_url = interview_url_action( 'get_remote_signature', device_id='tbd', interview_data_id=interview_data_id, party_id=signer.id )
+  long_device_choice_url = interview_url_action( 'get_remote_signature', device_id='tbd', signature_data_id=signature_data_id, party_id=signer.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
 ---
 modules:
@@ -126,9 +126,9 @@ generic object: Individual
 question: |
   Are you willing to sign?
 subquestion: |
-  This is ${ redis.get_data( url_args['interview_data_id'] )['user_names'] }'s document. Are you willing to sign it?
+  This is ${ redis.get_data( url_args['signature_data_id'] )['user_names'] }'s document. Are you willing to sign it?
 
-  ${ redis.get_data( url_args['interview_data_id'] )['preview'] }
+  ${ redis.get_data( url_args['signature_data_id'] )['preview'] }
 yesno: x.willing_to_sign
 ---
 id: signature
@@ -152,7 +152,7 @@ event: x.end
 question: |
   Thank you
 subquestion: |
-  You have signed ${ redis.get_data( url_args['interview_data_id'] )['user_names'] }'s document. They will get your signature soon.
+  You have signed ${ redis.get_data( url_args['signature_data_id'] )['user_names'] }'s document. They will get your signature soon.
 ---
 ## Inactive. Should show signed doc with status, but not updating.
 #id: signature status
@@ -162,9 +162,9 @@ subquestion: |
 #question: |
 #  Signature status for ${ x }
 #subquestion: |
-#  ${ redis.get_data( url_args['interview_data_id'] )['user_names'] }'s document.
+#  ${ redis.get_data( url_args['signature_data_id'] )['user_names'] }'s document.
 #  
-#  ${ redis.get_data( url_args['interview_data_id'] )[ 'signed_doc' ] }
+#  ${ redis.get_data( url_args['signature_data_id'] )[ 'signed_doc' ] }
 ---
 id: unwilling to sign end
 generic object: Individual
@@ -174,9 +174,14 @@ question: |
 buttons:
   - Exit: exit
 ---
+id: 404
+# Preferred?
+event: unauthorized
+code: |
+  response('Page not found', response_code=404)
+---
 id: unauthorized
 event: unauthorized
-# Add 404 here, as old multiuser example?
 question: |
   Thank you and goodbye
 buttons:

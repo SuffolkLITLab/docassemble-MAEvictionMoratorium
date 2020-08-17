@@ -74,7 +74,7 @@ code: |
   docket_numbers[0]
   preview_screen
   # Do you want to send this to C to sign or did you get permission to sign it for them?
-  form_to_sign.set_attributes(persistent=True, private=False)
+  form_to_sign  # Just have to make sure this is happily defined here
 
   # Get signers that will sign on this device
   local_signers
@@ -82,6 +82,7 @@ code: |
   # Also used for sending out for signatures (multiuser code)
   remote_signers = all_signers.difference(local_signers)
   # Cleaner way to do this?
+  # Ask after user signs?
   for remote_signer in remote_signers:
     remote_signer.send_method
 
@@ -289,13 +290,13 @@ subquestion: |
   Massachusetts has an eviction moratorium. Most people cannot get evicted in Massachusetts before: 
   
   * August 18, 2020, or, 
-  *	Until 45 days after the Governor lifts the state of emergency,
+  * Until 45 days after the Governor lifts the state of emergency,
   whichever comes first.  
   
   This is called the eviction moratorium. But you **can** get evicted if you risk the health and safety of someone else by:
   
-  *	Getting involved in criminal activity, or,
-  *	Violating your lease.
+  * Getting involved in criminal activity, or,
+  * Violating your lease.
   
   This interview helps defend against an eviction your landlord should not have filed.
 continue button field: mtd_intro
@@ -540,11 +541,12 @@ code: |
   remote_signer_url_end = user_info().package + ':remote_signer_entrypoint.yml'
 ---
 code: |
+  form_to_sign.set_attributes(persistent=True, private=False)
   # Whatever info you want to be able to use for the co-signers' interview
   custom_interview_redis_data = {
     'user_names': str(users),
     'preview': form_to_sign,
-  } #, 'signed_doc': signature_doc, }  #'no doc given' } # signature_doc, } #'preview': signature_doc }
+  }
 ---
 id: sms template multiuser
 template: codefendants[i].sms_template
@@ -606,11 +608,11 @@ content:
 generic object: Individual
 code: |
   # `action` experiments for true device choice begin here
-  long_device_choice_url = interview_url_action( 'signature_with_device_choice', device_id='tbd', interview_data_id=interview_data_id, party_id=x.id )
+  long_device_choice_url = interview_url_action( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
 ---
 code: |
-  interview_data_id = get_random_chars()
+  signature_data_id = get_random_chars()
 ---
 generic object: Individual
 code: |
@@ -684,4 +686,3 @@ subquestion: |
   
   ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
 attachment code: motion_to_dismiss_for_non_essential_eviction
----

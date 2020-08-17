@@ -20,31 +20,31 @@ code: |
   multi_user = True
 ---
 code: |
-  interview_data_id
+  signature_data_id
 
   # DEVELOPER: Assumes list of users
   if not defined('all_signers'):
     all_signers = users
 
   # Have to abstract so devs can create/use their own docs and text effectively?
-  # DEVELOPERS: Create `interview_data` elsewhere, as shown below
-  interview_data = {}
+  # DEVELOPERS: Create `signature_data` elsewhere, as shown below
+  signature_data = {}
   if defined('custom_interview_redis_data'):
-    interview_data = custom_interview_redis_data
+    signature_data = custom_interview_redis_data
   
   parties = {}
   for signer in all_signers:
     parties[ signer.id ] = {
       "has_signed": False, "willing_to_sign": None, "name": str( signer )
     }
-  interview_data[ 'parties' ] = parties
+  signature_data[ 'parties' ] = parties
   
-  redis.set_data( interview_data_id, interview_data, expire=remote_siganure_expiration_ms )
+  redis.set_data( signature_data_id, signature_data, expire=remote_siganure_expiration_ms )
   set_initial_redis_data = True
 ---
 # Updates user doc with remote signatures
 code: |
-  new_data = redis.get_data( interview_data_id )
+  new_data = redis.get_data( signature_data_id )
   signing_parties = new_data[ 'parties' ]
   for signer in all_signers:
     if signer.id in signing_parties:
@@ -77,7 +77,7 @@ code: |
 generic object: Individual
 code: |
   url_str = interview_url(
-    interview_data_id = interview_data_id,
+    signature_data_id = signature_data_id,
     party_id = x.id,
     new_session = '1',
     i=remote_signer_url_end  # The url the co-signer will go to
@@ -85,7 +85,7 @@ code: |
   x.cosigner_url = shortenMe( url_str ).shortenedURL
 ---
 code: |
-  interview_data_id = get_random_chars()
+  signature_data_id = get_random_chars()
 ---
 generic object: Individual
 code: |
