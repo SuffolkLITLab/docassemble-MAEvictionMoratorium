@@ -4,6 +4,7 @@
 ---
 include:
   - docassemble.MAVirtualCourt:basic-questions.yml
+  - sign_on_device.yml
 ---
 modules:
   - docassemble.base.util
@@ -32,18 +33,18 @@ code: |
   interview_presets
   
   # Skipping for speeding up tests
-  #download_only_intro_screen = True
-  #mtd_intro = True
-  #eviction_choice = "no"
-  #other_parties.target_number = '1'
-  #codefendants[0].name.first = 'c'
+  download_only_intro_screen = True
+  mtd_intro = True
+  eviction_choice = "no"
+  other_parties.target_number = '1'
+  codefendants[0].name.first = 'c'
   #codefendants[1].name.first = 'f'
   #codefendants[2].name.first = 's'
-  #docket_numbers[0] = '111'
-  #preview_screen = True
-  #users[0].name.first = 'd'
-  #users[0].name.last = 'd'
-  #other_parties[0].name.first = 'f'
+  docket_numbers[0] = '111'
+  preview_screen = True
+  users[0].name.first = 'd'
+  users[0].name.last = 'd'
+  other_parties[0].name.first = 'v'
   
   download_only_intro_screen
   mtd_intro
@@ -75,20 +76,73 @@ code: |
   if not service_method == "not_know":
     service_date
 
-  basic_questions_signature_flow # user
+  #basic_questions_signature_flow # user
+  users[0].sign_on_device
   
-  send_for_codefendant_signatures
+  # handled in .after_signature
+  #send_for_codefendant_signatures
+  
+  ## Can only include this code once per interview.
+  ## Cannot be commented out.
+  ## Sends the emails and does whatever other `background_action`s are queued up.
+  #process_action()
+  #
+  #log( 'got here', 'console' )
+  #for local in local_signers:
+  #  local.signature
+  #  local.notified = True  # Not sure we need this anymore
+  #
+  ## Makes sure users[0].status is the only page the user can see.
+  ##force_ask('users[0].status')
+  #users[0].status
+---
+# After the user signs, the links for the co-signers get sent
+event: x.after_signature
+generic object: Individual
+code: |
+  if device() and device().is_pc:
+    request_remote_signatures
+    after_remote_signatures_requested
+  else:
+    if wants_to_finish_on_phone:
+      request_remote_signatures
+      after_remote_signatures_requested
+    else:
+      phone_end
+---
+id: ask wants to finish on phone
+question: |
+  Do you want to finish on your phone?
+yesno: wants_to_finish_on_phone
+---
+event: phone_end
+question: |
+  Thank you
+subquestion: |
+  You can finish on your original device.
+---
+id: trigger requests for signatures
+code: |
+  for remote in remote_signers:
+    remote.signature_url_was_sent
+  users[0].was_notified_of_cosigner_messages
+  request_remote_signatures = True
+---
+event: after_remote_signatures_requested
+code: |
+  # Request other signatures under here
+  # Possibly using action arguments when that's worked out
+  
   # Can only include this code once per interview.
   # Cannot be commented out.
   # Sends the emails and does whatever other `background_action`s are queued up.
-  process_action()
+  process_action()  # Needed? Probably - we want the requests sent now
   
   for local in local_signers:
     local.signature
     local.notified = True  # Not sure we need this anymore
   
-  # Makes sure users[0].status is the only page the user can see.
-  force_ask('users[0].status')
+  users[0].status
 ---
 code: |
   download_titles = ['dismiss-non-essential-eviction.pdf']
@@ -453,3 +507,127 @@ attachment:
 ---
 include:
   - multipleusers.yml
+---
+#######################
+# Interface with redis handler
+#######################
+---
+# Keep in as the default
+code: |
+  # When the saved redis data will expire
+  remote_siganure_expiration_ms = 1* 6 * 60 * 60 * 1000  # 6hrs
+---
+# Keep in as the default
+code: |
+  # DEVELOPERS: Use the name of your own remote entrypoint file
+  remote_signer_url_end = user_info().package + ':remote_signer_entrypoint.yml'
+---
+code: |
+  # Whatever info you want to be able to use for the co-signers' interview
+  custom_interview_redis_data = { 'user_names': str(users) } #, 'signed_doc': signature_doc, }  #'no doc given' } # signature_doc, } #'preview': signature_doc }
+---
+id: send user email
+code: |
+  users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
+  users[0].was_notified_of_cosigner_messages = True
+---
+######################
+# Interfacing with code to let user choose which device to sign on
+######################
+---
+id: number to text for signature
+generic object: Individual
+question: |
+  What number do you want to send this to?
+fields:
+  - no label: x.device_number
+    default: ${ showifdef( x.instanceName + '.mobile_number' )}
+---
+generic object: Individual
+code: |
+  # TODO: Should this be in sign_on_device.yml?
+  # TODO: Send with action arguments (in templates)
+  #if x.send_method == 'text':
+  #  x.send_sms_signature_link
+  #elif x.send_method == 'email':  # Not implemented for MVP
+  #  x.send_email_signature_link
+  x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
+  x.send_signature_link = True  # Used by sign_on_device.yml
+---
+generic object: Individual
+template: x.sms_device_template
+content:
+  You have chosen to sign on this device, ${ x }. Sign your document at the link below
+
+  ${ device_choice_url }
+---
+generic object: Individual
+code: |
+  # `action` experiments for true device choice begin here
+  long_device_choice_url = interview_url_action( 'signature_with_device_choice', device_id='tbd', interview_data_id=interview_data_id, party_id=x.id )
+  device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
+---
+code: |
+  interview_data_id = get_random_chars()
+---
+generic object: Individual
+code: |
+  x.id = get_random_chars()
+---
+code: |
+  import random
+  import string
+  def get_random_chars(num_chars=10):
+    return ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+---
+# Triggered by new device
+event: signature_with_device_choice
+code: |
+  users[0].sign_on_device
+---
+#################
+# Interview-specific UI
+#################
+id: signature
+generic object: Individual
+question: |
+  Sign your name, ${ x }
+signature: x.signature
+under: |
+  ${ x }
+---
+id: signature status
+event: users[0].status
+prevent going back: True
+reconsider:
+  - all_signatures_in
+  - motion_to_dismiss_for_non_essential_eviction
+  - final_form
+question: |
+  % if all_signatures_in:
+  Your Eviction Moratorium has been signed.
+  % else:
+  Your Eviction Moratorium has not been signed by everyone yet.
+  % endif
+subquestion: |
+  % if not all_signatures_in:
+    % for codef in codefendants:
+      % if defined( codef.instanceName + '.signature' ):
+  ${ codef } has signed.
+
+      % else:
+  ${ codef } has not signed yet.
+
+      % endif
+    % endfor
+  % else:
+    % if len( codefendants ) > 1:
+    ${ comma_and_list( codefendants )} have signed.
+    % else:
+      ${ codefendants[0] } has signed.
+    % endif
+  % endif
+  
+  ${ action_button_html('javascript:daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
+attachment code: motion_to_dismiss_for_non_essential_eviction
+---

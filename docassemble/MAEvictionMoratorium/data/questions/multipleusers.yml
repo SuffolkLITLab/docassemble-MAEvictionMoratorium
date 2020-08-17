@@ -4,9 +4,6 @@
 metadata:
   title: Multiple signatures
   short: Signature
-  documentation: https://docassemble.org/docs/recipes.html#multisignature
-  example start: 1
-  example end: 37
 ---
 modules:  
   - docassemble.VirtualCourtToolbox.shortenURL
@@ -35,7 +32,7 @@ id: send request for signatures
 event: send_out_for_signature  # TODO: make plural
 code: |
   for remote in remote_signers:
-    remote.notified
+    remote.signature_url_was_sent
   users[0].notified
   background_response()
 ---
@@ -223,19 +220,19 @@ fields:
     exclude:
       - local_signers_temp
 ---
-# Triggered with codefendants[i].notified
-# TODO: put `.notified` outside of `if` statement
-# If this is called from a background task and it results in
-# an exception caused by an undefined variable, then .notified
-# would not be set, but it would not cause a loop. It would error.
-code: |
-  # TODO: Tell user which messages were sent successfully and which weren't
-  if codefendants[i].send_method == 'text': 
-    codefendants[i].message_result = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_number,template=codefendants[i].sms_template)
-    codefendants[i].notified = True
-  else:
-    codefendants[i].message_result = send_email(to=codefendants[i], template=codefendants[i].email_template)
-    codefendants[i].notified = True
+## Triggered with codefendants[i].notified
+## TODO: put `.notified` outside of `if` statement
+## If this is called from a background task and it results in
+## an exception caused by an undefined variable, then .notified
+## would not be set, but it would not cause a loop. It would error.
+#code: |
+#  # TODO: Tell user which messages were sent successfully and which weren't
+#  if codefendants[i].send_method == 'text': 
+#    codefendants[i].message_result = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_number,template=codefendants[i].sms_template)
+#    codefendants[i].notified = True
+#  else:
+#    codefendants[i].message_result = send_email(to=codefendants[i], template=codefendants[i].email_template)
+#    codefendants[i].notified = True
 ---
 id: sms template multiuser
 template: codefendants[i].sms_template
