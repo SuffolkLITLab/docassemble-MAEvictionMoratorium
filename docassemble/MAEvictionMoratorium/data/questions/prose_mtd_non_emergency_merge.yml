@@ -356,6 +356,7 @@ fields:
     required: False
 ---
 id: how to send to codefendant
+# TODO: Do we need to add contact info (number/email) for co-signer on court form?
 question: |
   Do you want to send this to ${ codefendants[i] } by email or text?
 fields:
@@ -364,10 +365,10 @@ fields:
     choices:
       - Email: email
       - Text: text
-  - What is their email?: codefendants[i].email
+  - What email should we use to ask for their signature?: codefendants[i].signature_email
     js show if: |
       val("codefendants[i].send_method") == "email"
-  - What is their phone number?: codefendants[i].mobile_number
+  - What number should we text to ask for their signature?: codefendants[i].signature_number
     js show if: |
       val("codefendants[i].send_method") == "text"
 ---
@@ -540,7 +541,10 @@ code: |
 ---
 code: |
   # Whatever info you want to be able to use for the co-signers' interview
-  custom_interview_redis_data = { 'user_names': str(users) } #, 'signed_doc': signature_doc, }  #'no doc given' } # signature_doc, } #'preview': signature_doc }
+  custom_interview_redis_data = {
+    'user_names': str(users),
+    'preview': form_to_sign,
+  } #, 'signed_doc': signature_doc, }  #'no doc given' } # signature_doc, } #'preview': signature_doc }
 ---
 id: sms template multiuser
 template: codefendants[i].sms_template
@@ -574,7 +578,9 @@ code: |
 id: number to text for signature
 generic object: Individual
 question: |
-  What number do you want to send this to?
+  Sign on a phone
+subquestion: |
+  What number do you want to send this to for a signature?
 fields:
   - no label: x.device_number
     default: ${ showifdef( x.instanceName + '.mobile_number' )}

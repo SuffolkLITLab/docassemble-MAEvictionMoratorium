@@ -1,4 +1,6 @@
 comment: |
+  RETIRED for now
+  
   Some pre-made functionality for mutli-user signatures.
 
   ## Definitions:
@@ -58,10 +60,10 @@ code: |
 
       # Skip question if they've already signed or were already willing to sign.
       if signer.has_signed or was_willing is True or signer.willing_to_sign:
-        amend_signer( url_args, 'willing_to_sign', True )
+        amend_signer( data, 'willing_to_sign', True )
         signer.sign_on_device
       else:
-        amend_signer( url_args, 'willing_to_sign', False )
+        amend_signer( data, 'willing_to_sign', False )
         signer.after_unwilling_to_sign
 
   ## Untested
@@ -74,9 +76,9 @@ event: x.after_signature
 generic object: Individual
 code: |
   if not x.has_signed:
-    amend_signer( url_args, 'signature', x.signature )
-    amend_signer( url_args, 'signature_date', today()  )
-    amend_signer( url_args, 'has_signed', True )
+    amend_signer( data, 'signature', x.signature )
+    amend_signer( data, 'signature_date', today()  )
+    amend_signer( data, 'has_signed', True )
 
   x.after_signature_saved
 ---
@@ -85,7 +87,7 @@ id: x.after_unwilling_to_sign
 event: x.after_unwilling_to_sign
 generic object: Individual
 code: |
-  amend_signer( url_args, 'willing_to_sign', False )
+  amend_signer( data, 'willing_to_sign', False )
   x.after_unwilling_to_sign_saved
 ---
 # Less opinionated? Or does this belong in here?
@@ -155,7 +157,7 @@ event: x.end
 question: |
   Thank you
 subquestion: |
-  You have signed ${ redis.get_data( url_args['interview_data_id'] )['user_names'] }'s document. They will get your signature soon.
+  You have signed ${ redis.get_data( data['interview_data_id'] )['user_names'] }'s document. They will get your signature soon.
 ---
 ## Inactive. Should show signed doc with status, but not updating.
 #id: signature status
@@ -165,9 +167,9 @@ subquestion: |
 #question: |
 #  Signature status for ${ x }
 #subquestion: |
-#  ${ redis.get_data( url_args['interview_data_id'] )['user_names'] }'s document.
+#  ${ redis.get_data( data['interview_data_id'] )['user_names'] }'s document.
 #  
-#  ${ redis.get_data( url_args['interview_data_id'] )[ 'signed_doc' ] }
+#  ${ redis.get_data( data['interview_data_id'] )[ 'signed_doc' ] }
 ---
 id: unwilling to sign end
 generic object: Individual

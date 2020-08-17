@@ -244,7 +244,7 @@ content: |
 id: codefendant email
 template: codefendants[i].email_template
 subject: |
-  Your signature needed on a document for ${ users[0] }
+  Your signature is needed on a document for ${ users[0] }
 content: |
   Dear ${ codefendants[i] },
 

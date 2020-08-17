@@ -35,7 +35,6 @@ code: |
     # Reset and start over again
     undefine( x.instanceName + '.which_device' )
     undefine( x.instanceName + '.send_method' )
-    # TODO: Change this to device_number
     undefine( x.instanceName + '.device_number' )
     undefine( x.instanceName + '.send_signature_link' )
     undefine( x.instanceName + '.wants_to_change_device' )
@@ -132,6 +131,7 @@ subquestion: |
   You can use a QR code that could be here or you can text your mobile device.
 fields:
   - Number to text: x.device_number
+    default: ${ showifdef( x.instanceName + '.mobile_number' )}
 ---
 id: x.wants_to_change_device
 generic object: Individual

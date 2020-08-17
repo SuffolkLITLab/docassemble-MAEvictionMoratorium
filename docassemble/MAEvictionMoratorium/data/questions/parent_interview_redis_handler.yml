@@ -69,9 +69,9 @@ generic object: Individual
 code: |
   # TODO: Should this be `signature_number` and `signature_email`?
   if x.send_method == 'text': 
-    x.message_result = send_sms(task='send sms_template', to=x.mobile_number, template=x.sms_template)
+    x.message_result = send_sms(task='send sms_template', to=x.signature_number, template=x.sms_template)
   else:
-    x.message_result = send_email(to=x, template=x.email_template)
+    x.message_result = send_email(to=x.signature_email, template=x.email_template)
   x.signature_url_was_sent = True
 ---
 generic object: Individual
