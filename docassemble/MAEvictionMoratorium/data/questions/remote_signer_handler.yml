@@ -8,6 +8,8 @@ comment: |
   - Remote users never see the doc update (not MVP)
   
   As usual, these can all be customized. It just hopes these help save brain cells.
+  
+  TODO: A way to decouple this from `sign_on_device` and make it less opinionated is to only handle redis data in here. That would mean the 'remote signer entrypoint' would have to know more about these internals - when to use them and how - but an example could do that just as well as the current question examples.
 ---
 modules:
   - .signing_party
@@ -31,6 +33,7 @@ code: |
 #code: |
 #  get_remote_signature
 ---
+# Less opinionated - this would only create `signer` and its data
 # Must be able to be triggered by action (from other device chosen)
 event: get_remote_signature
 code: |
@@ -65,6 +68,7 @@ code: |
   #else:
   #  unauthorized
 ---
+# Less opinionated - this would be triggered by the remote entrypoint instead of by sign_on_device
 id: x.after_signature
 event: x.after_signature
 generic object: Individual
@@ -76,6 +80,7 @@ code: |
 
   x.after_signature_saved
 ---
+# Less opinionated - this would be triggered by the remote entrypoint instead of by sign_on_device
 id: x.after_unwilling_to_sign
 event: x.after_unwilling_to_sign
 generic object: Individual
@@ -83,6 +88,7 @@ code: |
   amend_signer( url_args, 'willing_to_sign', False )
   x.after_unwilling_to_sign_saved
 ---
+# Less opinionated? Or does this belong in here?
 code: |
   long_device_choice_url = interview_url_action( 'get_remote_signature', device_id='tbd', interview_data_id=interview_data_id, party_id=signer.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL

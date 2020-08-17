@@ -98,7 +98,7 @@ code: |
     return ''.join(random.choice(string.ascii_lowercase) for i in range(10))
 ---
 ###################
-# For interfacing with code to send to co-signers
+# Defaults
 ##################
 ---
 # Keep in as the default
