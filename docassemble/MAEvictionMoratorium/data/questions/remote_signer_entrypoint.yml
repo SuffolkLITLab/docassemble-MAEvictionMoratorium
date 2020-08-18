@@ -10,6 +10,7 @@ comment: |
   As usual, these can all be customized. It just hopes these help save brain cells.
 ---
 modules:
+  - docassemble.VirtualCourtToolbox.shortenURL
   - .signing_party
 ---
 include:
@@ -48,44 +49,54 @@ code: |
   if signer.valid:
     # Skip question if they've already signed or were already willing to sign.
     if signer.has_signed or signer.was_willing or signer.willing_to_sign:
-      amend_signer( signature_data_id, party_id, 'willing_to_sign', True )
+      signer.willing_to_sign = True  # Hide this in the function below?
+      store_willing_to_sign( signer, True )
       signer.sign_on_device
     else:
-      amend_signer( signature_data_id, party_id, 'willing_to_sign', False )
+      signer.willing_to_sign = False  # Hide this in the function below?
+      store_willing_to_sign( signer, False )
       signer.after_unwilling_to_sign
 
   ## Untested
   #else:
   #  unauthorized
 ---
+# Interface directly with .sign_on_device code
 id: x.after_signature
 event: x.after_signature
 generic object: Individual
 code: |
   if not x.has_signed:
-    amend_signer( signature_data_id, party_id, 'signature', x.signature )
-    amend_signer( signature_data_id, party_id, 'signature_date', today()  )
-    amend_signer( signature_data_id, party_id, 'has_signed', True )
+    signer.signature_date = today()
+    signer.has_signed = True
+    store_signature_data( signer )
 
   x.after_signature_saved
 ---
+# This follows the format of x.after_unwilling_to_sign_saved. Pros and cons of maintaining consisency? Is there any point if this won't be abstracted later?
 id: x.after_unwilling_to_sign
 event: x.after_unwilling_to_sign
 generic object: Individual
 code: |
-  amend_signer( signature_data_id, party_id, 'willing_to_sign', False )
   x.after_unwilling_to_sign_saved
 ---
 code: |
   long_device_choice_url = interview_url_action( 'get_remote_signature', device_id='tbd', signature_data_id=signature_data_id, party_id=signer.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
 ---
-modules:
-  - docassemble.VirtualCourtToolbox.shortenURL
----
 ###################
-# Interfacing directly with remote signer code
+# Interfacing directly with remote signer interview order code
 ##################
+---
+id: willing to sign
+generic object: Individual
+question: |
+  Are you willing to sign?
+subquestion: |
+  This is ${ redis.get_data( url_args['signature_data_id'] )['user_names'] }'s document. Are you willing to sign it?
+
+  ${ redis.get_data( url_args['signature_data_id'] )['preview'] }
+yesno: x.willing_to_sign
 ---
 id: x.after_signature_saved
 event: x.after_signature_saved
@@ -114,16 +125,6 @@ code: |
   #  x.send_email_signature_link
   x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
   x.send_signature_link = True  # Used by sign_on_device.yml
----
-id: willing to sign
-generic object: Individual
-question: |
-  Are you willing to sign?
-subquestion: |
-  This is ${ redis.get_data( url_args['signature_data_id'] )['user_names'] }'s document. Are you willing to sign it?
-
-  ${ redis.get_data( url_args['signature_data_id'] )['preview'] }
-yesno: x.willing_to_sign
 ---
 id: signature
 generic object: Individual

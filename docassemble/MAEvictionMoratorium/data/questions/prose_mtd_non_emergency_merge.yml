@@ -34,7 +34,7 @@ code: |
   interview_presets
   
   # Skipping for speeding up tests
-  download_only_intro_screen = True
+  #download_only_intro_screen = True
   mtd_intro = True
   eviction_choice = "no"
   other_parties.target_number = '1'
@@ -58,6 +58,7 @@ code: |
   will_proxy_sign = False
   exist_other_local_signers = False
   
+  # Real code
   download_only_intro_screen
   mtd_intro
   if eviction_choice == "yes":

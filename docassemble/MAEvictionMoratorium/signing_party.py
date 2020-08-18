@@ -2,23 +2,21 @@ from docassemble.base.util import log, DARedis, Individual, today#, DAObject
 
 redis = DARedis()
 
-def _amend_signer( signature_data_id, party_id, key, value ):
+def store_signer_attribute( signer, key, value ):
+  # Returns whether amendment was successful or not
+  signature_data_id = signer.signature_data_id
+  party_id = signer.id
+
   if signature_data_id and party_id:
     signature_data = redis.get_data( signature_data_id )
     # set party key
     signature_data['parties'][ party_id ][ key ] = value
     redis.set_data( signature_data_id, signature_data )
-    return signature_data['parties'][ party_id ]
+    return True
   else:
-    return None
+    return False
   
-# TODO: Rename to amend_signer_data? amend_party_data? store_signer/party_data?
-def amend_signer( signature_data_id, party_id, key, value, signer=None ):
-  if signer:
-    return _amend_signer( signer.signature_data_id, signer.id, key, value )  
-  else:
-    return _amend_signer( signature_data_id, party_id, key, value )
-  
+# Should this set defaults as well if the party data exists, but its attributes aren't defined? It may mean the originating interview wouldn't have to handle it, but it would hide functionality.
 def set_signer_attributes( signer, signature_data_id, party_id ):
   signer.valid = False
   
@@ -36,32 +34,18 @@ def set_signer_attributes( signer, signature_data_id, party_id ):
 
   return signer
   
-## set_signer_attrs()?
-#def get_signer( signature_data_id, party_id, signer=None ):
-#  # In transition from party_data to signer
-#  party_data = None
-#  
-#  if signature_data_id and party_id:
-#    if party_id in redis.get_data( signature_data_id )['parties']:
-#      party_data = redis.get_data( signature_data_id )['parties'][ party_id ]
-#  
-#  if party_data and signer:
-#    signer.signature_data_id = signature_data_id
-#    signer.id = party_id
-#    signer.name.first = party_data['name']
-#    signer.has_signed = party_data['has_signed']
-#    signer.was_willing = party_data['willing_to_sign']
-#    return signer
-#  else:
-#    return party_data
-  
 def store_willing_to_sign( signer, value ):
-  #signer.willing_to_sign = value  # Not sure about this, but would remove need to do both...
-  return amend_signer( signer, 'willing_to_sign', value )
+  # This first one is a bit weird and hidden. What's the clearest/most traceable choice?
+  # Leaving it to be done in the yml? It seems a bit silly, but maybe that's the way to go.
+  # Might leave it in here commented out and explain about why it's not set here.
+  #signer.willing_to_sign = value
+  return store_signer_attribute( signer, 'willing_to_sign', value )
 
-def store_signed_data( signer ):
-  signer.signature_date = today()
-  amend_signer( signer.signature_data_id, signer.id, 'signature_date', today() )
-  amend_signer( signer.signature_data_id, signer.id, 'signature', signer.signature )
-  return amend_signer( signer.signature_data_id, signer.id, 'has_signed', True )
+def store_signature_data( signer ):
+  ## These first two are a bit weird and hidden. What's the clearest/most traceable choice?
+  #signer.signature_date = today()
+  #signer.has_signed = True
+  store_signer_attribute( signer, 'signature_date', today() )
+  store_signer_attribute( signer, 'signature', signer.signature )
+  return store_signer_attribute( signer, 'has_signed', True )
   
