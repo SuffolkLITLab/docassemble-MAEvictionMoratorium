@@ -44,14 +44,8 @@ code: |
     signature_data_id = url_args['signature_data_id']
     party_id = url_args['party_id']
 
-  party_data = get_signer( signature_data_id, party_id )
-  if party_data:
-    signer.signature_data_id = signature_data_id
-    signer.id = party_id
-    signer.name.first = party_data['name']
-    signer.has_signed = party_data['has_signed']
-    signer.was_willing = party_data['willing_to_sign']
-
+  set_signer_attributes( signer, signature_data_id, party_id )
+  if signer.valid:
     # Skip question if they've already signed or were already willing to sign.
     if signer.has_signed or signer.was_willing or signer.willing_to_sign:
       amend_signer( signature_data_id, party_id, 'willing_to_sign', True )

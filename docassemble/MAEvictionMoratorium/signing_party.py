@@ -19,24 +19,41 @@ def amend_signer( signature_data_id, party_id, key, value, signer=None ):
   else:
     return _amend_signer( signature_data_id, party_id, key, value )
   
-# set_signer_attrs()?
-def get_signer( signature_data_id, party_id, signer=None ):
-  # In transition from party_data to signer
-  party_data = None
+def set_signer_attributes( signer, signature_data_id, party_id ):
+  signer.valid = False
   
   if signature_data_id and party_id:
     if party_id in redis.get_data( signature_data_id )['parties']:
       party_data = redis.get_data( signature_data_id )['parties'][ party_id ]
   
-  if party_data and signer:
+  if party_data:
+    signer.valid = True
     signer.signature_data_id = signature_data_id
     signer.id = party_id
     signer.name.first = party_data['name']
     signer.has_signed = party_data['has_signed']
     signer.was_willing = party_data['willing_to_sign']
-    return signer
-  else:
-    return party_data
+
+  return signer
+  
+## set_signer_attrs()?
+#def get_signer( signature_data_id, party_id, signer=None ):
+#  # In transition from party_data to signer
+#  party_data = None
+#  
+#  if signature_data_id and party_id:
+#    if party_id in redis.get_data( signature_data_id )['parties']:
+#      party_data = redis.get_data( signature_data_id )['parties'][ party_id ]
+#  
+#  if party_data and signer:
+#    signer.signature_data_id = signature_data_id
+#    signer.id = party_id
+#    signer.name.first = party_data['name']
+#    signer.has_signed = party_data['has_signed']
+#    signer.was_willing = party_data['willing_to_sign']
+#    return signer
+#  else:
+#    return party_data
   
 def store_willing_to_sign( signer, value ):
   #signer.willing_to_sign = value  # Not sure about this, but would remove need to do both...
