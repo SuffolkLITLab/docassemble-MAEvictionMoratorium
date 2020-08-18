@@ -15,14 +15,8 @@ mandatory: True
 code: |
   multi_user = True
 ---
-mandatory: True
-code: |
-  process_action()  # Makes the `background_action`s possible, I think
-  force_ask('unauthorized')
----
 code: |
   emails_sent
-  told_to_wait
   send_for_codefendant_signatures = True
 ---
 code: |
@@ -40,27 +34,15 @@ code: |
 id: send request for signatures
 event: send_out_for_signature  # TODO: make plural
 code: |
-  for codefendant in codefendants:
-    codefendant.notified
+  for remote in remote_signers:
+    remote.notified
   users[0].notified
-  # Let the background_action know this background action is
-  # done. Don't do something else or send back any data.
   background_response()
 ---
 comment: |
   =============================
   USER
   =============================
----
-# Now set by the user outside of this flow
-#code: |
-#  users[0].signature_date = today()
----
-# The status page will currently just say to wait for others to sign
-code: |
-  told_to_wait = True
-  # Makes sure users[0].status is the only page the user can see.
-  force_ask('users[0].status')
 ---
 id: signature status
 event: users[0].status
@@ -78,7 +60,7 @@ question: |
 subquestion: |
   % if not all_signatures_in:
     % for codef in codefendants:
-      % if codef.signed:
+      % if defined( codef.instanceName + '.signature' ):
   ${ codef } has signed.
 
       % else:
@@ -150,7 +132,7 @@ id: if all signed send email
 # Is requested when people check on the status of the signatures
 code: |
   for codef in codefendants:
-    if not codef.signed:
+    if not defined( codef.instanceName + '.signature' ):
       all_signatures_in = False
       break
   else:
@@ -184,6 +166,62 @@ comment: |
   =============================
   Codefendants
   =============================
+---
+objects:
+  - local_signers: PeopleList.using(auto_gather=False)
+---
+code: |
+  local_signers_temp = DAList(auto_gather=False)
+  local_signers_temp.extend( users )
+  
+  if len( codefendants ) > 0:
+    log( 1, 'console' )
+    if will_proxy_sign:
+      log( 2, 'console' )
+      local_signers_temp.extend( who_proxy_sign_for )
+
+    log( 3, 'console' )
+    log( will_proxy_sign, 'console' )
+    codefendants_remain = ( not will_proxy_sign or  
+        len( codefendants.difference( local_signers_temp )) > 0)
+    log( 4, 'console' )
+    
+    if codefendants_remain and exist_other_local_signers:
+      log( 5, 'console' )
+      local_signers_temp.extend( who_else_on_device )
+  
+  local_signers_temp.gathered = True
+  local_signers = local_signers_temp
+---
+id: proxy signer
+question: |
+  Are you signing for any of the codefendants?
+yesno: will_proxy_sign
+---
+id: who will proxy
+question: |
+  Who will you be signing for?
+fields:
+  - no label: who_proxy_sign_for
+    datatype: object_checkboxes
+    choices:
+      - codefendants
+---
+id: local co-signers
+question: |
+  Are any codefendants signing on your device?
+yesno: exist_other_local_signers
+---
+id: device signers
+question: |
+  Who will be signing on your device?
+fields:
+  - no label: who_else_on_device
+    datatype: object_checkboxes
+    choices:
+      - codefendants
+    exclude:
+      - local_signers_temp
 ---
 # Triggered with codefendants[i].notified
 # TODO: put `.notified` outside of `if` statement
@@ -295,44 +333,7 @@ code: |
   codefendants[i].signature_date = today()
   codefendants[i].signature_obtained = True
 ---
-# if signature_choice == 'this device':
-#       for signature in signature_fields:
-#         value(signature)    
-#     # Check for Branch 2 or 3
-#     elif signature_choice == 'phone':
-#       saw_signature_qrcode
-#       # User will click next. users[0].mobile_number will only be defined if they chose the texting option
-#       if defined('users[0].mobile_number') and users[0].mobile_number and task_not_yet_performed('send signature link'): 
-#         # They used the text option
-#         send_sms(task='send signature link', to=users[0].mobile_number,template=interview_link)
-#         signature_wait_screen
-#         for signature in signature_fields:
-#           value(signature)
-#       else: # Branch 3: They used the QR Code. No special screen, just continue
-#         for signature in signature_fields:
-#           value(signature)
-#       # Show the follow-up either way
-#       if device().is_mobile:
-#         #signed = False
-#         #while not signed:
-#         #  for signature in signature_fields:
-#         #    signed = defined(signature) & signed
-#         signature_phone_followup
-#   basic_questions_signature_flow = True
-# ---
-# code: |
-#   users[0]_signature_verification = users[0].signature
-# ---
-# id: basic questions intro screen
----
 # Makes sure this is defined when the signer has not signed yet
 code: |
   codefendants[i].signed = False
 ---
-# TODO: Possibly replace with text that's useful, maybe underlined somehow
-code: |
-  codefendants[i].signature_date = "_________________"
----
-# TODO: Possibly replace with text that's useful, maybe underlined somehow
-code: |
-  codefendants[i].signature = "____________________________"
