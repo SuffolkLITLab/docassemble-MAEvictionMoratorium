@@ -1,6 +1,6 @@
 ---
 # TODO: Use more basic questions?
-# TODO: Implement new multi-signature recipe: https://github.com/jhpyle/docassemble/blob/master/docassemble_demo/docassemble/demo/data/questions/examples/demo-multi-sign-2.yml
+# TODO: Explore new `session_local`, etc. features
 ---
 include:
   - docassemble.MAVirtualCourt:basic-questions.yml
