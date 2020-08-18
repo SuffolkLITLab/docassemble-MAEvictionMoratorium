@@ -34,39 +34,31 @@ code: |
 event: get_remote_signature
 code: |
   #devices[0] = devices.appendObject()
-  data = None
   signature_data_id = None
   party_id = None
   if action_argument() and action_argument('signature_data_id'):
-    data = {
-      'signature_data_id': action_argument('signature_data_id'),
-      'party_id': action_argument('party_id')
-    }
     signature_data_id = action_argument('signature_data_id')
     party_id = action_argument('party_id')
 
   elif 'signature_data_id' in url_args:
-    data = url_args
     signature_data_id = url_args['signature_data_id']
     party_id = url_args['party_id']
 
-  if data:
-    signature_data_id = data['signature_data_id']
-    party_data = get_signer( signature_data_id, party_id )
-    if party_data:
-      signer.signature_data_id = signature_data_id
-      signer.id = party_id
-      signer.name.first = party_data['name']
-      signer.has_signed = party_data['has_signed']
-      was_willing = party_data['willing_to_sign']
+  party_data = get_signer( signature_data_id, party_id )
+  if party_data:
+    signer.signature_data_id = signature_data_id
+    signer.id = party_id
+    signer.name.first = party_data['name']
+    signer.has_signed = party_data['has_signed']
+    signer.was_willing = party_data['willing_to_sign']
 
-      # Skip question if they've already signed or were already willing to sign.
-      if signer.has_signed or was_willing is True or signer.willing_to_sign:
-        amend_signer( signature_data_id, party_id, 'willing_to_sign', True )
-        signer.sign_on_device
-      else:
-        amend_signer( signature_data_id, party_id, 'willing_to_sign', False )
-        signer.after_unwilling_to_sign
+    # Skip question if they've already signed or were already willing to sign.
+    if signer.has_signed or signer.was_willing or signer.willing_to_sign:
+      amend_signer( signature_data_id, party_id, 'willing_to_sign', True )
+      signer.sign_on_device
+    else:
+      amend_signer( signature_data_id, party_id, 'willing_to_sign', False )
+      signer.after_unwilling_to_sign
 
   ## Untested
   #else:
