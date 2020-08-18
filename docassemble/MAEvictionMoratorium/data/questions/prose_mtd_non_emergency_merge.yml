@@ -114,7 +114,7 @@ code: |
 event: x.after_signature
 generic object: Individual
 code: |
-  custom_interview_redis_data
+  custom_signature_redis_data
   set_initial_redis_data
 
   if device() and device().is_pc:
@@ -543,7 +543,7 @@ code: |
 code: |
   form_to_sign.set_attributes(persistent=True, private=False)
   # Whatever info you want to be able to use for the co-signers' interview
-  custom_interview_redis_data = {
+  custom_signature_redis_data = {
     'user_names': str(users),
     'preview': form_to_sign,
   }

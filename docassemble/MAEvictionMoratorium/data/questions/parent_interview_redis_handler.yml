@@ -29,8 +29,8 @@ code: |
   # Have to abstract so devs can create/use their own docs and text effectively?
   # DEVELOPERS: Create `signature_data` elsewhere, as shown below
   signature_data = {}
-  if defined('custom_interview_redis_data'):
-    signature_data = custom_interview_redis_data
+  if defined('custom_signature_redis_data'):
+    signature_data = custom_signature_redis_data
   
   parties = {}
   for signer in all_signers:
