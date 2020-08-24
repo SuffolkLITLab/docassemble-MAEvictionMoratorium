@@ -7,7 +7,7 @@ comment: |
 ---
 # Make own function to make this more independent?
 modules:
-  - docassemble.VirtualCourtToolbox.shortenURL
+  - docassemble.VirtualCourtToolbox.misc
 ---
 include:
   - sign_on_device.yml

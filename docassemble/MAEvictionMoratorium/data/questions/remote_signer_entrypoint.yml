@@ -10,7 +10,7 @@ comment: |
   As usual, these can all be customized. It just hopes these help save brain cells.
 ---
 modules:
-  - docassemble.VirtualCourtToolbox.shortenURL
+  - docassemble.VirtualCourtToolbox.misc
   - .signing_party
 ---
 include:
@@ -93,9 +93,9 @@ generic object: Individual
 question: |
   Are you willing to sign?
 subquestion: |
-  This is ${ redis.get_data( url_args['signature_data_id'] )['user_names'] }'s document. Are you willing to sign it?
+  This is ${ redis.get_data( signature_data_id )['user_names'] }'s document. Are you willing to sign it?
 
-  ${ redis.get_data( url_args['signature_data_id'] )['preview'] }
+  ${ redis.get_data( signature_data_id )['preview'] }
 yesno: x.willing_to_sign
 ---
 id: x.after_signature_saved
@@ -147,7 +147,7 @@ event: x.end
 question: |
   Thank you
 subquestion: |
-  You have signed ${ redis.get_data( url_args['signature_data_id'] )['user_names'] }'s document. They will get your signature soon.
+  You have signed ${ redis.get_data( signature_data_id )['user_names'] }'s document. They will get your signature soon.
 ---
 ## Inactive. Should show signed doc with status, but not updating.
 #id: signature status
@@ -157,9 +157,9 @@ subquestion: |
 #question: |
 #  Signature status for ${ x }
 #subquestion: |
-#  ${ redis.get_data( url_args['signature_data_id'] )['user_names'] }'s document.
+#  ${ redis.get_data( signature_data_id )['user_names'] }'s document.
 #  
-#  ${ redis.get_data( url_args['signature_data_id'] )[ 'signed_doc' ] }
+#  ${ redis.get_data( signature_data_id )[ 'signed_doc' ] }
 ---
 id: unwilling to sign end
 generic object: Individual

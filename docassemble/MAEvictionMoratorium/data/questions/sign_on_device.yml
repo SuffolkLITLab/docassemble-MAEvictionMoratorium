@@ -4,7 +4,6 @@ comment: |
   `generic object` is being used to allow more flexibility for developers using this module.
   
   ## Limitations:
-  - Devices don't prevent each other from signing. TODO: Try sending action arguments with every keypress and... something and checking action arguments in every block. Not sure that's possible.
   - Right now the signer can't pick any device they want. It only differentiates between using a computer and a mobile device. A mobile device will always only present a signature. The execution order for handling multiple devices is complex unless it's broken into multiple interviews.
 
   TODO: Try new `session_local` da feature
@@ -15,7 +14,7 @@ generic object: Individual
 # Cannot be triggered by an action (because of generic object)
 code: |
   
-  if x.has_signed:
+  if defined(x.attr_name('signature')):
     x.after_signature
 
   # which_device: atm really means 'wants to use any computer'
@@ -31,7 +30,11 @@ code: |
 event: x.wait_for_signature
 generic object: Individual
 code: |
-  if x.wants_to_change_device is True:
+  # Add to moratorium
+  if defined(x.attr_name('signature')):
+    x.after_signature
+    
+  elif x.wants_to_change_device is True:
     # Reset and start over again
     undefine( x.instanceName + '.which_device' )
     undefine( x.instanceName + '.send_method' )

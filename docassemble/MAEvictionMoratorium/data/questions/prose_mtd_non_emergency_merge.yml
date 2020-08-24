@@ -9,7 +9,7 @@ include:
 ---
 modules:
   - docassemble.base.util
-  - docassemble.VirtualCourtToolbox.shortenURL
+  - docassemble.VirtualCourtToolbox.misc
 ---
 objects:
   - other_parties: PeopleList.using(ask_number=True)  # Can they be businesses? Does it matter?
@@ -49,8 +49,8 @@ code: |
   #users[0].address.zip = '02127'
   #other_parties[0].name.first = 'v'
   #codefendants[0].name.first = 'c'
-  ##codefendants[1].name.first = 'f'
-  ##codefendants[2].name.first = 's'
+  #codefendants[1].name.first = 'f'
+  #codefendants[2].name.first = 's'
   #courts[0] = local_housing_court
   #ready_to_serve = True
   #service_method = 'first class mail, postage prepaid'

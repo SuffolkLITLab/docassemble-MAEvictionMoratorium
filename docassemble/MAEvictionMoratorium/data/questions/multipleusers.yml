@@ -6,7 +6,7 @@ metadata:
   short: Signature
 ---
 modules:  
-  - docassemble.VirtualCourtToolbox.shortenURL
+  - docassemble.VirtualCourtToolbox.misc
 ---
 mandatory: True
 code: |
