@@ -31,29 +31,30 @@ event: x.wait_for_signature
 generic object: Individual
 code: |
   # Add to moratorium
-  if defined(x.attr_name('signature')):
+  if defined(x.attr_name( 'signature' )):
     x.after_signature
     
   elif x.wants_to_change_device is True:
     # Reset and start over again
-    undefine( x.instanceName + '.which_device' )
-    undefine( x.instanceName + '.send_method' )
-    undefine( x.instanceName + '.device_number' )
-    undefine( x.instanceName + '.send_signature_link' )
-    undefine( x.instanceName + '.wants_to_change_device' )
+    undefine( x.attr_name( 'which_device' ))
+    undefine( x.attr_name( 'send_method' ))
+    undefine( x.attr_name( 'device_number' ))
+    undefine( x.attr_name( 'send_signature_link' ))
+    undefine( x.attr_name( 'wants_to_change_device' ))
     x.sign_on_device
 
   # If wants to change device again
   else:
     # If they've already signed, just move on?
     # TODO: Do we want them to be able to choose to re-sign?
-    if defined( x.instanceName + '.signature' ):
+    # Can we remove this now that there's one above?
+    if defined( x.attr_name( 'signature' )):
       x.after_signature
 
     # Otherwise, let them change the device they want to use
     else:
       x.said_had_signed_on_other_device = True  # For custom waiting screen text
-      undefine( x.instanceName + '.wants_to_change_device' )
+      undefine( x.attr_name( 'wants_to_change_device' ))
       x.wait_for_signature
 ---
 # Starting value
@@ -134,7 +135,7 @@ subquestion: |
   You can use a QR code that could be here or you can text your mobile device.
 fields:
   - Number to text: x.device_number
-    default: ${ showifdef( x.instanceName + '.mobile_number' )}
+    default: ${ showifdef( x.attr_name( 'mobile_number' )) }
 ---
 id: x.wants_to_change_device
 generic object: Individual

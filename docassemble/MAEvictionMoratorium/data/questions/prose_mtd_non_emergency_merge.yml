@@ -586,7 +586,7 @@ subquestion: |
   What number do you want to send this to for a signature?
 fields:
   - no label: x.device_number
-    default: ${ showifdef( x.instanceName + '.mobile_number' )}
+    default: ${ showifdef( x.attr_name( 'mobile_number' )) }
 ---
 generic object: Individual
 code: |
@@ -645,7 +645,7 @@ id: if all signed send email
 # Is requested when people check on the status of the signatures
 code: |
   for codef in codefendants:
-    if not defined( codef.instanceName + '.signature' ):
+    if not defined( codef.attr_name( 'signature' )):
       all_signatures_in = False
       break
   else:
@@ -669,7 +669,7 @@ question: |
 subquestion: |
   % if not all_signatures_in:
     % for codef in codefendants:
-      % if defined( codef.instanceName + '.signature' ):
+      % if defined( codef.attr_name( 'signature' )):
   ${ codef } has signed.
 
       % else:
