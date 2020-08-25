@@ -30,8 +30,7 @@ code: |
 event: x.wait_for_signature
 generic object: Individual
 code: |
-  # Add to moratorium
-  if defined(x.attr_name( 'signature' )):
+  if defined( x.attr_name( 'signature' )):
     x.after_signature
     
   elif x.wants_to_change_device is True:

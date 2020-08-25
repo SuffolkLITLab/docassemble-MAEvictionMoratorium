@@ -117,37 +117,8 @@ generic object: Individual
 code: |
   custom_signature_redis_data
   set_initial_redis_data
-
-  if device() and device().is_pc:
-    request_remote_signatures
-    after_remote_signatures_requested
-  else:
-    if wants_to_finish_on_phone:
-      request_remote_signatures
-      after_remote_signatures_requested
-    else:
-      phone_end
----
-id: ask wants to finish on phone
-question: |
-  Do you want to finish on your phone?
-yesno: wants_to_finish_on_phone
----
-event: phone_end
-question: |
-  Thank you
-subquestion: |
-  You can finish on your original device.
----
-id: trigger requests for signatures
-code: |
-  for remote in remote_signers:
-    remote.signature_url_was_sent
-  users[0].was_notified_of_cosigner_messages
-  request_remote_signatures = True
----
-event: after_remote_signatures_requested
-code: |
+  request_remote_signatures
+  
   # Request other signatures under here
   # Possibly using action arguments when that's worked out
   
@@ -161,6 +132,25 @@ code: |
     local.notified = True  # Not sure we need this anymore
   
   users[0].status
+---
+# It's weird to ask this if they didn't start on another device and there's no provision for that right now. Could set a flag at the very start if we really want that.
+#id: ask wants to finish on phone
+#question: |
+#  Do you want to finish on your phone?
+#yesno: wants_to_finish_on_phone
+---
+event: phone_end
+question: |
+  Thank you
+subquestion: |
+  You can finish on your original device.
+---
+id: trigger requests for signatures
+code: |
+  for remote in remote_signers:
+    remote.signature_url_was_sent
+  users[0].was_notified_of_cosigner_messages
+  request_remote_signatures = True
 ---
 code: |
   download_titles = ['dismiss-non-essential-eviction.pdf']
