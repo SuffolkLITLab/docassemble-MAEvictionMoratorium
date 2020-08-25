@@ -652,28 +652,34 @@ reconsider:
   - final_form
 question: |
   % if all_signatures_in:
-  Your Eviction Moratorium has been signed.
+  Your Eviction Moratorium is ready
   % else:
-  Your Eviction Moratorium has not been signed by everyone yet.
+  Some people still need to sign your Eviction Moratorium
   % endif
 subquestion: |
-  % if not all_signatures_in:
-    % for codef in codefendants:
-      % if defined( codef.attr_name( 'signature' )):
-  ${ codef } has signed.
 
-      % else:
-  ${ codef } has not signed yet.
-
-      % endif
-    % endfor
-  % else:
+  % if all_signatures_in:
     % if len( codefendants ) > 1:
     ${ comma_and_list( codefendants )} have signed.
     % else:
       ${ codefendants[0] } has signed.
     % endif
+  
+  % else:
+    % for signer in codefendants:
+    % if defined( signer.attr_name( 'signature' )):
+    <i class="fa fa-check" aria-hidden="true"></i> ${ signer } has signed[BR]
+    % endif
+    % endfor
+
+    % for signer in codefendants:
+    % if not defined( signer.attr_name( 'signature' )):
+    <i class="fa fa-times" aria-hidden="true"></i> ${ signer } has not signed[BR]
+    % endif
+    % endfor
+  
   % endif
   
   ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
+  
 attachment code: motion_to_dismiss_for_non_essential_eviction
