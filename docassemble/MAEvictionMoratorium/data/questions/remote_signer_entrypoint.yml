@@ -66,10 +66,9 @@ id: x.after_signature
 event: x.after_signature
 generic object: Individual
 code: |
-  if not x.has_signed:
-    signer.signature_date = today()
-    signer.has_signed = True
-    store_signature_data( signer )
+  x.signature_date = today()
+  x.has_signed = True
+  store_signature_data( x )
 
   x.after_signature_saved
 ---
