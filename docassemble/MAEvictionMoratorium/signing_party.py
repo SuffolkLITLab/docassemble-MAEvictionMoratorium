@@ -77,6 +77,7 @@ def set_signer_attributes( signer, signature_data_id, party_id ):
   """
   
   signer.valid = False
+  party_data = None
   
   if signature_data_id and party_id:
     if party_id in redis.get_data( signature_data_id )['parties']:

@@ -57,9 +57,9 @@ code: |
       store_willing_to_sign( signer, False )
       signer.after_unwilling_to_sign
 
-  ## Untested
-  #else:
-  #  unauthorized
+  # Untested
+  else:
+    unauthorized
 ---
 # Interface directly with .sign_on_device code
 id: x.after_signature
@@ -169,15 +169,15 @@ question: |
 buttons:
   - Exit: exit
 ---
-id: 404
-# Preferred?
-event: unauthorized
-code: |
-  response('Page not found', response_code=404)
----
 id: unauthorized
 event: unauthorized
 question: |
   Thank you and goodbye
 buttons:
   - Exit: exit
+---
+id: 404
+# Preferred?
+event: unauthorized
+code: |
+  response('Page not found', response_code=404)
