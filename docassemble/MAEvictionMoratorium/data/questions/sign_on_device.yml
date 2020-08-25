@@ -1,0 +1,148 @@
+comment: |
+  A flow for allowing signers to sign on the device with which they are most comfortable.
+
+  `generic object` is being used to allow more flexibility for developers using this module.
+  
+  ## Limitations:
+  - Right now the signer can't pick any device they want. It only differentiates between using a computer and a mobile device. A mobile device will always only present a signature. The execution order for handling multiple devices is complex unless it's broken into multiple interviews.
+
+  TODO: Try new `session_local` da feature
+  TODO: Try using action arguments for every question to identify/verify devices
+---
+event: x.sign_on_device
+generic object: Individual
+# Cannot be triggered by an action (because of generic object)
+code: |
+  
+  if defined(x.attr_name('signature')):
+    x.after_signature
+
+  # which_device: atm really means 'wants to use any computer'
+  # If not on computer or wants to sign on computer
+  elif (device() and not device().is_pc) or x.which_device == 'this device':
+    x.signature.set_attributes(persistent=True, private=False)
+    x.after_signature
+  else:
+    x.device_number
+    x.send_signature_link
+    x.wait_for_signature
+---
+event: x.wait_for_signature
+generic object: Individual
+code: |
+  if defined( x.attr_name( 'signature' )):
+    x.after_signature
+    
+  elif x.wants_to_change_device is True:
+    # Reset and start over again
+    undefine( x.attr_name( 'which_device' ))
+    undefine( x.attr_name( 'send_method' ))
+    undefine( x.attr_name( 'device_number' ))
+    undefine( x.attr_name( 'send_signature_link' ))
+    undefine( x.attr_name( 'wants_to_change_device' ))
+    x.sign_on_device
+
+  # If wants to change device again
+  else:
+    # If they've already signed, just move on?
+    # TODO: Do we want them to be able to choose to re-sign?
+    # Can we remove this now that there's one above?
+    if defined( x.attr_name( 'signature' )):
+      x.after_signature
+
+    # Otherwise, let them change the device they want to use
+    else:
+      x.said_had_signed_on_other_device = True  # For custom waiting screen text
+      undefine( x.attr_name( 'wants_to_change_device' ))
+      x.wait_for_signature
+---
+# Starting value
+generic object: Individual
+code: |
+  x.said_had_signed_on_other_device = False
+---
+# Fallback
+generic object: Individual
+code: |
+  x.has_signed = False
+---
+###################
+#  Interfaces directly with choosing another device
+##################
+---
+id: x.willing_to_sign
+generic object: Individual
+question: |
+  Are you willing to sign this document?
+yesno: x.willing_to_sign
+---
+id: x.end_with_unwilling_to_sign
+event: x.end_with_unwilling_to_sign
+generic object: Individual
+question: |
+  Thank you
+subquestion: |
+  You can close this window now.
+---
+# TODO: Always send with action arguments with unique ID
+id: x.which_device
+generic object: Individual
+question: |
+  Where do you want to sign this?
+subquestion: |
+  Do you want to sign on this computer or on a phone or tablet instead?
+field: x.which_device
+buttons:
+  - This computer: this device
+    image: desktop
+  - A phone or tablet: other device
+    image: mobile-alt
+script: |
+  <script>
+    $(".da-field-buttons > div > .btn-da-custom").last().after("<br>")
+    $(".da-field-buttons > div > .btn-da-custom").first().before("<br>")
+  </script>
+---
+id: x.signature
+generic object: Individual
+question: |
+  x.signature
+signature: x.signature
+---
+id: x.after_signature
+event: x.after_signature
+generic object: Individual
+code: |
+  x.status
+---
+###################
+#  Questions triggered by above code interfacing code
+##################
+---
+#id: x.status
+#event: x.status
+#generic object: Individual
+#question: |
+#  x.status
+---
+id: send_method
+# for now, just get the mobile number
+generic object: Individual
+question: |
+  Send this to your mobile device
+subquestion: |
+  You can use a QR code that could be here or you can text your mobile device.
+fields:
+  - Number to text: x.device_number
+    default: ${ showifdef( x.attr_name( 'mobile_number' )) }
+---
+id: x.wants_to_change_device
+generic object: Individual
+question: |
+  Waiting for signature or change device
+subquestion: |
+  What should be the follow-up page/feedback for signature being done?
+field: x.wants_to_change_device
+buttons:
+  - Change my device: True
+  - Check for signature: False
