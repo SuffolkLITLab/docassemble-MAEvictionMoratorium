@@ -652,7 +652,7 @@ reconsider:
   - final_form
 question: |
   % if all_signatures_in:
-  Your Eviction Moratorium is ready
+  Your Eviction Moratorium is ready to print
   % else:
   Some people still need to sign your Eviction Moratorium
   % endif
