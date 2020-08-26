@@ -81,26 +81,6 @@ code: |
   send_email(to=users[0], template=initial_email_template)
   users[0].notified = True
 ---
-id: user email before signatures
-template: initial_email_template
-subject: |
-  Your Eviction Moratorium is out for signature.
-content: |
-  ${ users[0] },
-
-  % if codefendants.number() == 1:
-  We have e-mailed your codefendant to ask for a signature on the Eviction Moratorium.
-
-  We will e-mail you when the codefendant has signed, but in the meantime you can [check the status].
-  
-  % else:
-  I have e-mailed your codefendants to request that they sign the Eviction Moratorium.
-
-  We will e-mail you when all the codefendants have signed.  You can check the status of your document to see who still has not signed.
-  % endif
-
-  [Check the status of the signatures]: ${ interview_url_action('status_page', code=users[0].code) }
----
 # TODO: Is the generic one sufficient for the user object as well?
 id: set interview's user id
 code: |
