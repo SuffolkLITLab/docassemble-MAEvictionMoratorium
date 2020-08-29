@@ -38,7 +38,7 @@ code: |
   interview_presets
   
   # Skipping for speeding up tests
-  #download_only_intro_screen = True
+  #no_court_email_massaccess_terms = True
   #mtd_intro = True
   #eviction_choice = "no"
   #other_parties.target_number = '1'
@@ -63,7 +63,8 @@ code: |
   #exist_other_local_signers = False
   
   # Real code
-  download_only_intro_screen
+  interview_short_title = 'Ask the court for an Eviction Moratorium'  # Will be easier to switch to basic questions in future
+  no_court_email_massaccess_terms
   mtd_intro
   if eviction_choice == "yes":
     kick_out
@@ -182,26 +183,41 @@ comment: |
   fields:
     - Name: witnesses[i].name.text
 ---
-id: basic questions intro screen
-question: |
-  Mass Access Project
-subquestion: |
-  This interview can help you complete and download court forms in 3 steps:
-  
-  Step 1. Answer questions to fill your motion.  
-  Step 2. Review the completed motion.  
-  Step 3. Download the motion and file it.
-  
+template: additional_terms_of_agreement_instructions
+content: |
   This interview **does not** deliver the motion for you. You must do
   that on your own.
+---
+# MassAccess terms of agreement page for forms that can't be emailed to the court.
+id: terms with no email
+continue button field: no_court_email_massaccess_terms
+question: |
+  ${interview_short_title}: Mass Access Project
+subquestion: |
+ 
+  The MassAccess Project can help you complete and file court forms in 3 steps:
   
+  Step 1. Answer questions that will fill in your form for you.  
+  Step 2. Preview the completed form.  
+  Step 3. Download the motion and file it.
+  
+  ${ additional_terms_of_agreement_instructions }
+
+  Tap the {green words} in any screen for a definition or more information.
+  
+  If you have questions about this form or the court process, 
+  call the Trial Court’s Emergency HelpLine:  
+  833-91-COURT (833-912-6878)  
+  Monday-Friday  
+  8:30am - 4:30pm
+
   % if chat_partners_available().help:
   Live help is currently available in this interview. Click the speech bubble
   (:comment-alt:) in the navigation bar to connect to a live advocate for help.
   % endif
 
 fields:
-  - To continue, read the [terms of use](https://massaccess.suffolklitlab.org/privacy/): acknowledged_information_use
+  - To continue, you must accept the [terms of use](https://massaccess.suffolklitlab.org/privacy/): acknowledged_information_use
     datatype: checkboxes
     none of the above: False    
     minlength: 1
@@ -209,8 +225,17 @@ fields:
       - I accept the terms of use.
     validation messages:
       minlength: |
-        You cannot continue unless you agree to the terms of use.        
-continue button field: download_only_intro_screen
+        You cannot continue unless you agree to the terms of use.
+terms:
+  green words: |
+    Green words are legal terms or a short way of referring to something that needs more explanation. The definition or explanation pops up when you tap the green words.
+right: |
+  % if user_has_saved_answers:
+  ${fa_icon("bell", color="primary", size="sm")}
+  Saved answers available!  
+  
+  ${action_button_html(url_action('load_answer'), icon="folder-open", label=word("View answers"), size="sm" )}
+  % endif    
 ---
 id: number of landlords
 question:  |
@@ -251,10 +276,10 @@ fields:
 ---
 id: contact information
 question: |
-  Contact information
+  What is your contact information?
 subquestion: |
   The court needs to be able to reach you about your case. Give them as many ways as you can.
-fields:
+fields:  
   - Mobile number: users[0].mobile_number
     required: False
   - Other phone number: users[0].phone_number
@@ -262,12 +287,13 @@ fields:
   - Email address: users[0].email    
     datatype: email
     required: False
-  - What is the best way for the court to reach you: users[0].other_contact_method
+  - Other ways to reach you: users[0].other_contact_method
     input type: area
+    required: False
     help: |
       If you do not have a phone number or email the court can use, provide
       specific contact instructions. For example, use a friend's phone number.
-      But the friend must be someone you can trust to tell you the court is
+      But the friend must be someone you can rely on to tell you the court is
       trying to reach you.
 validation code: |
   if (not showifdef('users[0].phone_number') and \
@@ -276,7 +302,10 @@ validation code: |
       (not showifdef('users[0].other_contact_method'))):
     validation_error(word("You need to provide at least one contact method."))
 help: |
-  You _must_ provide contact information so the court can reach you.
+  The court **must** be able to reach you. You have to give them some way to do this.
+  
+  Some forms let you tell the court you need to keep your address, phone,
+  and email confidential, so that only court staff can see this information. 
 ---
 id: eviction mtd covid intro screen
 question: |
