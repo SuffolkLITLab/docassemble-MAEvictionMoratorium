@@ -2,6 +2,10 @@
 # TODO: Use more basic questions?
 # TODO: Explore new `session_local`, etc. features
 ---
+mandatory: True
+code: |
+  multi_user = True
+---
 include:
   - docassemble.MAVirtualCourt:basic-questions.yml
   - sign_on_device.yml
@@ -563,6 +567,38 @@ id: send user email
 code: |
   users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
   users[0].was_notified_of_cosigner_messages = True
+---
+id: user email before signatures
+template: initial_email_template
+subject: |
+  Your Eviction Moratorium is out for signature.
+content: |
+
+  ${ users[0] },
+
+  % if codefendants.number() == 1:
+  We have e-mailed your codefendant to ask for a signature on the Eviction Moratorium.
+
+  We will e-mail you when the codefendant has signed, but in the meantime you can [check the status of your document](${ interview_url_action('check_status', party_id=users[0].id) }).
+  
+  % else:
+  We have e-mailed your codefendants to request that they sign the Eviction Moratorium.
+
+  We will e-mail you when all the codefendants have signed.  You can [check the status of your document](${ interview_url_action('check_status', party_id=users[0].id) }) to see who still has not signed.
+  % endif
+---
+# Must come from an `action`. Needed for security.
+event: check_status
+code: |
+  if action_argument('party_id') == users[0].id:
+    users[0].status
+  else:
+    unauthorized
+---
+id: 404
+event: unauthorized
+code: |
+  response('Page not found', response_code=404)
 ---
 ######################
 # Interfacing with code to let user choose which device to sign on
