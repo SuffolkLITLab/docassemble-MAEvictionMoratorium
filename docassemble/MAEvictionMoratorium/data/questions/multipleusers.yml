@@ -278,14 +278,6 @@ subquestion: |
   If you are willing to sign, tap to continue.  On the next screen, you will provide your signature.
 continue button field: codefendants[i].willing_to_sign
 ---
-id: Codefendant signature
-generic object: Person
-question: |
-  Sign your name
-signature: x.signature
-under: |
-  ${ x }
----
 id: thank codefendants
 event: codefendants[i].thanked
 reconsider:

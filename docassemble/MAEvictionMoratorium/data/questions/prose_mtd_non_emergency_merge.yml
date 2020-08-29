@@ -7,9 +7,10 @@ code: |
   multi_user = True
 ---
 include:
-  - docassemble.MAVirtualCourt:basic-questions.yml
   - sign_on_device.yml
   - parent_interview_redis_handler.yml
+  # The questions below here should supercede the above files
+  - docassemble.MAVirtualCourt:basic-questions.yml
 ---
 modules:
   - docassemble.base.util
@@ -606,26 +607,26 @@ content: |
 ---
 id: send user email
 code: |
-  users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
+  if remote_signers.number() > 0:
+    users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
   users[0].was_notified_of_cosigner_messages = True
 ---
-id: user email before signatures
+id: after remote signatures requested
 template: initial_email_template
 subject: |
-  Your Motion to Dismiss was sent to ${ codefendants[i] }
+  Your Motion to Dismiss was sent to ${ comma_and_list( remote_signers ) }
 content: |
-
   ${ users[0] },
 
-  % if codefendants.number() == 1:
-  We e-mailed ${ codefendants[i] } to ask for their signature on the Motion to Dismiss.
+  % if remote_signers.number() == 1:
+  We e-mailed ${ remote_signers } to ask for their signature on the Motion to Dismiss.
 
-  We will e-mail you when ${ codefendants[i] } has signed.  But, you can [check if ${ codefendants[i] } signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+  We will e-mail you when ${ remote_signers } has signed, but you can also [check if ${ remote_signers } signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   
   % else:
-  We e-mailed ${ codefendants[i] } to ask them to sign your Motion to Dismiss.
+  We e-mailed ${ comma_and_list( remote_signers ) } to ask them to sign your Motion to Dismiss.
 
-  We will e-mail you when everyone has signed.  But, you can [check if ${ codefendants[i] } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+  We will e-mail you when everyone has signed, but you can also [check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   % endif
 ---
 # Must come from an `action`. Needed for security.
@@ -700,14 +701,6 @@ code: |
 #################
 # Interview-specific UI
 #################
-id: signature
-generic object: Individual
-question: |
-  Sign your name, ${ x }
-signature: x.signature
-under: |
-  ${ x }
----
 id: if all signed send email
 # Is requested when people check on the status of the signatures
 code: |
