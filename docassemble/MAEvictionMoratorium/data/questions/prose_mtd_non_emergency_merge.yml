@@ -17,7 +17,7 @@ modules:
 ---
 objects:
   - other_parties: PeopleList.using(ask_number=True)  # Can they be businesses? Does it matter?
-  - codefendants: PeopleList.using(there_are_any=True, complete_attribute='complete')  # Can they be businesses?
+  - codefendants: PeopleList.using(complete_attribute='complete')  # Can they be businesses?
   - signatories: DADict.using(auto_gather=False)
 ---
 comment: |
@@ -74,8 +74,7 @@ code: |
   other_parties.gather()
   users.gathered = True
   users.there_is_another = False
-  if codefendants.is_there == True:
-    codefendants.gather()
+  codefendants.gather()
   courts[0]
   docket_numbers[0]
   preview_screen
@@ -336,7 +335,7 @@ question: |
   Other people listed as DEFENDANT(S)/TENANT(S)/OCCUPANT(S) on the Summons and Complaint can file this motion too.  
 subquestion: |
   Do any defendants want to file this Motion to Dismiss with you?
-yesno: codefendants.is_there
+yesno: codefendants.there_are_any
 ---
 id: codefendants
 question: |
@@ -708,7 +707,7 @@ subquestion: |
   % if all_signatures_in:
     % if len( codefendants ) > 1:
     ${ comma_and_list( codefendants )} have signed.
-    % else:
+    % elif len( codefendants ) > 0:
       ${ codefendants[0] } has signed.
     % endif
   
