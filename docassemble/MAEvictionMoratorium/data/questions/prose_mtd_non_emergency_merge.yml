@@ -74,7 +74,8 @@ code: |
   other_parties.gather()
   users.gathered = True
   users.there_is_another = False
-  codefendants.gather()
+  if codefendants.is_there == True:
+    codefendants.gather()
   courts[0]
   docket_numbers[0]
   preview_screen
@@ -238,7 +239,7 @@ fields:
 ---
 id: eviction address
 question: |
-  What is the address you are being evicted from?
+  What address are you being evicted from?
 fields:
   - Street address: users[0].address.address
     address autocomplete: True
@@ -284,7 +285,7 @@ question: |
 subquestion: |  
   Massachusetts has an eviction moratorium. Most people cannot get evicted in Massachusetts before: 
   
-  * August 18, 2020, or, 
+  * October 18, 2020, or, 
   * Until 45 days after the Governor lifts the state of emergency,
   whichever comes first.  
   
@@ -330,9 +331,16 @@ buttons:
   - File an Answer with MADE: exit
     url: https://www.gbls.org/MADE
 ---
+id: do you have codefendants
+question: |
+  Other people listed as DEFENDANT(S)/TENANT(S)/OCCUPANT(S) on the Summons and Complaint can file this motion too.  
+subquestion: |
+  Do any defendants want to file this Motion to Dismiss with you?
+yesno: codefendants.is_there
+---
 id: codefendants
 question: |
-  Is anyone else filing this motion with you?  
+  Are any other codefendants filing this motion with you?  
 subquestion: |
   % if len(codefendants.elements) > 0:
   You already told us about ${comma_and_list(set(codefendants.elements))}
@@ -341,7 +349,7 @@ yesno: codefendants.there_is_another
 ---
 id: codefendant names
 question: |
-  Who else is filing with you?
+  What is one of your codefendants' name?
 fields:
   - First Name: codefendants[i].name.first
   - Middle Name: codefendants[i].name.middle
@@ -410,7 +418,11 @@ subquestion: |
   * File your motion with the ${courts[0].name}.
   
   During the pandemic, you can [email the motion](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under)
-  to ${other_parties} or their lawyer.
+  to ${other_parties}'s lawyer. If ${other_parties} does not have a lawyer, you can ask ${other_parties} if you can email it to them. If ${other_parties} says no
+  
+  * Print a copy of the motion.
+  * Mail or hand-deliver it to ${other_parties}.
+  
 fields:
   - no label: ready_to_serve
     datatype: yesnoradio
@@ -432,8 +444,7 @@ help:
   content: |
     If your landlord has a lawyer, you need to get a copy to the
     lawyer. If they do not, you need to get it to the landlord.
-    You can email the motion.
-    
+        
     Read more about your [options to deliver by email](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under).    
 ---
 id: service
@@ -553,15 +564,15 @@ content: |
 id: codefendant email
 template: codefendants[i].email_template
 subject: |
-  Your signature needed on a document for ${ users[0] }
+  ${ users[0] } needs your signature on a court document.
 content: |
   Dear ${ codefendants[i] },
 
-  You are requested to sign a sworn statement attesting that ${ users[0] } TODO: WHAT ARE THEY ATTESTING.
+  ${ users[0] } got an Summary Process Summons and Complaint listing your name. Your landlord is trying to evict you.  ${ users[0] } filled out a Motion to Dismiss to tell the court you should not be evicted. If you want to tell the court this too, sign the motion.
 
-  [Tap here to see the document you are being asked to sign](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }).
+  [Tap here to see the Motion to Dismiss](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }).
 
-  [Tap here to sign the thing](${ codefendants[i].cosigner_url })
+  [Tap here to sign the Motion to Dismiss](${ codefendants[i].cosigner_url })
 ---
 id: send user email
 code: |
@@ -609,7 +620,7 @@ generic object: Individual
 question: |
   Sign on a phone
 subquestion: |
-  What number do you want to send this to for a signature?
+  What number do you want to test this to for a signature?
 fields:
   - no label: x.device_number
     default: ${ showifdef( x.attr_name( 'mobile_number' )) }
@@ -628,7 +639,7 @@ code: |
 generic object: Individual
 template: x.sms_device_template
 content:
-  You have chosen to sign on this device, ${ x }. Sign your document at the link below
+  ${ x }, tap the link to sign your Motion to Dismiss.
 
   ${ device_choice_url }
 ---
