@@ -1,5 +1,4 @@
 ---
-# TODO: Use more basic questions?
 # TODO: Explore new `session_local`, etc. features
 ---
 mandatory: True
@@ -64,18 +63,18 @@ code: |
   #exist_other_local_signers = False
   
   # Real code
-  interview_short_title = 'Ask the court for an Eviction Moratorium'  # Will be easier to switch to basic questions in future
-  no_court_email_massaccess_terms
+  interview_short_title = 'Ask the court for an Eviction Moratorium'  # Will be easier to switch to basic questions in future. Can be moved into its own block.
+  no_court_email_massaccess_terms  # Custom
   mtd_intro
   if eviction_choice == "yes":
     kick_out
   users[0].name.first
   users[0].address.address
   users[0].mobile_number
-  other_parties.target_number
-  other_parties.gather()
   users.gathered = True
   users.there_is_another = False
+  other_parties.target_number
+  other_parties.gather()
   codefendants.gather()
   courts[0]
   docket_numbers[0]
