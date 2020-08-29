@@ -135,7 +135,7 @@ subject: Your Eviction Moratorium has been signed by all parties
 content: |
   ${ users[0] },
 
-  Your Eviction Moratorium has now been signed by all of your codefendants.
+  Your Motion to Dismiss was signed by all of your codefendants.
   
   You can [tap to see the signed document](${ final_form.url_for(external=True) })
 ---

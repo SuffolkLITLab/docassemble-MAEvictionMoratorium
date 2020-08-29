@@ -332,9 +332,11 @@ buttons:
 ---
 id: do you have codefendants
 question: |
-  Other people listed as DEFENDANT(S)/TENANT(S)/OCCUPANT(S) on the Summons and Complaint can file this motion too.  
+  Co-defendants  
 subquestion: |
-  Do any defendants want to file this Motion to Dismiss with you?
+  Other people listed as DEFENDANT(S)/TENANT(S)/OCCUPANT(S) on the Summons and Complaint can file this motion too. 
+  
+  Do you want any co-defendants to file this Motion to Dismiss with you?
 yesno: codefendants.there_are_any
 ---
 id: codefendants
@@ -430,8 +432,8 @@ fields:
     choices:
       - By email: electronic mail
       - By mail (with postage paid by me): first class mail, postage prepaid
-      - other: other
-      - I do not know: not_know
+      - other: _________________________
+      - I do not know: _______________________
     show if:
       ready_to_serve
   - Other method: service_method
@@ -557,7 +559,7 @@ id: sms template multiuser
 template: codefendants[i].sms_template
 content: |
   Dear ${ codefendants[i] },
-  Your signature needed on a document for ${ users[0] }.  
+  ${ users[0] } filled out a Motion to Dismiss your eviction case. Please review and sign if you want to file it with ${ users[0] }.  
   ${ codefendants[i].cosigner_url }
 ---
 id: codefendant email
@@ -567,7 +569,7 @@ subject: |
 content: |
   Dear ${ codefendants[i] },
 
-  ${ users[0] } got an Summary Process Summons and Complaint listing your name. Your landlord is trying to evict you.  ${ users[0] } filled out a Motion to Dismiss to tell the court you should not be evicted. If you want to tell the court this too, sign the motion.
+  ${ users[0] } got a Summary Process Summons and Complaint listing your name. Your landlord is trying to evict you.  ${ users[0] } filled out a Motion to Dismiss to tell the court you should not be evicted. If you want to tell the court this too, sign the motion.
 
   [Tap here to see the Motion to Dismiss](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }).
 
@@ -581,20 +583,20 @@ code: |
 id: user email before signatures
 template: initial_email_template
 subject: |
-  Your Eviction Moratorium is out for signature.
+  Your Motion to Dismiss was sent to ${ codefendants[i] }
 content: |
 
   ${ users[0] },
 
   % if codefendants.number() == 1:
-  We have e-mailed your codefendant to ask for a signature on the Eviction Moratorium.
+  We e-mailed ${ codefendants[i] } to ask for their signature on the Motion to Dismiss.
 
-  We will e-mail you when the codefendant has signed, but in the meantime you can [check the status of your document](${ interview_url_action('check_status', party_id=users[0].id) }).
+  We will e-mail you when ${ codefendants[i] } has signed.  But, you can [check if ${ codefendants[i] } signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   
   % else:
-  We have e-mailed your codefendants to request that they sign the Eviction Moratorium.
+  We e-mailed ${ codefendants[i] } to ask them to sign your Motion to Dismiss.
 
-  We will e-mail you when all the codefendants have signed.  You can [check the status of your document](${ interview_url_action('check_status', party_id=users[0].id) }) to see who still has not signed.
+  We will e-mail you when everyone has signed.  But, you can [check if ${ codefendants[i] } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   % endif
 ---
 # Must come from an `action`. Needed for security.
