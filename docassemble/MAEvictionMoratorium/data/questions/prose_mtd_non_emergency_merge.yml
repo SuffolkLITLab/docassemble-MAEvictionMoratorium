@@ -692,7 +692,6 @@ code: |
 ---
 id: signature status
 event: users[0].status
-prevent going back: True
 reconsider:
   - get_stored_signatures
   - all_signatures_in
