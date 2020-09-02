@@ -37,30 +37,30 @@ id: interview order
 code: |
   interview_presets
   
-  ## Skipping for speeding up tests
-  #download_only_intro_screen = True
-  #mtd_intro = True
-  #eviction_choice = "no"
-  #other_parties.target_number = '1'
-  #docket_numbers[0] = '111'
-  #preview_screen = True
-  #users[0].name.first = 'd'
-  #users[0].name.last = 'd'
-  #users[0].address.address = '12 Dudley Street'
-  #users[0].address.unit = ''
-  #users[0].address.city = 'Boston'
-  #users[0].address.state = 'Massachusetts'
-  #users[0].address.zip = '02127'
-  #other_parties[0].name.first = 'v'
-  #codefendants[0].name.first = 'c'
-  ##codefendants[1].name.first = 'f'
-  ##codefendants[2].name.first = 's'
-  #courts[0] = local_housing_court
-  #ready_to_serve = True
-  #service_method = 'first class mail, postage prepaid'
-  #service_date = '12/12/2020'
-  #will_proxy_sign = False
-  #exist_other_local_signers = False
+  # Skipping for speeding up tests
+  download_only_intro_screen = True
+  mtd_intro = True
+  eviction_choice = "no"
+  other_parties.target_number = '1'
+  docket_numbers[0] = '111'
+  preview_screen = True
+  users[0].name.first = 'd'
+  users[0].name.last = 'd'
+  users[0].address.address = '12 Dudley Street'
+  users[0].address.unit = ''
+  users[0].address.city = 'Boston'
+  users[0].address.state = 'Massachusetts'
+  users[0].address.zip = '02127'
+  other_parties[0].name.first = 'v'
+  codefendants[0].name.first = 'c'
+  codefendants[1].name.first = 'f'
+  codefendants[2].name.first = 's'
+  courts[0] = local_housing_court
+  ready_to_serve = True
+  service_method = 'first class mail, postage prepaid'
+  service_date = '12/12/2020'
+  will_proxy_sign = False
+  exist_other_local_signers = False
   
   # Real code
   download_only_intro_screen
@@ -540,7 +540,7 @@ content: |
 
   [Tap here to sign the Motion to Dismiss](${ codefendants[i].cosigner_url })
 ---
-id: send user email
+id: notifiy of cosigner links sent
 code: |
   if remote_signers.number() > 0 and defined( 'users[0].email' ) and users[0].email:
     users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
@@ -554,15 +554,12 @@ content: |
   ${ users[0] },
 
   % if remote_signers.number() == 1:
-  We e-mailed ${ remote_signers } to ask for their signature on the Motion to Dismiss.
-
-  We will e-mail you when ${ remote_signers } has signed, but you can also [check if ${ remote_signers } signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
-  
+  We e-mailed ${ remote_signers } to ask for their signature on the Motion to Dismiss. We will e-mail you when they have signed.
   % else:
-  We e-mailed ${ comma_and_list( remote_signers ) } to ask them to sign your Motion to Dismiss.
-
-  We will e-mail you when everyone has signed, but you can also [check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+  We e-mailed ${ comma_and_list( remote_signers ) } to ask them to sign your Motion to Dismiss. We will e-mail you when everyone has signed.
   % endif
+  
+  You can also [check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
 ---
 # TODO: Check if user email is going to be required in this flow
 code: |
@@ -571,7 +568,7 @@ code: |
 ---
 event: send_final_email
 code: |
-  if remote_signers.number() > 0 and defined( 'users[0].email' ) and users[0].email:
+  if defined( 'users[0].email' ) and users[0].email:
     final_email_result = send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
   background_response()
 ---
@@ -583,7 +580,11 @@ subject: Your Eviction Moratorium has been signed by all parties
 content: |
   ${ users[0] },
 
-  Your Motion to Dismiss was signed by all of your codefendants.
+  % if codefendants.number() > 0:
+  Your Motion to Dismiss a Non-Essential Eviction was signed by ${ comma_and_list( codefendants ) }.
+  % else:
+  Your Motion to Dismiss a Non-Essential Eviction is ready.
+  % endif
   
   You can [tap to see the signed document](${ final_form.url_for(external=True) })
 ---
