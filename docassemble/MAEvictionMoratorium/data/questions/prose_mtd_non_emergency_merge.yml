@@ -540,6 +540,7 @@ include:
 # Keep in as the default
 code: |
   # When the saved redis data will expire
+  # days * hours * minutes * seconds * milliseconds
   remote_siganure_expiration_ms = 7 * 24 * 60 * 60 * 1000  # 1 week
 ---
 # Keep in as the default
