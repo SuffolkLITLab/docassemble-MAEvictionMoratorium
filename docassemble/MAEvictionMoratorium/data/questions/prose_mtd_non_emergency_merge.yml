@@ -63,7 +63,7 @@ code: |
   #exist_other_local_signers = False
   
   # Real code
-  interview_short_title = 'Ask the court for an Eviction Moratorium'  # Will be easier to switch to basic questions in future. Can be moved into its own block.
+  interview_short_title = 'Ask the court for a Motion to Dismiss a Non-Essential Eviction'  # Will be easier to switch to basic questions in future. Can be moved into its own block.
   no_court_email_massaccess_terms  # Custom
   mtd_intro
   if eviction_choice == "yes":
