@@ -247,14 +247,13 @@ subquestion: |
 fields: 
   - no label: other_parties.target_number
     datatype: integer
+    default: 1
     min: 1
 ---
 id: plaintiff names
 question: |
   % if other_parties.target_number == 1:
     What is the plaintiff's name?
-  % elif i==0:
-    What is the first plaintiff's name?
   % else:
     What is the ${ordinal(i)} plaintiff's name?
   % endif 
