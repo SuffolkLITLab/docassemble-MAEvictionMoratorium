@@ -52,7 +52,6 @@ code: |
       if signing_parties[ signer.id ][ 'has_signed' ]:
         signer.has_signed = signing_parties[ signer.id ][ 'has_signed' ]
         signer.signature = signing_parties[ signer.id ][ 'signature' ]
-        log( has_signed, 'console' )
 
   get_stored_signatures = True
 ---
