@@ -399,18 +399,32 @@ fields:
       - Email: email
       - Text: text
   - What email should we use to ask for their signature?: codefendants[i].signature_email
+    default: ${ codefendants[i].email }
     js show if: |
       val("codefendants[i].send_method") == "email"
   - What number should we text to ask for their signature?: codefendants[i].signature_number
+    default: ${ codefendants[i].mobile_number }
     js show if: |
       val("codefendants[i].send_method") == "text"
+---
+id: cosigner contact info
+question: |
+  How should the court contact ${ codefendants[i] }?
+subquestion: |
+  Make sure you have ${ codefendants[i].familiar() }'s permission to put this on the form.
+fields:
+  - Mobile number: codefendants[i].mobile_number
+    required: False
+  - Other phone number: codefendants[i].phone_number
+    required: False
+  - Email address: codefendants[i].email    
+    datatype: email
+    required: False
 ---
 id: get codefendant info
 code: |
   codefendants[i].name.first
-  #codefendants[i].send_method
-  #codefendants[i].signature
-  #codefendants[i].signature_date
+  codefendants[i].mobile_number
   codefendants[i].complete = True
 ---
 id: placeholder
