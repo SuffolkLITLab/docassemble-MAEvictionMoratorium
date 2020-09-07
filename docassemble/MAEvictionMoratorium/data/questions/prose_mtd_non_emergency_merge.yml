@@ -38,27 +38,27 @@ code: |
   interview_presets
   
   # Skipping for speeding up tests
-  #no_court_email_massaccess_terms = True
-  #mtd_intro = True
-  #eviction_choice = "no"
-  #other_parties.target_number = '1'
-  #docket_numbers[0] = '111'
-  #preview_screen = True
-  #users[0].name.first = 'd'
-  #users[0].name.last = 'd'
-  #users[0].address.address = '12 Dudley Street'
-  #users[0].address.unit = ''
-  #users[0].address.city = 'Boston'
-  #users[0].address.state = 'Massachusetts'
-  #users[0].address.zip = '02127'
-  #other_parties[0].name.first = 'v'
+  no_court_email_massaccess_terms = True
+  mtd_intro = True
+  eviction_choice = "no"
+  other_parties.target_number = '1'
+  docket_numbers[0] = '111'
+  users[0].name.first = 'd'
+  users[0].name.last = 'd'
+  users[0].address.address = '12 Dudley Street'
+  users[0].address.unit = ''
+  users[0].address.city = 'Boston'
+  users[0].address.state = 'Massachusetts'
+  users[0].address.zip = '02127'
+  other_parties[0].name.first = 'v'
   #codefendants[0].name.first = 'c'
   #codefendants[1].name.first = 'f'
   #codefendants[2].name.first = 's'
-  #courts[0] = local_housing_court
+  courts[0] = local_housing_court
   #ready_to_serve = True
   #service_method = 'first class mail, postage prepaid'
   #service_date = '12/12/2020'
+  #preview_screen = True
   #will_proxy_sign = False
   #exist_other_local_signers = False
   
@@ -78,9 +78,6 @@ code: |
   codefendants.gather()
   courts[0]
   docket_numbers[0]
-  preview_screen
-  # Do you want to send this to C to sign or did you get permission to sign it for them?
-  form_to_sign  # Just have to make sure this is happily defined here
 
   # Get signers that will sign on this device
   local_signers
@@ -93,8 +90,11 @@ code: |
     remote_signer.send_method
 
   ready_to_serve
-  if not service_method == "not_know":
-    service_date
+  if ready_to_serve:
+    if service_method != "not_know":
+      service_date
+
+  preview_screen  # Must define form_to_sign=
 
   #basic_questions_signature_flow # user
   users[0].sign_on_device
