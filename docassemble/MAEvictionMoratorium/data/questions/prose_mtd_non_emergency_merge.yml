@@ -38,29 +38,29 @@ code: |
   interview_presets
   
   # Skipping for speeding up tests
-  download_only_intro_screen = True
-  mtd_intro = True
-  eviction_choice = "no"
-  other_parties.target_number = '1'
-  docket_numbers[0] = '111'
-  preview_screen = True
-  users[0].name.first = 'd'
-  users[0].name.last = 'd'
-  users[0].address.address = '12 Dudley Street'
-  users[0].address.unit = ''
-  users[0].address.city = 'Boston'
-  users[0].address.state = 'Massachusetts'
-  users[0].address.zip = '02127'
-  other_parties[0].name.first = 'v'
-  codefendants[0].name.first = 'c'
-  codefendants[1].name.first = 'f'
-  codefendants[2].name.first = 's'
-  courts[0] = local_housing_court
-  ready_to_serve = True
-  service_method = 'first class mail, postage prepaid'
-  service_date = '12/12/2020'
-  will_proxy_sign = False
-  exist_other_local_signers = False
+  #download_only_intro_screen = True
+  #mtd_intro = True
+  #eviction_choice = "no"
+  #other_parties.target_number = '1'
+  #docket_numbers[0] = '111'
+  #preview_screen = True
+  #users[0].name.first = 'd'
+  #users[0].name.last = 'd'
+  #users[0].address.address = '12 Dudley Street'
+  #users[0].address.unit = ''
+  #users[0].address.city = 'Boston'
+  #users[0].address.state = 'Massachusetts'
+  #users[0].address.zip = '02127'
+  #other_parties[0].name.first = 'v'
+  #codefendants[0].name.first = 'c'
+  #codefendants[1].name.first = 'f'
+  #codefendants[2].name.first = 's'
+  #courts[0] = local_housing_court
+  #ready_to_serve = True
+  #service_method = 'first class mail, postage prepaid'
+  #service_date = '12/12/2020'
+  #will_proxy_sign = False
+  #exist_other_local_signers = False
   
   # Real code
   download_only_intro_screen
