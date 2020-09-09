@@ -70,7 +70,7 @@ code: |
   # TODO: Should this be `signature_number` and `signature_email`?
   if x.send_method == 'text': 
     x.message_result = send_sms(task='send sms_template', to=x.signature_number, template=x.sms_template)
-  else:
+  elif x.send_method == 'email':
     x.message_result = send_email(to=x.signature_email, template=x.email_template)
   x.signature_url_was_sent = True
 ---
