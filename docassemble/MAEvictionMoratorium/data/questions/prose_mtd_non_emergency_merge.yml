@@ -394,20 +394,6 @@ fields:
     datatype: email
     required: False
 ---
-id: cosigner court contact info
-question: |
-  How should the court contact ${ codefendants[i] }?
-subquestion: |
-  Make sure you have ${ codefendants[i].familiar() }'s permission to put this on the form.
-fields:
-  - Mobile number: codefendants[i].mobile_number
-    required: False
-  - Other phone number: codefendants[i].phone_number
-    required: False
-  - Email address: codefendants[i].email    
-    datatype: email
-    required: False
----
 id: get codefendant info
 code: |
   codefendants[i].name.first
