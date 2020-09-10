@@ -73,21 +73,20 @@ code: |
   users[0].mobile_number
   users.gathered = True
   users.there_is_another = False
+  codefendants.gather()
+  # TODO: Move these below all the `signers` stuff for clarity
   other_parties.target_number
   other_parties.gather()
-  codefendants.gather()
   courts[0]
   docket_numbers[0]
-
+  
   # Get signers that will sign on this device
+  who_proxy_sign_for
+  who_else_on_device
   local_signers
   
-  # Also used for sending out for signatures (multiuser code)
-  remote_signers = all_signers.difference(local_signers)
-  # Cleaner way to do this?
-  # Ask after user signs?
-  for remote_signer in remote_signers:
-    remote_signer.send_method
+  # Used in here and for sending out for signatures (multiuser code)
+  remote_signers
 
   ready_to_serve
   if ready_to_serve:
@@ -100,6 +99,20 @@ code: |
   preview_screen  # Must define form_to_sign=
 
   users[0].sign_on_device
+---
+code: |
+  who_proxy_sign_for = [codef for codef in codefendants if codef.sign_method == 'proxy']
+---
+code: |
+  who_else_on_device = [codef for codef in codefendants if codef.sign_method == 'local']
+---
+code: |
+  # Get signers that will sign on this device
+  local_signers = users + who_proxy_sign_for + who_else_on_device
+---
+code: |
+  # Used in here and for sending out for signatures (multiuser code)
+  remote_signers = all_signers.difference(local_signers)
 ---
 # After the user signs, the links for the co-signers get sent
 event: x.after_signature
@@ -359,23 +372,27 @@ fields:
 id: how to send to codefendant
 # TODO: Do we need to add contact info (number/email) for co-signer on court form?
 question: |
-  Do you want to send this to ${ codefendants[i] } by email or text?
+  How will ${ codefendants[i] } sign this document?
+subquestion: |
+  When this form is ready, how do you want to get their signature?
 fields:
-  - no label: codefendants[i].send_method
+  - no label: codefendants[i].sign_method
     datatype: radio
     choices:
-      - Email: email
-      - Text: text
+      - The form should email them a link: email
+      - The form should text them a link: text
+      - I have their permission to sign for them: proxy
+      - They are with me and will sign on the same device as me: local
   - What email should we use to ask for their signature?: codefendants[i].signature_email
     default: ${ codefendants[i].email }
     js show if: |
-      val("codefendants[i].send_method") == "email"
+      val("codefendants[i].sign_method") == "email"
   - What number should we text to ask for their signature?: codefendants[i].signature_number
     default: ${ codefendants[i].mobile_number }
     js show if: |
-      val("codefendants[i].send_method") == "text"
+      val("codefendants[i].sign_method") == "text"
 ---
-id: cosigner contact info
+id: cosigner court contact info
 question: |
   How should the court contact ${ codefendants[i] }?
 subquestion: |
@@ -393,6 +410,7 @@ id: get codefendant info
 code: |
   codefendants[i].name.first
   codefendants[i].mobile_number
+  codefendants[i].send_method = codefendants[i].sign_method
   codefendants[i].complete = True
 ---
 id: placeholder
