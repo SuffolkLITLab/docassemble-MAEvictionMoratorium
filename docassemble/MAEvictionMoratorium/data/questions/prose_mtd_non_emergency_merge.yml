@@ -91,30 +91,15 @@ code: |
 
   ready_to_serve
   if ready_to_serve:
-    if service_method != "not_know":
+    if service_method == '______________________________________________':
+      service_date = '_______________________'
+    else:
       service_date
+      
 
   preview_screen  # Must define form_to_sign=
 
-  #basic_questions_signature_flow # user
   users[0].sign_on_device
-  
-  # handled in .after_signature
-  #send_for_codefendant_signatures
-  
-  ## Can only include this code once per interview.
-  ## Cannot be commented out, must be deleted.
-  ## Sends the emails and does whatever other `background_action`s are queued up.
-  # Might need to include process + _ + action + ()
-  #
-  #log( 'got here', 'console' )
-  #for local in local_signers:
-  #  local.signature
-  #  local.notified = True  # Not sure we need this anymore
-  #
-  ## Makes sure users[0].status is the only page the user can see.
-  ##force_ask('users[0].status')
-  #users[0].status
 ---
 # After the user signs, the links for the co-signers get sent
 event: x.after_signature
@@ -124,17 +109,13 @@ code: |
   set_initial_redis_data
   request_remote_signatures
   
-  # Request other signatures under here
-  # Possibly using action arguments when that's worked out
-  
-  # Can only include this code once per interview.
+  # Can only include proccessing action once per interview.
   # Cannot be commented out.
   # Sends the emails and does whatever other `background_action`s are queued up.
   process_action()  # Needed? Probably - we want the requests sent now
   
   for local in local_signers:
     local.signature
-    local.notified = True  # Not sure we need this anymore
   
   users[0].status
 ---
@@ -169,19 +150,6 @@ comment: |
     for index, user in enumerate(users):
       signature_fields.append('users[' + str(index) + '].signature')
     update_signature_fields = True
----
-comment: |
-  id: codefendant name
-  question: |
-    What is the name and e-mail address
-    % if i == 0:
-    of a
-    % else:
-    of the ${ ordinal(i) }
-    % endif
-    witness who can attest that you like ${ user.favorite_fruit }?
-  fields:
-    - Name: witnesses[i].name.text
 ---
 template: additional_terms_of_agreement_instructions
 content: |
@@ -475,7 +443,7 @@ fields:
       - By email: electronic mail
       - By mail (with postage paid by me): first class mail, postage prepaid
       - By delivering it to ${comma_and_list(other_parties)} in person: hand delivery
-      - I do not know: _______________________
+      - I do not know: ______________________________________________
     show if:
       ready_to_serve
   - Other method: service_method
@@ -617,9 +585,9 @@ content: |
 
   [Tap here to sign the Motion to Dismiss](${ codefendants[i].cosigner_url })
 ---
-id: send user email
+id: notifiy of cosigner links sent
 code: |
-  if remote_signers.number() > 0:
+  if remote_signers.number() > 0 and defined( 'users[0].email' ) and users[0].email:
     users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
   users[0].was_notified_of_cosigner_messages = True
 ---
@@ -631,15 +599,39 @@ content: |
   ${ users[0] },
 
   % if remote_signers.number() == 1:
-  We e-mailed ${ remote_signers } to ask for their signature on the Motion to Dismiss.
-
-  We will e-mail you when ${ remote_signers } has signed, but you can also [check if ${ remote_signers } signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
-  
+  We e-mailed ${ remote_signers } to ask for their signature on the Motion to Dismiss. We will e-mail you when they have signed.
   % else:
-  We e-mailed ${ comma_and_list( remote_signers ) } to ask them to sign your Motion to Dismiss.
-
-  We will e-mail you when everyone has signed, but you can also [check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+  We e-mailed ${ comma_and_list( remote_signers ) } to ask them to sign your Motion to Dismiss. We will e-mail you when everyone has signed.
   % endif
+  
+  You can also [check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+---
+# TODO: Check if user email is going to be required in this flow
+code: |
+  background_action('send_final_email')
+  final_email_sent = True
+---
+event: send_final_email
+code: |
+  if defined( 'users[0].email' ) and users[0].email:
+    final_email_result = send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+  background_response()
+---
+id: all signed email template
+reconsider:
+  - final_form
+template: final_email_template
+subject: Your Eviction Moratorium has been signed by all parties
+content: |
+  ${ users[0] },
+
+  % if codefendants.number() > 0:
+  Your Motion to Dismiss a Non-Essential Eviction was signed by ${ comma_and_list( codefendants ) }.
+  % else:
+  Your Motion to Dismiss a Non-Essential Eviction is ready.
+  % endif
+  
+  You can [tap to see the signed document](${ final_form.url_for(external=True) })
 ---
 # Must come from an `action`. Needed for security.
 event: check_status
