@@ -74,24 +74,19 @@ code: |
   users.gathered = True
   users.there_is_another = False
   codefendants.gather()
+  # TODO: Move these below all the `signers` stuff for clarity
   other_parties.target_number
   other_parties.gather()
   courts[0]
   docket_numbers[0]
   
-  who_proxy_sign_for = [codef for codef in codefendants if codef.sign_method == 'proxy']
-  who_else_on_device = [codef for codef in codefendants if codef.sign_method == 'local']
-
-  will_proxy_sign = len(who_proxy_sign_for) > 0
   # Get signers that will sign on this device
-  local_signers = users + who_proxy_sign_for + who_else_on_device
+  who_proxy_sign_for
+  who_else_on_device
+  local_signers
   
-  # Also used for sending out for signatures (multiuser code)
-  remote_signers = all_signers.difference(local_signers)
-  # Cleaner way to do this?
-  # Ask after user signs?
-  for remote_signer in remote_signers:
-    remote_signer.send_method
+  # Used in here and for sending out for signatures (multiuser code)
+  remote_signers
 
   ready_to_serve
   if ready_to_serve:
@@ -101,6 +96,20 @@ code: |
   preview_screen  # Must define form_to_sign=
 
   users[0].sign_on_device
+---
+code: |
+  who_proxy_sign_for = [codef for codef in codefendants if codef.sign_method == 'proxy']
+---
+code: |
+  who_else_on_device = [codef for codef in codefendants if codef.sign_method == 'local']
+---
+code: |
+  # Get signers that will sign on this device
+  local_signers = users + who_proxy_sign_for + who_else_on_device
+---
+code: |
+  # Used in here and for sending out for signatures (multiuser code)
+  remote_signers = all_signers.difference(local_signers)
 ---
 # After the user signs, the links for the co-signers get sent
 event: x.after_signature
