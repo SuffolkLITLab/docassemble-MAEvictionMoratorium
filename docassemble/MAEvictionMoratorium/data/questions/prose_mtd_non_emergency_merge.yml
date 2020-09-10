@@ -91,8 +91,11 @@ code: |
 
   ready_to_serve
   if ready_to_serve:
-    if service_method != "not_know":
+    if service_method == '______________________________________________':
+      service_date = '_______________________'
+    else:
       service_date
+      
 
   preview_screen  # Must define form_to_sign=
 
@@ -440,7 +443,7 @@ fields:
       - By email: electronic mail
       - By mail (with postage paid by me): first class mail, postage prepaid
       - other: _________________________
-      - I do not know: _______________________
+      - I do not know: ______________________________________________
     show if:
       ready_to_serve
   - Other method: service_method
