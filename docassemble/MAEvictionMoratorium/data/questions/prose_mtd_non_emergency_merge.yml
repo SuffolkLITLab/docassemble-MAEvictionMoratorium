@@ -618,7 +618,7 @@ id: all signed email template
 reconsider:
   - final_form
 template: final_email_template
-subject: Your Eviction Moratorium is ready
+subject: Your Eviction Moratorium is ready to print or email
 content: |
   ${ users[0] },
 
