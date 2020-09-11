@@ -59,8 +59,6 @@ code: |
   #service_method = 'first class mail, postage prepaid'
   #service_date = '12/12/2020'
   #preview_screen = True
-  #will_proxy_sign = False
-  #exist_other_local_signers = False
   
   # Real code
   interview_short_title = 'Ask the court for a Motion to Dismiss a Non-Essential Eviction'  # Will be easier to switch to basic questions in future. Can be moved into its own block.
@@ -74,8 +72,8 @@ code: |
   # Set signers that will sign on this device or not
   who_proxy_sign_for
   who_else_on_device
-  local_signers
-  remote_signers  # Used multiuser signatuer code, but also in here
+  local_signers  # codefendants signing on user's device
+  remote_signers  # Used in multiuser signatuer code, but also in here
   
   if eviction_choice == "yes":
     kick_out
@@ -316,10 +314,10 @@ fields:
   - no label: eviction_choice
     datatype: radio
     choices:
-      - ${ not_risking_health_and_saftey_text }: no
-      - ${ yes_risking_health_and_saftey_text }: yes
+      - ${ not_risking_health_and_safety_text }: no
+      - ${ yes_risking_health_and_safety_text }: yes
 ---
-template: not_risking_health_and_saftey_text
+template: not_risking_health_and_safety_text
 content: |
   % if codefendants.number() > 0:
   No, we are not risking someone's health and safety
@@ -327,7 +325,7 @@ content: |
   No, I am not risking someone's health and safety
   % endif
 ---
-template: yes_risking_health_and_saftey_text
+template: yes_risking_health_and_safety_text
 content: |
   % if codefendants.number() > 0:
   Yes, we are risking someone's health and safety
