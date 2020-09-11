@@ -66,28 +66,27 @@ code: |
   interview_short_title = 'Ask the court for a Motion to Dismiss a Non-Essential Eviction'  # Will be easier to switch to basic questions in future. Can be moved into its own block.
   no_court_email_massaccess_terms  # Custom
   mtd_intro
-  if eviction_choice == "yes":
-    kick_out
   users[0].name.first
-  users[0].address.address
-  users[0].mobile_number
   users.gathered = True
   users.there_is_another = False
+  
   codefendants.gather()
-  # TODO: Move these below all the `signers` stuff for clarity
+  # Set signers that will sign on this device or not
+  who_proxy_sign_for
+  who_else_on_device
+  local_signers
+  remote_signers  # Used multiuser signatuer code, but also in here
+  
+  if eviction_choice == "yes":
+    kick_out
+    
+  users[0].address.address
+  users[0].mobile_number
   other_parties.target_number
   other_parties.gather()
   courts[0]
   docket_numbers[0]
   
-  # Get signers that will sign on this device
-  who_proxy_sign_for
-  who_else_on_device
-  local_signers
-  
-  # Used in here and for sending out for signatures (multiuser code)
-  remote_signers
-
   ready_to_serve
   if ready_to_serve:
     if service_method == '______________________________________________':
@@ -95,9 +94,7 @@ code: |
     else:
       service_date
       
-
-  preview_screen  # Must define form_to_sign=
-
+  preview_screen  # Must define form_to_sign
   users[0].sign_on_device
 ---
 code: |
@@ -305,7 +302,7 @@ subquestion: |
   This interview helps defend against an eviction your landlord should not have filed.
 continue button field: mtd_intro
 ---
-id: agree risked health and safety
+id: is this risking saftey
 question: |
   Are you risking someone's health and safety?
 subquestion: |
@@ -314,13 +311,29 @@ subquestion: |
   * Involved in criminal activity, or 
   * Breaking your lease,
 
-  in a way that risks someone's health and safety. 
+  in a way that risks someone's health and safety?
 fields:
   - no label: eviction_choice
     datatype: radio
     choices:
-      - No, I am not risking someone's health and safety.: no
-      - Yes, I am risking someone's health and safety.: yes
+      - ${ not_risking_health_and_saftey_text }: no
+      - ${ yes_risking_health_and_saftey_text }: yes
+---
+template: not_risking_health_and_saftey_text
+content: |
+  % if codefendants.number() > 0:
+  No, we are not risking someone's health and safety
+  % else:
+  No, I am not risking someone's health and safety
+  % endif
+---
+template: yes_risking_health_and_saftey_text
+content: |
+  % if codefendants.number() > 0:
+  Yes, we are risking someone's health and safety
+  % else:
+  Yes, I am risking someone's health and safety
+  % endif
 ---
 id: kick out
 event: kick_out
