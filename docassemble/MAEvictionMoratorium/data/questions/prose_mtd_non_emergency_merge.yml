@@ -366,7 +366,11 @@ yesno: codefendants.there_is_another
 ---
 id: codefendant names
 question: |
-  What is one of your codefendants' name?
+  % if i == 0:
+  What is your codefendant's name?
+  % else:
+  What is your ${ ordinal(i) } codefendant's name?
+  % endif
 fields:
   - First Name: codefendants[i].name.first
   - Middle Name: codefendants[i].name.middle
