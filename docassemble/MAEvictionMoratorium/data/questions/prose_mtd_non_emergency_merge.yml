@@ -653,7 +653,7 @@ id: all signed email template
 reconsider:
   - final_form
 template: final_email_template
-subject: Your Eviction Moratorium has been signed by all parties
+subject: Your Eviction Moratorium is ready to print or email
 content: |
   ${ users[0] },
 
@@ -663,7 +663,7 @@ content: |
   Your Motion to Dismiss a Non-Essential Eviction is ready.
   % endif
   
-  You can [tap to see the signed document](${ final_form.url_for(external=True) })
+  You can [tap to see the signed document](${ final_form.url_for(external=True) }).
 ---
 # Must come from an `action`. Needed for security.
 event: check_status
