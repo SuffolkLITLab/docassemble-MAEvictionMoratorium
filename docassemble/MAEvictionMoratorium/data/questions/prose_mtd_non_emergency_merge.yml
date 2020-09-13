@@ -536,6 +536,8 @@ subquestion: |
 attachment code: motion_to_dismiss_for_non_essential_eviction  
 progress: 100
 ---
+reconsider:
+  - form_to_sign
 id: preview
 question: |
   Preview your motion
@@ -550,6 +552,8 @@ continue button field: preview_screen
 ---
 code: |
   form_to_sign = pdf_concatenate(preview_doc, filename="dismiss-non-essential-eviction-preview.pdf")
+  # TODO: Discuss if this should always be set or not
+  form_to_sign.set_attributes(private=False, persistent=True)
 ---
 attachment:
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx
@@ -582,8 +586,9 @@ code: |
   # DEVELOPERS: Use the name of your own remote entrypoint file
   remote_signer_url_end = user_info().package + ':remote_signer_entrypoint.yml'
 ---
+reconsider:
+  - form_to_sign
 code: |
-  form_to_sign.set_attributes(persistent=True, private=False)
   # Whatever info you want to be able to use for the co-signers' interview
   custom_signature_redis_data = {
     'user_names': str(users),
@@ -598,6 +603,8 @@ content: |
   ${ codefendants[i].cosigner_url }
 ---
 id: codefendant email
+reconsider:
+  - form_to_sign
 template: codefendants[i].email_template
 subject: |
   ${ users[0] } needs your signature on a court document.
@@ -606,9 +613,9 @@ content: |
 
   ${ users[0] } got a Summary Process Summons and Complaint listing your name. Your landlord is trying to evict you.  ${ users[0] } filled out a Motion to Dismiss to tell the court you should not be evicted. If you want to tell the court this too, sign the motion.
 
-  [Tap here to see the Motion to Dismiss](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }).
+  [Tap here to look at a preview the final Motion to Dismiss](${ form_to_sign.url_for(external=True) }).
 
-  [Tap here to sign the Motion to Dismiss](${ codefendants[i].cosigner_url })
+  [Tap here to sign the document](${ codefendants[i].cosigner_url }).
 ---
 id: notifiy of cosigner links sent
 code: |
