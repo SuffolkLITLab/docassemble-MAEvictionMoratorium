@@ -101,18 +101,15 @@ code: |
   users[0].sign_on_device
 ---
 code: |
+  all_signers = users + codefendants
+  who_sign_with_pen = [codef for codef in codefendants if codef.sign_method == 'physical']
+  # Get signatures that will taken on this device
   who_proxy_sign_for = [codef for codef in codefendants if codef.sign_method == 'proxy']
----
-code: |
   who_else_on_device = [codef for codef in codefendants if codef.sign_method == 'local']
----
-code: |
-  # Get signers that will sign on this device
   local_signers = users + who_proxy_sign_for + who_else_on_device
----
-code: |
   # Used in here and for sending out for signatures (multiuser code)
-  remote_signers = all_signers.difference(local_signers)
+  remote_signers = all_signers.difference(local_signers + who_sign_with_pen)
+  collect_signer_types = True
 ---
 # After the user signs, the links for the co-signers get sent
 event: x.after_signature
@@ -153,9 +150,6 @@ code: |
 ---
 code: |
   download_titles = ['dismiss-non-essential-eviction.pdf']
----
-code: |
-  all_signers = users + codefendants
 ---
 comment: |
   code: |
@@ -377,24 +371,24 @@ fields:
     required: False
 ---
 id: how to send to codefendant
-# TODO: Do we need to add contact info (number/email) for co-signer on court form?
 question: |
-  How will ${ codefendants[i] } sign this document?
+  How will ${ codefendants[i] } sign this Motion to Dismiss?
 subquestion: |
-  When this form is ready, how do you want to get their signature?
+  Your codefendants must sign this motion before you give it to the court. How will ${ codefendants[i] } sign this Motion to Dismiss?
 fields:
   - no label: codefendants[i].sign_method
     datatype: radio
     choices:
-      - The form should email them a link: email
-      - The form should text them a link: text
-      - I have their permission to sign for them: proxy
-      - They are with me and will sign on the same device as me: local
-  - What email should we use to ask for their signature?: codefendants[i].signature_email
+      - Send a link by **email** so they can draw their signature on a computer or phone screen: email
+      - Send a link by **text** so they can draw their signature on their phone: text
+      - I asked for permission to sign ${ codefendants[i] }'s name on this motion. ${ codefendants[i] } said "yes," so I will sign for ${ codefendants[i] }: proxy
+      - ${ codefendants[i] } is here with me. ${ codefendants[i] } will sign near the end of this interview: local
+      - I will print my motion out when I am done with the interview and ${ codefendants[i] } will sign on the paper copy before I give it to the court: physical
+  - What email should we use to ask for ${ codefendants[i] }'s signature?: codefendants[i].signature_email
     default: ${ codefendants[i].email }
     js show if: |
       val("codefendants[i].sign_method") == "email"
-  - What number should we text to ask for their signature?: codefendants[i].signature_number
+  - What number should we text to ask for ${ codefendants[i] }'s signature?: codefendants[i].signature_number
     default: ${ codefendants[i].mobile_number }
     js show if: |
       val("codefendants[i].sign_method") == "text"
