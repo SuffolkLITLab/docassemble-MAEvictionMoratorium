@@ -98,12 +98,14 @@ code: |
 code: |
   all_signers = users + codefendants
   who_sign_with_pen = [codef for codef in codefendants if codef.sign_method == 'physical']
+  all_digital_codefs = [codef for codef in codefendants if codef not in who_sign_with_pen]
   # Get signatures that will taken on this device
   who_proxy_sign_for = [codef for codef in codefendants if codef.sign_method == 'proxy']
   who_else_on_device = [codef for codef in codefendants if codef.sign_method == 'local']
   local_signers = users + who_proxy_sign_for + who_else_on_device
   # Used in here and for sending out for signatures (multiuser code)
   remote_signers = all_signers.difference(local_signers + who_sign_with_pen)
+  log( who_sign_with_pen, 'console' )
   collect_signer_types = True
 ---
 # After the user signs, the links for the co-signers get sent
@@ -747,52 +749,75 @@ code: |
 # Interview-specific UI
 #################
 id: if all signed send email
+reconsider:
+  - get_stored_data
 # Is requested when people check on the status of the signatures
 code: |
-  for codef in codefendants:
+  # Statuses: sent, signed, unwilling, physical
+  for codef in all_digital_codefs:
     if not defined( codef.attr_name( 'signature' )):
       all_signatures_in = False
       break
   else:
     final_email_sent
     all_signatures_in = True
+  get_status_of_signatures = True
 ---
 id: signature status
 event: users[0].status
 reconsider:
-  - get_stored_signatures
+  - get_stored_data
+  - collect_signer_types
   - all_signatures_in
   - motion_to_dismiss_for_non_essential_eviction
   - final_form
 question: |
   % if all_signatures_in:
-  Your Eviction Moratorium is ready to print
+  Your Eviction Moratorium is ready to print or email
   % else:
   Some people still need to sign your Eviction Moratorium
   % endif
 subquestion: |
 
   % if all_signatures_in:
-    % if len( codefendants ) > 1:
-    ${ comma_and_list( codefendants )} have signed.
-    % elif len( codefendants ) > 0:
-      ${ codefendants[0] } has signed.
+  
+    % if len( all_digital_codefs ) > 1:
+    <i class="fa fa-check" aria-hidden="true"></i> ${ comma_and_list( all_digital_codefs )} have signed.
+    % elif len( all_digital_codefs ) > 0:
+    <i class="fa fa-check" aria-hidden="true"></i> ${ all_digital_codefs[0] } has signed.
     % endif
   
   % else:
+  
+    <% unwilling_exists = False %>
+    % for signer in codefendants:
+    % if defined( signer.attr_name( 'willing_to_sign' )) and signer.willing_to_sign is False:
+    <% unwilling_exists = True %>
+    <i class="fa fa-times" aria-hidden="true"></i> ${ signer } does not want to sign[BR]
+    % endif
+    % endfor
+    
+    % if unwilling_exists:
+    ---
+    % endif
+
+    % for signer in remote_signers:
+    % if not defined( signer.attr_name( 'signature' )) and (not defined( signer.attr_name( 'willing_to_sign' )) or not signer.willing_to_sign is False):
+    <i class="fa fa-envelope" aria-hidden="true"></i> You sent a message to ${ signer } to sign. They have not signed yet.[BR]
+    % endif
+    % endfor
+  
     % for signer in codefendants:
     % if defined( signer.attr_name( 'signature' )):
     <i class="fa fa-check" aria-hidden="true"></i> ${ signer } has signed[BR]
     % endif
     % endfor
-
-    % for signer in codefendants:
-    % if not defined( signer.attr_name( 'signature' )):
-    <i class="fa fa-times" aria-hidden="true"></i> ${ signer } has not signed[BR]
-    % endif
-    % endfor
   
   % endif
+  
+  % for signer in who_sign_with_pen:
+  <i class="fa fa-pen-alt" aria-hidden="true"></i> ${ signer } will sign on the document when you print it.
+  % endfor
   
   ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
   
