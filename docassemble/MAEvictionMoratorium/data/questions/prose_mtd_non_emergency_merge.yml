@@ -639,12 +639,15 @@ subject: |
 content: |
   ${ users[0] },
   
-  We sent a message to ${ comma_and_list( remote_signers ) }  to ask for their signature on the Motion to Dismiss. We will e-mail you when they have signed.
-
   % if len( remote_signers ) == 1:
-  You can also [check if ${ comma_and_list( remote_signers ) } has signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+  We sent a message to ${ comma_and_list( remote_signers ) } to ask for their signature on the Motion to Dismiss. We will e-mail you when ${ remote_signers } has signed.
+
+  You can also [tap here to check if ${ comma_and_list( remote_signers ) } has signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+
   % else:
-  You can also [check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+  We sent a message to ${ comma_and_list( remote_signers ) } to ask for their signatures on the Motion to Dismiss. We will e-mail you when they have signed.
+  
+  You can also [tap here to check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   % endif
 ---
 # TODO: Check if user email is going to be required in this flow
