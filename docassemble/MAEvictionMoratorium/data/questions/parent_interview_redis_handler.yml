@@ -63,8 +63,13 @@ code: |
       if signing_parties[ signer.id ][ 'has_signed' ]:
         signer.has_signed = signing_parties[ signer.id ][ 'has_signed' ]
         signer.signature = signing_parties[ signer.id ][ 'signature' ]
+      
+      if defined( signer.attr_name( 'signature' )):
+        signer.willing_to_sign = True
+      elif signing_parties[ signer.id ][ 'willing_to_sign' ] is False:
+        signer.willing_to_sign = False
 
-  get_stored_signatures = True
+  get_stored_data = True
 ---
 # Makes sure `has_signed` is always at least defined
 generic object: Individual
