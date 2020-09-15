@@ -1,0 +1,176 @@
+# TODO:
+# - Many screens should be customizable
+# - Should allow a screen after the final screen, so don't use `force_ask()`
+metadata:
+  title: Multiple signatures
+  short: Signature
+---
+modules:  
+  - docassemble.VirtualCourtToolbox.misc
+---
+mandatory: True
+code: |
+  multi_user = True
+---
+id: gather signatories
+code: |
+  for codefendant in codefendants:
+    signatories[codefendant.code] = codefendant
+  signatories.gathered = True
+---
+#id: send request for signatures
+#event: send_out_for_signature  # TODO: make plural
+#code: |
+#  for remote in remote_signers:
+#    remote.signature_url_was_sent
+#  users[0].notified
+#  background_response()
+---
+comment: |
+  =============================
+  USER
+  =============================
+---
+id: signature status
+event: users[0].status
+prevent going back: True
+reconsider:
+  - all_signatures_in
+  - motion_to_dismiss_for_non_essential_eviction
+  - final_form
+question: |
+  % if all_signatures_in:
+  Your Eviction Moratorium has been signed.
+  % else:
+  Your Eviction Moratorium has not been signed by everyone yet.
+  % endif
+subquestion: |
+  % if not all_signatures_in:
+    % for codef in codefendants:
+      % if defined( codef.instanceName + '.signature' ):
+  ${ codef } has signed.
+
+      % else:
+  ${ codef } has not signed yet.
+
+      % endif
+    % endfor
+  % else:
+    % if len( codefendants ) > 1:
+    ${ comma_and_list( codefendants )} have signed.
+    % else:
+      ${ codefendants[0] } has signed.
+    % endif
+  % endif
+  
+  ${ action_button_html('javascript:daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
+attachment code: motion_to_dismiss_for_non_essential_eviction
+---
+# TODO: Is the generic one sufficient for the user object as well?
+id: set interview's user id
+code: |
+  import random
+  import string
+  users[0].code = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+---
+id: ensure authorize user
+event: status_page
+code: |
+  if action_argument('code') != users[0].code:
+    force_ask('unauthorized')
+  force_ask('users[0].status')
+---
+id: 404
+event: unauthorized
+code: |
+  response('Page not found', response_code=404)
+---
+# Think this belongs with the QR code flow
+# TODO: Wrong template for user?
+code: |
+  send_sms(task='send signature link', to=users[0].mobile_number, template=codefendants[i].sms_template)
+---
+comment: |
+  =============================
+  Codefendants
+  =============================
+---
+id: sms template multiuser
+template: codefendants[i].sms_template
+content: |
+  Dear ${ codefendants[i] },
+  Your signature needed on a document for ${ users[0] }.  
+  ${ y.shortenedURL }
+---
+# TODO: Change '.code' to '.signer_id'
+# A randomized ID for the individual so the interview can tell who
+# they are when they use the link to sign the document.
+id: set interview's id for remaining individuals
+generic object: Individual
+code: |
+  import random
+  import string
+  x.code = ''.join(random.choice(string.ascii_lowercase) for i in range(10))
+---
+id: shorten codefendant url
+code: |
+  y = shortenMe(codefendants[i].sign_url)
+---
+id: codefendant signature url
+code: |
+  codefendants[i].sign_url = interview_url_action('request_signature', code=codefendants[i].code)
+---
+id: signatories flow
+event: request_signature
+code: |
+  # No new code gets run after a `force_ask`
+  if action_argument('code') not in signatories:
+    force_ask('unauthorized')
+  codefendant = signatories[action_argument('code')]
+  if codefendant.signed:
+    force_ask(codefendant.instanceName + '.thanked')
+  force_ask(codefendant.instanceName + '.willing_to_sign',
+    codefendant.instanceName + '.signature',
+    { 'recompute': [ codefendant.instanceName + '.signature_obtained' ] },
+    codefendant.instanceName + '.thanked')
+---
+id: codefendant willing to sign
+reconsider:
+  - motion_to_dismiss_for_non_essential_eviction
+  - final_form
+question: |
+  Are you willing to sign a statement attesting that ${ users[0] } TODO: WHAT ARE THEY ATTESTING?
+subquestion: |
+  You can [preview the statement](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }) now.
+
+  If you are willing to sign, tap to continue.  On the next screen, you will provide your signature.
+continue button field: codefendants[i].willing_to_sign
+---
+id: thank codefendants
+event: codefendants[i].thanked
+reconsider:
+  - all_signatures_in
+  - motion_to_dismiss_for_non_essential_eviction
+  - final_form
+question: |
+  Thank you for signing ${ users[0].possessive('Eviction Moratorium') }
+subquestion: |
+  If you would like a signed copy for your records, you can download or email it below.
+
+  % if not all_signatures_in:
+  Please note that not everyone has signed the document yet.
+  % endif
+  
+  ${ motion_to_dismiss_for_non_essential_eviction }
+attachment code: motion_to_dismiss_for_non_essential_eviction
+---
+only sets: codefendants[i].signature_obtained
+code: |
+  codefendants[i].signed = True
+  codefendants[i].signature_date = today()
+  codefendants[i].signature_obtained = True
+---
+# Makes sure this is defined when the signer has not signed yet
+code: |
+  codefendants[i].signed = False
+---

@@ -1,0 +1,182 @@
+comment: |
+  Some pre-made functionality for mutli-user signatures.
+
+  ## Definitions:
+  `remote` in here refers to devices of signers other than the user or those using the user's device.
+  
+  ## Limitations:
+  - Remote users never see the doc update (not MVP)
+  
+  As usual, these can all be customized. It just hopes these help save brain cells.
+---
+modules:
+  - docassemble.VirtualCourtToolbox.misc
+  - .signing_party
+---
+include:
+  - sign_on_device.yml
+---
+objects:
+  - redis: DARedis
+  - signer: Individual
+  #- signer.devices: DAList.using(object_type=DAObject, auto_gather=False, gathered=True, there_is_another=False)  # For adding devices with actions
+---
+mandatory: True
+code: |
+  multi_user = True
+---
+---
+# Currently getting here with the url in the console of the initial interview
+mandatory: True
+code: |
+  get_remote_signature
+---
+# Must be able to be triggered by action (from other device chosen)
+event: get_remote_signature
+code: |
+  #devices[0] = devices.appendObject()
+  signature_data_id = None
+  party_id = None
+  if action_argument() and action_argument('signature_data_id'):
+    signature_data_id = action_argument('signature_data_id')
+    party_id = action_argument('party_id')
+
+  elif 'signature_data_id' in url_args:
+    signature_data_id = url_args['signature_data_id']
+    party_id = url_args['party_id']
+
+  set_signer_attributes( signer, signature_data_id, party_id )
+  if signer.valid:
+    # Skip question if they've already signed or were already willing to sign.
+    if signer.has_signed or signer.was_willing or signer.willing_to_sign:
+      signer.willing_to_sign = True  # Hide this in the function below?
+      store_willing_to_sign( signer, True )
+      signer.sign_on_device
+    else:
+      signer.willing_to_sign = False  # Hide this in the function below?
+      store_willing_to_sign( signer, False )
+      signer.after_unwilling_to_sign
+
+  # Untested
+  else:
+    unauthorized
+---
+# Interface directly with .sign_on_device code
+id: x.after_signature
+event: x.after_signature
+generic object: Individual
+code: |
+  x.signature_date = today()
+  x.has_signed = True
+  store_signature_data( x )
+
+  x.after_signature_saved
+---
+# This follows the format of x.after_unwilling_to_sign_saved. Pros and cons of maintaining consisency? Is there any point if this won't be abstracted later?
+id: x.after_unwilling_to_sign
+event: x.after_unwilling_to_sign
+generic object: Individual
+code: |
+  x.after_unwilling_to_sign_saved
+---
+code: |
+  long_device_choice_url = interview_url_action( 'get_remote_signature', device_id='tbd', signature_data_id=signature_data_id, party_id=signer.id )
+  device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
+---
+###################
+# Interfacing directly with remote signer interview order code
+##################
+---
+id: willing to sign
+generic object: Individual
+question: |
+  Are you willing to sign?
+subquestion: |
+  This is ${ redis.get_data( signature_data_id )['user_names'] }'s document. Are you willing to sign it?
+
+  ${ redis.get_data( signature_data_id )['preview'] }
+yesno: x.willing_to_sign
+---
+id: x.after_signature_saved
+event: x.after_signature_saved
+generic object: Individual
+code: |
+  x.end
+  #x.status
+---
+id: x.after_unwilling_to_sign_saved
+event: x.after_unwilling_to_sign_saved
+generic object: Individual
+code: |
+  x.unwilling_to_sign_end
+---
+###################
+# Interfacing directly with script for user choosing other device to sign on
+##################
+---
+generic object: Individual
+code: |
+  # TODO: Should this be in sign_on_device.yml?
+  # TODO: Send with action arguments (in templates)
+  #if x.send_method == 'text':
+  #  x.send_sms_signature_link
+  #elif x.send_method == 'email':  # Not implemented for MVP
+  #  x.send_email_signature_link
+  x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
+  x.send_signature_link = True  # Used by sign_on_device.yml
+---
+id: signature
+generic object: Individual
+question: |
+  Signature ${ x }
+signature: x.signature
+---
+###################
+# Questions interacting with the above
+##################
+---
+generic object: Individual
+template: x.sms_device_template
+content:
+  You have chosen to sign on this device, ${ x }. ${ device_choice_url }
+---
+id: remote signer end
+generic object: Individual
+event: x.end
+question: |
+  Thank you
+subquestion: |
+  You have signed ${ redis.get_data( signature_data_id )['user_names'] }'s document. They will get your signature soon.
+---
+## Inactive. Should show signed doc with status, but not updating.
+#id: signature status
+#event: x.status
+#generic object: Individual
+#prevent going back: True
+#question: |
+#  Signature status for ${ x }
+#subquestion: |
+#  ${ redis.get_data( signature_data_id )['user_names'] }'s document.
+#  
+#  ${ redis.get_data( signature_data_id )[ 'signed_doc' ] }
+---
+id: unwilling to sign end
+generic object: Individual
+event: x.unwilling_to_sign_end
+question: |
+  Thank you and goodbye
+buttons:
+  - Exit: exit
+---
+id: unauthorized
+event: unauthorized
+question: |
+  Thank you and goodbye
+buttons:
+  - Exit: exit
+---
+id: 404
+# Preferred?
+event: unauthorized
+code: |
+  response('Page not found', response_code=404)
