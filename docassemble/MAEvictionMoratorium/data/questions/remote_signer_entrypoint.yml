@@ -155,7 +155,7 @@ content: |
   
   We sent ${ signer } a link to your Motion to Dismiss a Non-Essential Eviction. They said they would not sign the motion. Call or talk to ${ signer } to find out if the contact information you wrote is correct. If it is wrong, fill out a new form with the correct information.
 
-  If ${ signer } does not want to sign, you can fill out a new form. Do not add them as signing codefendant on the document.
+  If ${ signer } does not want to sign the motion, you can still print or download it without ${ signer }'s signature and file it with the court.
 
   [Tap here to go back to the form and check your document's status](${ redis.get_data( signature_data_id )['interview_url'] }).
 ---
