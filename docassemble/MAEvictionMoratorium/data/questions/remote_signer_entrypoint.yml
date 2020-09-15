@@ -163,9 +163,15 @@ subquestion: |
 id: unwilling to sign end
 generic object: Individual
 event: x.unwilling_to_sign_end
+# TODO: Discuss if 'you can come back later' is more or less clear
 question: |
-  Thank you and goodbye
+  You did not sign the motion
+subquestion: |
+  If you change your mind later and want to sign it, go back to the message and click the link again.
+  
+  Thank you and goodbye.
 buttons:
+  - Start again: restart
   - Exit: exit
 ---
 id: unauthorized
