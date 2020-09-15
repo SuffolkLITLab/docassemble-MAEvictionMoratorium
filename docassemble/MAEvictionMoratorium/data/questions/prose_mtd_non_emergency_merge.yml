@@ -695,25 +695,23 @@ code: |
 # Interfacing with code to let user choose which device to sign on
 ######################
 ---
-id: number to text for signature
-generic object: Individual
-question: |
-  Sign on a phone
-subquestion: |
-  What number do you want to test this to for a signature?
-fields:
-  - no label: x.device_number
-    default: ${ showifdef( x.attr_name( 'mobile_number' )) }
+#id: number to text for signature
+#generic object: Individual
+#question: |
+#  Sign on a phone
+#subquestion: |
+#  What number do you want to text this to for a signature?
+#fields:
+#  - no label: x.device_number
+#    default: ${ showifdef( x.attr_name( 'mobile_number' )) }
 ---
 generic object: Individual
 code: |
   # TODO: Should this be in sign_on_device.yml?
   # TODO: Send with action arguments (in templates)
-  #if x.send_method == 'text':
-  #  x.send_sms_signature_link
-  #elif x.send_method == 'email':  # Not implemented for MVP
-  #  x.send_email_signature_link
-  x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
+  # No email for MVP?
+  if defined( x.attr_name( 'device_number' )):
+    x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
   x.send_signature_link = True  # Used by sign_on_device.yml
 ---
 generic object: Individual
@@ -728,6 +726,7 @@ code: |
   # `action` experiments for true device choice begin here
   long_device_choice_url = interview_url_action( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
+  qr_url = interview_url_action_as_qr( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
 ---
 code: |
   signature_data_id = get_random_chars()
