@@ -85,11 +85,14 @@ def set_signer_attributes( signer, signature_data_id, party_id ):
   
   if party_data:
     signer.valid = True
-    signer.signature_data_id = signature_data_id
-    signer.id = party_id
     signer.name.first = party_data['name']
     signer.has_signed = party_data['has_signed']
     signer.was_willing = party_data['willing_to_sign']
+    #for key, value in party_data.items():
+    #  #signer.set_attr( key, value, None )
+    #  setattr( signer, key, value )
+    signer.signature_data_id = signature_data_id
+    signer.id = party_id
 
   return signer
   

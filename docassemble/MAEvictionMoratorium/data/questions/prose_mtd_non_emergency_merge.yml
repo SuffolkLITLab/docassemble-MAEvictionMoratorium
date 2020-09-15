@@ -597,12 +597,22 @@ code: |
 ---
 reconsider:
   - form_to_sign
+  - final_form
 code: |
   # Whatever info you want to be able to use for the co-signers' interview
   custom_signature_redis_data = {
-    'user_names': str(users),
+    'user_names': comma_and_list(users),
     'preview': form_to_sign,
+    'final_form': final_form,  # only works because it's docx
+    'user_email': users[0].email if defined('users[0].email') else None,
+    'user_mobile': users[0].mobile_number if defined('users[0].mobile_number') else None,
+    'interview_url': shortenMe( interview_url_action('check_status', party_id=users[0].id) ).shortenedURL
   }
+---
+# Possible way to deal with edited answers
+event: update_custom_redis_data
+code: |
+  reconsider( 'custom_signature_redis_data' )
 ---
 id: sms template multiuser
 template: codefendants[i].sms_template

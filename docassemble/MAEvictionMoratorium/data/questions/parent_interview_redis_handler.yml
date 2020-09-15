@@ -19,6 +19,7 @@ mandatory: True
 code: |
   multi_user = True
 ---
+# TODO: Consider changing model. First create the standard data in here, then send it to be modified/customized by the originating interview, then store it. Might be a model more suited to an advanced user, though.
 code: |
   signature_data_id
 
@@ -30,6 +31,7 @@ code: |
   # DEVELOPERS: Create `signature_data` elsewhere, as shown below
   signature_data = {}
   if defined('custom_signature_redis_data'):
+    # Maybe reconsider('custom_signature_redis_data')
     signature_data = custom_signature_redis_data
   
   parties = {}
@@ -42,7 +44,16 @@ code: |
   redis.set_data( signature_data_id, signature_data, expire=remote_siganure_expiration_ms )
   set_initial_redis_data = True
 ---
-# Updates user doc with remote signatures
+event: update_stored_data
+# Current use expectation - update final form
+# Possible way to deal with edited answers
+# Not quite sure what all to reconsider in this place, honestly
+code: |
+  signature_data = redis.get_data( signature_data_id )
+  # recinsider( 'update_custom_redis_data' )  # Maybe
+  # redis.set_data( signature_data_id, signature_data, expire=remote_siganure_expiration_ms )
+---
+# Updates remote user data for doc and other things
 code: |
   new_data = redis.get_data( signature_data_id )
   signing_parties = new_data[ 'parties' ]
