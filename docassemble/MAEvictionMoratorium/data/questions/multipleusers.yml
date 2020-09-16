@@ -12,29 +12,19 @@ mandatory: True
 code: |
   multi_user = True
 ---
-code: |
-  emails_sent
-  send_for_codefendant_signatures = True
----
-code: |
-  users[0].code
-  signatories.gather()
-  background_action('send_out_for_signature')
-  emails_sent = True
----
 id: gather signatories
 code: |
   for codefendant in codefendants:
     signatories[codefendant.code] = codefendant
   signatories.gathered = True
 ---
-id: send request for signatures
-event: send_out_for_signature  # TODO: make plural
-code: |
-  for remote in remote_signers:
-    remote.signature_url_was_sent
-  users[0].notified
-  background_response()
+#id: send request for signatures
+#event: send_out_for_signature  # TODO: make plural
+#code: |
+#  for remote in remote_signers:
+#    remote.signature_url_was_sent
+#  users[0].notified
+#  background_response()
 ---
 comment: |
   =============================
@@ -76,11 +66,6 @@ subquestion: |
   ${ action_button_html('javascript:daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
 attachment code: motion_to_dismiss_for_non_essential_eviction
 ---
-id: send user email
-code: |
-  send_email(to=users[0], template=initial_email_template)
-  users[0].notified = True
----
 # TODO: Is the generic one sufficient for the user object as well?
 id: set interview's user id
 code: |
@@ -105,114 +90,10 @@ code: |
 code: |
   send_sms(task='send signature link', to=users[0].mobile_number, template=codefendants[i].sms_template)
 ---
-id: if all signed send email
-# Is requested when people check on the status of the signatures
-code: |
-  for codef in codefendants:
-    if not defined( codef.instanceName + '.signature' ):
-      all_signatures_in = False
-      break
-  else:
-    final_email_sent
-    all_signatures_in = True
----
-# TODO: Check if user email is going to be required in this flow
-code: |
-  background_action('send_final_email')
-  final_email_sent = True
----
-event: send_final_email
-code: |
-  if defined( 'users[0].email' ) and users[0].email:
-    final_email_result = send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
-  background_response()
----
-id: all signed email template
-reconsider:
-  - final_form
-template: final_email_template
-subject: Your Eviction Moratorium has been signed by all parties
-content: |
-  ${ users[0] },
-
-  Your Motion to Dismiss was signed by all of your codefendants.
-  
-  You can [tap to see the signed document](${ final_form.url_for(external=True) })
----
 comment: |
   =============================
   Codefendants
   =============================
----
-objects:
-  - local_signers: PeopleList.using(auto_gather=False)
----
-code: |
-  local_signers_temp = DAList(auto_gather=False)
-  local_signers_temp.extend( users )
-  
-  if len( codefendants ) > 0:
-    log( 1, 'console' )
-    if will_proxy_sign:
-      log( 2, 'console' )
-      local_signers_temp.extend( who_proxy_sign_for )
-
-    log( 3, 'console' )
-    log( will_proxy_sign, 'console' )
-    codefendants_remain = ( not will_proxy_sign or  
-        len( codefendants.difference( local_signers_temp )) > 0)
-    log( 4, 'console' )
-    
-    if codefendants_remain and exist_other_local_signers:
-      log( 5, 'console' )
-      local_signers_temp.extend( who_else_on_device )
-  
-  local_signers_temp.gathered = True
-  local_signers = local_signers_temp
----
-id: proxy signer
-question: |
-  Are you signing for any of the codefendants?
-yesno: will_proxy_sign
----
-id: who will proxy
-question: |
-  Who will you be signing for?
-fields:
-  - no label: who_proxy_sign_for
-    datatype: object_checkboxes
-    choices:
-      - codefendants
----
-id: local co-signers
-question: |
-  Are any codefendants signing on your device?
-yesno: exist_other_local_signers
----
-id: device signers
-question: |
-  Who will be signing on your device?
-fields:
-  - no label: who_else_on_device
-    datatype: object_checkboxes
-    choices:
-      - codefendants
-    exclude:
-      - local_signers_temp
----
-## Triggered with codefendants[i].notified
-## TODO: put `.notified` outside of `if` statement
-## If this is called from a background task and it results in
-## an exception caused by an undefined variable, then .notified
-## would not be set, but it would not cause a loop. It would error.
-#code: |
-#  # TODO: Tell user which messages were sent successfully and which weren't
-#  if codefendants[i].send_method == 'text': 
-#    codefendants[i].message_result = send_sms(task='send codefendant signature link', to=codefendants[i].mobile_number,template=codefendants[i].sms_template)
-#    codefendants[i].notified = True
-#  else:
-#    codefendants[i].message_result = send_email(to=codefendants[i], template=codefendants[i].email_template)
-#    codefendants[i].notified = True
 ---
 id: sms template multiuser
 template: codefendants[i].sms_template
@@ -220,19 +101,6 @@ content: |
   Dear ${ codefendants[i] },
   Your signature needed on a document for ${ users[0] }.  
   ${ y.shortenedURL }
----
-id: codefendant email
-template: codefendants[i].email_template
-subject: |
-  Your signature is needed on a document for ${ users[0] }
-content: |
-  Dear ${ codefendants[i] },
-
-  You are requested to sign a sworn statement attesting that ${ users[0] } TODO: WHAT ARE THEY ATTESTING.
-
-  [Tap here to see the document you are being asked to sign](${ motion_to_dismiss_for_non_essential_eviction.pdf.url_for() }).
-
-  [Tap here to sign the thing](${ codefendants[i].sign_url })
 ---
 # TODO: Change '.code' to '.signer_id'
 # A randomized ID for the individual so the interview can tell who
@@ -277,14 +145,6 @@ subquestion: |
 
   If you are willing to sign, tap to continue.  On the next screen, you will provide your signature.
 continue button field: codefendants[i].willing_to_sign
----
-id: Codefendant signature
-generic object: Person
-question: |
-  Sign your name
-signature: x.signature
-under: |
-  ${ x }
 ---
 id: thank codefendants
 event: codefendants[i].thanked
