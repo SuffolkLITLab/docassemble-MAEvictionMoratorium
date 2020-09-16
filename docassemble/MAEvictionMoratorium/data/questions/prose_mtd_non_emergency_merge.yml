@@ -822,6 +822,8 @@ subquestion: |
   <i class="fa fa-pen-alt" aria-hidden="true"></i> ${ signer } will sign on the document when you print it.
   % endfor
   
-  ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
+  % if codefendants.number() > 0:
+  ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='md') }
+  % endif
   
 attachment code: motion_to_dismiss_for_non_essential_eviction
