@@ -1,15 +1,18 @@
 ---
 # TODO: Explore new `session_local`, etc. features
 ---
-mandatory: True
-code: |
-  multi_user = True
----
 include:
   - sign_on_device.yml
   - parent_interview_redis_handler.yml
   # The questions below here should supercede the above files
   - docassemble.MAVirtualCourt:basic-questions.yml
+---
+metadata:
+  title: Motion to Dismiss a Non-Essential Eviction
+---
+mandatory: True
+code: |
+  multi_user = True
 ---
 modules:
   - docassemble.base.util
