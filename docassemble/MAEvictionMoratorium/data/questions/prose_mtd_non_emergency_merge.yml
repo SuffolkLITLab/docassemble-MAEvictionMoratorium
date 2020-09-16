@@ -822,7 +822,7 @@ subquestion: |
   <i class="fa fa-pen-alt" aria-hidden="true"></i> ${ signer } will sign on the document when you print it.
   % endfor
   
-  % if codefendants.number() > 0:
+  % if len( remote_signers ) > 0:
   ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='md') }
   % endif
   
