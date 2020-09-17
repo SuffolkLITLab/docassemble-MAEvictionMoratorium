@@ -811,7 +811,7 @@ subquestion: |
     % if not defined( signer.attr_name( 'signature' )) and (not defined( signer.attr_name( 'willing_to_sign' )) or not signer.willing_to_sign is False):
     <div class="row">
     <div class="col-auto p-1"><i class="fa fa-envelope" aria-hidden="true"></i></div>
-    <div class="col-8 p-1">You sent a message to ${ signer } to sign. They have not signed yet.</div>
+    <div class="col-8 p-1">You sent a message to ${ signer } to sign at ${ showifdef( signer.attr_name('signature_email' )) } ${ showifdef(signer.attr_name('signature_number' )) }. They have not signed yet.</div>
     <div class="col-auto p-1">${ action_button_html( url_ask([signer.attr_name('sign_method'), signer.attr_name('mobile_number')]), label='<i class="fas fa-pencil-alt"></i> Edit' ) }</div>
     <div class="col-auto p-1">${ action_button_html( url_ask( signer.attr_name('signature_url_was_sent' )), label='Send <i class="fas fa-share"></i>') }</div>
     </div>
