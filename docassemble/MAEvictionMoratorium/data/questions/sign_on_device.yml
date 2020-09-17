@@ -126,15 +126,36 @@ code: |
 #  x.status
 ---
 id: send_method
+# Do not define `qr_url` as it should need id that can't be made here
 # for now, just get the mobile number
 generic object: Individual
 question: |
-  Send this to your mobile device
+  Sign on a phone or tablet
 subquestion: |
-  You can use a QR code that could be here or you can text your mobile device.
+  % if qr_url:
+  You can text yourself a link or you can use the QR code.
+  % endif
 fields:
   - Number to text: x.device_number
     default: ${ showifdef( x.attr_name( 'mobile_number' )) }
+    required: False
+  - note: |
+      % if qr_url:
+      ---
+      
+      To use this QR code:
+
+      1. Open the camera app or barcode reader app on your phone.
+      1. Point your phone at the QR code to scan it.
+      1. Tap the pop-up notification.
+      
+      <center>
+      ${ qr_url }
+      </center>
+      % endif
+---
+code: |
+  qr_url = False  # Fallback
 ---
 id: x.wants_to_change_device
 generic object: Individual
