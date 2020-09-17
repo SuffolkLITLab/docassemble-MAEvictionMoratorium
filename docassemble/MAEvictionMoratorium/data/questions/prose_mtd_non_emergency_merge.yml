@@ -39,19 +39,19 @@ code: |
   interview_presets
   
   # Skipping for speeding up tests
-  no_court_email_massaccess_terms = True
-  mtd_intro = True
-  eviction_choice = "no"
-  other_parties.target_number = '1'
-  docket_numbers[0] = '111'
-  users[0].name.first = 'd'
-  users[0].name.last = 'd'
-  users[0].address.address = '12 Dudley Street'
-  users[0].address.unit = ''
-  users[0].address.city = 'Boston'
-  users[0].address.state = 'Massachusetts'
-  users[0].address.zip = '02127'
-  other_parties[0].name.first = 'v'
+  #no_court_email_massaccess_terms = True
+  #mtd_intro = True
+  #eviction_choice = "no"
+  #other_parties.target_number = '1'
+  #docket_numbers[0] = '111'
+  #users[0].name.first = 'd'
+  #users[0].name.last = 'd'
+  #users[0].address.address = '12 Dudley Street'
+  #users[0].address.unit = ''
+  #users[0].address.city = 'Boston'
+  #users[0].address.state = 'Massachusetts'
+  #users[0].address.zip = '02127'
+  #other_parties[0].name.first = 'v'
   #codefendants[0].name.first = 'c'
   #codefendants[1].name.first = 'f'
   #codefendants[2].name.first = 's'
