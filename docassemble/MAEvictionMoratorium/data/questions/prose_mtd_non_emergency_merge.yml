@@ -796,7 +796,7 @@ subquestion: |
     % for signer in codefendants:
     % if defined( signer.attr_name( 'willing_to_sign' )) and signer.willing_to_sign is False:
     <% unwilling_exists = True %>
-    <i class="fa fa-times" aria-hidden="true"></i> ${ signer } refused to sign your motion. If  ${ signer } does not want to sign the motion, you can still print or download it without  ${ signer }'s signature and file it with the court.[BR]
+    <i class="fa fa-times" aria-hidden="true"></i> ${ signer } refused to sign your motion. We sent it to ${ signer } at ${ showifdef( signer.attr_name('signature_email' )) }${ showifdef(signer.attr_name('signature_number' )) }. If  ${ signer } does not want to sign the motion, you can still print or download it without  ${ signer }'s signature and file it with the court.[BR]
     % endif
     % endfor
     
