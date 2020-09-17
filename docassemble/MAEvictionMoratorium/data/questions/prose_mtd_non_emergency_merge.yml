@@ -504,7 +504,7 @@ id: docket number
 question: |
   Docket number
 subquestion: |
-  If you know the docket number for this case, enter it below
+  What is the docket number for this case?
 fields:
   - I do not know the docket number: dont_know_docket_number
     datatype: yesno
@@ -515,7 +515,7 @@ help:
     What is a docket number?
   content: |
     The docket number is the number the court uses to track your case.
-    It may be on the notice you got from your landlord. 
+    Look at Docket No. in the top right corner of the Summons and Complaint. That is where to find your docket number. It may be empty.
 validation code: |
   # docket_numbers.there_are_any = not dont_know_docket_number
   if dont_know_docket_number:
