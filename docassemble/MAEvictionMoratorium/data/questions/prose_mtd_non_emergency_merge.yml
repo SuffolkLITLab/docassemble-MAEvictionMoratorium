@@ -212,7 +212,7 @@ id: number of landlords
 question:  |
   How many names are on the PLAINTIFF/LANDLORD/OWNER line of your summons and complaint?
 subquestion: |
-  Look at your summons and complaint.
+  Look at your summons and complaint.  Sometimes the name may look like more than one company when its actually only one.
 
   [FILE mtd_landlord_name.png]
 fields: 
@@ -460,15 +460,23 @@ subquestion: |
   
   You need to: 
   
-  * Give a copy of your motion to ${other_parties} 
+  * Give a copy of your motion to ${other_parties}. 
   * File your motion with the ${courts[0].name}.
   
   During the pandemic, you can [email the motion](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under)
-  to ${other_parties}'s lawyer. If ${other_parties} does not have a lawyer, you can ask ${other_parties} if you can email it to them. If ${other_parties} says no
+  to ${other_parties}'s lawyer. 
   
-  * Print a copy of the motion.
+  % if other_parties.target_number == 1: 
+  If ${other_parties} does not have a lawyer, you can ask ${other_parties} if you can email the motion.  If ${other_parties} says no,
+  % else:
+  If ${other_parties} do not have a lawyer, you can ask them if you can email the motion.  If ${other_parties} say no,
+  % endif
+  
+  
+  * Print the motion.
   * Mail or hand-deliver it to ${other_parties}.
   
+  Are you ready to serve ${other_parties}?
 fields:
   - no label: ready_to_serve
     datatype: yesnoradio
@@ -488,8 +496,8 @@ fields:
 help:
   label: What are my options?
   content: |
-    If your landlord has a lawyer, you need to get a copy to the
-    lawyer. If they do not, you need to get it to the landlord.
+    If the plaintiff has a lawyer, you need to get a copy to the
+    lawyer. If they do not, you need to get it to the plaintiff.
         
     Read more about your [options to deliver by email](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under).    
 ---
