@@ -23,8 +23,7 @@ code: |
     x.signature.set_attributes(persistent=True, private=False)
     x.after_signature
   else:
-    if qr_url: x.saw_qr_code
-    else: x.device_number
+    x.device_number
     x.send_signature_link
     x.wait_for_signature
 ---
@@ -38,7 +37,6 @@ code: |
     # Reset and start over again
     undefine( x.attr_name( 'which_device' ))
     undefine( x.attr_name( 'send_method' ))
-    undefine( x.attr_name( 'saw_qr_code' ))
     undefine( x.attr_name( 'device_number' ))
     undefine( x.attr_name( 'send_signature_link' ))
     undefine( x.attr_name( 'wants_to_change_device' ))
@@ -131,6 +129,7 @@ id: send_method with qr code
 # Do not define `qr_url` as it should have an id that can't
 # be made here. Making a default url would, I think, be more
 # confusing to developers.
+if: qr_url
 generic object: Individual
 question: |
   Sign on a phone or tablet
@@ -157,8 +156,8 @@ fields:
       </center>
 continue button field: x.saw_qr_code
 ---
-# Must be below `x.saw_qr_code`
 id: send_method just phone
+if: not qr_url
 generic object: Individual
 question: |
   Sign on a phone or tablet
