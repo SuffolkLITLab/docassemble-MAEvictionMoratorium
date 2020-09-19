@@ -735,7 +735,6 @@ code: |
   # `action` experiments for true device choice begin here
   long_device_choice_url = interview_url_action( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
-  qr_url = interview_url_action_as_qr( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
 ---
 code: |
   signature_data_id = get_random_chars()
