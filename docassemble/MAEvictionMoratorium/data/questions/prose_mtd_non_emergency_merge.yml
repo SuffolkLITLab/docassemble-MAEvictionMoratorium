@@ -463,12 +463,7 @@ fields:
     datatype: object
     object labeler: |
       lambda court: court.short_label()
-    choices: macourts    
-help: 
-  label: |
-    How do I pick a court?
-  content: |
-    ${ court_choice_help }
+    choices: macourts
 ---
 # One reason this would be triggered is if someone had an
 # out-of-state address
@@ -489,22 +484,11 @@ fields:
     datatype: object
     object labeler: |
       lambda court: court.short_label()
-    choices: macourts    
-help: 
-  label: |
-    How do I pick a court?
-  content: |
-    ${ court_choice_help }
+    choices: macourts
 ---
 template: court_choice_subquestion
 content: |
   Look at your court paperwork. Match the name listed there.
-  
-  [FILE court-names.png]
----
-template: court_choice_help
-content: |
-  Select the court that is already listed on your court paperwork.
   
   [FILE court-names.png]
 ---
