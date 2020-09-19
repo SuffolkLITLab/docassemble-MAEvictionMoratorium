@@ -9,12 +9,15 @@ comment: |
   
   As usual, these can all be customized. It just hopes these help save brain cells.
 ---
+include:
+  - sign_on_device.yml
+---
+metadata:
+  title: Motion to Dismiss a Non-Essential Eviction
+---
 modules:
   - docassemble.VirtualCourtToolbox.misc
   - .signing_party
----
-include:
-  - sign_on_device.yml
 ---
 objects:
   - redis: DARedis
