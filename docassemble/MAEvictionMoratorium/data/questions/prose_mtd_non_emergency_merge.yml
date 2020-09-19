@@ -436,13 +436,13 @@ template: placeholder_message
 content: |
   We won!
 ---
-id: choose a court no map
+id: matching courts choose a court no map
+if: |
+  len(all_matches)
 question: |
   What court is your case in?
 subquestion: |
-  Look at your court paperwork. Match the name listed there.
-  
-  [FILE court-names.png]
+  ${ court_choice_subquestion }
 fields:
   - no label: courts[0]
     datatype: object_radio
@@ -468,9 +468,45 @@ help:
   label: |
     How do I pick a court?
   content: |
-    Select the court that is already listed on your court paperwork.
-    
-    [FILE court-names.png]
+    ${ court_choice_help }
+---
+# One reason this would be triggered is if someone had an
+# out-of-state address
+id: empty matches choose a court no map
+if: |
+  # this should only be reached if the user's address is out of state
+  not len(all_matches)
+sets:
+  - courts[0]
+question: |
+  What court is your case in?
+subquestion: |
+  Look at your court paperwork. Match the name listed there.
+  
+  [FILE court-names.png]
+fields:
+  - no label: courts[0]
+    datatype: object
+    object labeler: |
+      lambda court: court.short_label()
+    choices: macourts    
+help: 
+  label: |
+    How do I pick a court?
+  content: |
+    ${ court_choice_help }
+---
+template: court_choice_subquestion
+content: |
+  Look at your court paperwork. Match the name listed there.
+  
+  [FILE court-names.png]
+---
+template: court_choice_help
+content: |
+  Select the court that is already listed on your court paperwork.
+  
+  [FILE court-names.png]
 ---
 id: ready to serve
 question: |
