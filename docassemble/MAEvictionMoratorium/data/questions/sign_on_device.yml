@@ -23,7 +23,8 @@ code: |
     x.signature.set_attributes(persistent=True, private=False)
     x.after_signature
   else:
-    x.device_number
+    if qr_url: x.saw_qr_code
+    else: x.device_number
     x.send_signature_link
     x.wait_for_signature
 ---
@@ -37,6 +38,7 @@ code: |
     # Reset and start over again
     undefine( x.attr_name( 'which_device' ))
     undefine( x.attr_name( 'send_method' ))
+    undefine( x.attr_name( 'saw_qr_code' ))
     undefine( x.attr_name( 'device_number' ))
     undefine( x.attr_name( 'send_signature_link' ))
     undefine( x.attr_name( 'wants_to_change_device' ))
@@ -125,22 +127,23 @@ code: |
 #question: |
 #  x.status
 ---
-id: send_method
-# Do not define `qr_url` as it should need id that can't be made here
-# for now, just get the mobile number
+id: send_method with qr code
+# Do not define `qr_url` as it should have an id that can't
+# be made here. Making a default url would, I think, be more
+# confusing to developers.
 generic object: Individual
 question: |
   Sign on a phone or tablet
 subquestion: |
-  % if qr_url:
   You can text yourself a link or you can use the QR code.
-  % endif
 fields:
+  - I want you to text me the link: should_text_singature_link
+    datatype: yesnowide
   - Number to text: x.device_number
     default: ${ showifdef( x.attr_name( 'mobile_number' )) }
     required: False
+    show if: should_text_singature_link
   - note: |
-      % if qr_url:
       ---
       
       To use this QR code:
@@ -152,7 +155,17 @@ fields:
       <center>
       ${ qr_url }
       </center>
-      % endif
+continue button field: x.saw_qr_code
+---
+# Must be below `x.saw_qr_code`
+id: send_method just phone
+generic object: Individual
+question: |
+  Sign on a phone or tablet
+fields:
+  - Number to text: x.device_number
+    default: ${ showifdef( x.attr_name( 'mobile_number' )) }
+    required: False
 ---
 code: |
   qr_url = False  # Fallback
