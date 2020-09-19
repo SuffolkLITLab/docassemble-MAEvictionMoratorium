@@ -447,7 +447,8 @@ fields:
   - no label: courts[0]
     datatype: object_radio
     choices: all_matches
-    none of the above: True
+    none of the above: |
+      My case is in another court
     disable others: True
     object labeler: |
       lambda court: court.short_description()
@@ -455,7 +456,7 @@ fields:
       code: |
         len(all_matches)      
   - note: |
-      Does the list above look wrong? If your case was filed in a court we didn't list, choose from the full list below.
+      Choose your court below.
     show if: 
       code: |
         len(all_matches)
@@ -476,9 +477,7 @@ sets:
 question: |
   What court is your case in?
 subquestion: |
-  Look at your court paperwork. Match the name listed there.
-  
-  [FILE court-names.png]
+  ${ court_choice_subquestion }
 fields:
   - no label: courts[0]
     datatype: object
