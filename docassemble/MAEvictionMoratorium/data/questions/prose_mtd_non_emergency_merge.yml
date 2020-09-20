@@ -831,6 +831,7 @@ code: |
     all_signatures_in = True
   get_status_of_signatures = True
 ---
+# Each variable is a chunk of text. Be aware of the `if` statements and move things around as you see fit.
 id: signature status
 event: users[0].status
 reconsider:
@@ -890,7 +891,8 @@ content: |
 template: unwilling_list_template
 content: |
   % for signer in unwilling_codefs:
-  :times: ${ signer } refused to sign your motion. We sent it to ${ signer } at **${ signer.signature_message_endpoint }**.[BR]
+  :times: ${ signer } refused to sign your motion. We sent 
+  it to ${ signer } at **${ signer.signature_message_endpoint }**.[BR]
   % endfor
 ---
 template: unwilling_instructions
@@ -923,7 +925,9 @@ template: waiting_list_template
 content: |
   % for signer in remote_signers:
   % if not hasattr(signer, 'signature') and (not hasattr(signer,'willing_to_sign') or not signer.willing_to_sign is False):
-  :envelope: You sent a message to ${ signer } at ${ signer.signature_message_endpoint } to sign the document. They have not signed yet.[BR]
+  :envelope: You sent a message to ${ signer } at
+  ${ signer.signature_message_endpoint } to sign the
+  document. They have not signed yet.[BR]
   % endif
   % endfor
 ---
