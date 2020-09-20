@@ -104,18 +104,16 @@ generic object: Individual
 code: |
   # Maybe there's no final notification. They just see
   # all these notifications.
-  if user_email: send_signature_complete_email
-  if user_mobile: send_signature_complete_sms
+  send_signature_complete_user_notifications
   x.end
   #x.status
 ---
 code: |
-  send_email(to=(redis.get_data( signature_data_id )['user_email']), template=signed_email_template)
-  send_signature_complete_email = True
----
-code: |
-  send_sms(to=(redis.get_data( signature_data_id )['user_mobile']), template=signed_sms_template)
-  send_signature_complete_sms = True
+  if redis.get_data( signature_data_id )['user_email']: 
+    send_email(to=(redis.get_data( signature_data_id )['user_email']), template=signed_email_template)
+  if redis.get_data( signature_data_id )['user_mobile']:
+    send_sms(to=(redis.get_data( signature_data_id )['user_mobile']), template=signed_sms_template)
+  send_signature_complete_user_notifications = True
 ---
 template: signed_email_template
 subject: |
@@ -127,23 +125,21 @@ content: |
 ---
 template: signed_sms_template
 content: |
-  ${ redis.get_data( signature_data_id )['user_names'] }, ${ signer } has signed your Motion to Dismiss a Non-Essential Eviction. Use the link to check your document's status. ${ redis.get_data( signature_data_id )['interview_url'] }.
+  ${ redis.get_data( signature_data_id )['user_names'] }, ${ signer } has signed your Motion to Dismiss a Non-Essential Eviction. Use the link to check your document's status. ${ redis.get_data( signature_data_id )['interview_url'] }
 ---
 id: x.after_unwilling_to_sign_saved
 event: x.after_unwilling_to_sign_saved
 generic object: Individual
 code: |
-  if user_email: send_unwilling_email
-  if user_mobile: send_unwilling_sms
+  send_unwilling_user_notifications
   x.unwilling_to_sign_end
 ---
 code: |
-  send_email(to=(redis.get_data( signature_data_id )['user_email']), template=unwilling_email_template)
-  send_unwilling_email = True
----
-code: |
-  send_sms(to=(redis.get_data( signature_data_id )['user_mobile']), template=unwilling_sms_template)
-  send_unwilling_sms = True
+  if redis.get_data( signature_data_id )['user_email']:
+    send_email(to=(redis.get_data( signature_data_id )['user_email']), template=unwilling_email_template)
+  if redis.get_data( signature_data_id )['user_mobile']:
+    send_sms(to=(redis.get_data( signature_data_id )['user_mobile']), template=unwilling_sms_template)
+  send_unwilling_user_notifications = True
 ---
 template: unwilling_email_template
 # at ${ signer.signature_email if defined('signer.signature_email') else signer.signature_number } (something complex to show both)
@@ -161,7 +157,7 @@ content: |
 ---
 template: unwilling_sms_template
 content: |
-  ${ redis.get_data( signature_data_id )['user_names'] }, ${ signer } will not sign your Motion to Dismiss a Non-Essential Eviction. Tap the link to check your document's status. ${ redis.get_data( signature_data_id )['interview_url'] }.
+  ${ redis.get_data( signature_data_id )['user_names'] }, ${ signer } will not sign your Motion to Dismiss a Non-Essential Eviction. Tap the link to check your document's status. ${ redis.get_data( signature_data_id )['interview_url'] }
 ---
 code: |
   user_email = redis.get_data( signature_data_id )['user_email']
