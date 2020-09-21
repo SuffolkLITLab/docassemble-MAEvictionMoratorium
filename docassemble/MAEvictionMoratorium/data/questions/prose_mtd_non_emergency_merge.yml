@@ -636,6 +636,19 @@ attachment:
   filename: dismiss-non-essential-eviction
   name: Motion to Dismiss - Non-Essential Eviction
 ---
+# Only triggered for signers who user is signing for.
+# Using intrinsic names is not enough.
+id: persons signature
+generic object: Individual
+if: |
+  x in who_proxy_sign_for
+question: |
+  ${ users[0] }, sign with the permisson of ${ x }
+signature: x.signature
+under: |
+  ${ x }
+progress: 99
+---
 include:
   - multipleusers.yml
 ---
