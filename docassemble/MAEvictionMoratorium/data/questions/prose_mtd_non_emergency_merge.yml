@@ -391,8 +391,9 @@ fields:
   - Middle Name: codefendants[i].name.middle
     required: False
   - Last Name: codefendants[i].name.last
-    required: False
   - Suffix: codefendants[i].name.suffix
+    code: |
+      name_suffix()
     required: False
 ---
 id: how to send to codefendant
@@ -636,6 +637,19 @@ attachment:
   filename: dismiss-non-essential-eviction
   name: Motion to Dismiss - Non-Essential Eviction
 ---
+# Only triggered for signers who user is signing for.
+# Using intrinsic names is not enough.
+id: persons signature
+generic object: Individual
+if: |
+  x in who_proxy_sign_for
+question: |
+  ${ users[0] }, sign with the permisson of ${ x }
+signature: x.signature
+under: |
+  ${ x }
+progress: 99
+---
 include:
   - multipleusers.yml
 ---
@@ -724,7 +738,7 @@ id: all signed email template
 reconsider:
   - final_form
 template: final_email_template
-subject: Your Eviction Moratorium is ready to print or email
+subject: Your Motion to Dismiss is ready to print or email
 content: |
   ${ users[0] },
 
@@ -833,9 +847,9 @@ reconsider:
   - final_form
 question: |
   % if all_signatures_in:
-  Your Eviction Moratorium is ready to print or email
+  Your Motion to Dismiss is ready to print or email
   % else:
-  Some people still need to sign your Eviction Moratorium
+  Some people still need to sign your Motion to Dismiss
   % endif
 subquestion: |
 
