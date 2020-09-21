@@ -738,7 +738,7 @@ id: all signed email template
 reconsider:
   - final_form
 template: final_email_template
-subject: Your Eviction Moratorium is ready to print or email
+subject: Your Motion to Dismiss is ready to print or email
 content: |
   ${ users[0] },
 
@@ -847,9 +847,9 @@ reconsider:
   - final_form
 question: |
   % if all_signatures_in:
-  Your Eviction Moratorium is ready to print or email
+  Your Motion to Dismiss is ready to print or email
   % else:
-  Some people still need to sign your Eviction Moratorium
+  Some people still need to sign your Motion to Dismiss
   % endif
 subquestion: |
 
