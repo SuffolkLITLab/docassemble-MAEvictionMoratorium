@@ -150,7 +150,7 @@ id: trigger requests for signatures
 code: |
   for remote in remote_signers:
     remote.signature_url_was_sent
-  users[0].was_notified_of_cosigner_messages
+  if len(remote_signers) > 0: trigger_initial_notification
   request_remote_signatures = True
 ---
 code: |
@@ -685,42 +685,77 @@ content: |
 
   [Tap here to sign the document](${ codefendants[i].cosigner_url }).
 ---
-id: notifiy of cosigner links sent
+id: first notifications to user
 code: |
-  if remote_signers.number() > 0 and defined( 'users[0].email' ) and users[0].email:
-    users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
-  users[0].was_notified_of_cosigner_messages = True
+  background_action('send_initial_notification')
+  trigger_initial_notification = True
 ---
-id: after remote signatures requested
+# Can be done with less nesting, but I find it less readable
+event: send_initial_notification
+code: |
+  if len(remote_signers) > 0 and not task_performed('send_initial_sms'):
+    if defined( 'users[0].device_number' ) and users[0].device_number:
+      send_sms(task='send_initial_sms', to=users[0].device_number, template=initial_sms_template)
+    elif defined( 'users[0].mobile_number' ) and users[0].mobile_number:
+      send_sms(task='send_initial_sms', to=users[0].mobile_number, template=initial_sms_template)
+
+  if not task_performed('send_initial_email'):
+    if defined( 'users[0].email' ) and users[0].email:
+      send_email(task='send_initial_email', to=users[0], template=initial_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+
+  background_response()
+---
+id: cosigner links sent notification sms
+template: initial_sms_template
+content: |
+  ${ users[0] }, your Motion to Dismiss was sent to ${ comma_and_list( remote_signers ) }. See the document at ${ interview_url_action('check_status', party_id=users[0].id) }
+---
+id: cosigner links sent notification email
 template: initial_email_template
 subject: |
   Your Motion to Dismiss was sent to ${ comma_and_list( remote_signers ) }
 content: |
   ${ users[0] },
   
-  % if len( remote_signers ) == 1:
-  We asked ${ comma_and_list( remote_signers ) } to sign your Motion to Dismiss. We will e-mail you when ${ remote_signers } signs it.
-
-  You can also [tap here to check if ${ comma_and_list( remote_signers ) } has signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
-
-  % else:
+  % if len( remote_signers ) > 1:
   We asked ${ comma_and_list( remote_signers ) } to sign your Motion to Dismiss. We will e-mail you when they sign it.
   
   You can also [tap here to check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+
+  % else:
+  We asked ${ comma_and_list( remote_signers ) } to sign your Motion to Dismiss. We will e-mail you when ${ remote_signers } signs it.
+
+  You can also [tap here to check if ${ comma_and_list( remote_signers ) } has signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   % endif
 ---
-# TODO: Check if user email is going to be required in this flow
 code: |
-  background_action('send_final_email')
-  final_email_sent = True
+  background_action('send_final_notification')
+  trigger_final_notification = True
 ---
-event: send_final_email
+# Can be done with less nesting, but I find it less readable
+event: send_final_notification
 code: |
-  if defined( 'users[0].email' ) and users[0].email:
-    final_email_result = send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+  if not task_performed('send_final_sms'):
+    if defined( 'users[0].device_number' ) and users[0].device_number:
+      send_sms(task='send_final_sms', to=users[0].device_number, template=final_sms_template)
+    elif defined( 'users[0].mobile_number' ) and users[0].mobile_number:
+      send_sms(task='send_final_sms', to=users[0].mobile_number, template=final_sms_template)
+      
+  if not task_performed('send_final_email'):
+    if defined( 'users[0].email' ) and users[0].email:
+      send_email(task='send_final_email', to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+
   background_response()
 ---
-id: all signed email template
+id: form ready sms
+reconsider:
+  - final_form
+template: final_sms_template
+content: |
+  ${ users[0] }, your Motion to Dismiss a Non-Essential Eviction is ready. See the document at ${ final_form.url_for(external=True) }
+---
+# TODO: The pdf is attached. Do we really need the link?
+id: form ready email
 reconsider:
   - final_form
 template: final_email_template
@@ -819,7 +854,7 @@ code: |
       all_signatures_in = False
       break
   else:
-    final_email_sent
+    trigger_final_notification
     all_signatures_in = True
   get_status_of_signatures = True
 ---
