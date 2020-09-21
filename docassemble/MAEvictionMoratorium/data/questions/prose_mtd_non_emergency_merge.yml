@@ -391,8 +391,9 @@ fields:
   - Middle Name: codefendants[i].name.middle
     required: False
   - Last Name: codefendants[i].name.last
-    required: False
   - Suffix: codefendants[i].name.suffix
+    code: |
+      name_suffix()
     required: False
 ---
 id: how to send to codefendant
