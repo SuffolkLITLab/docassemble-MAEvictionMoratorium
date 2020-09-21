@@ -901,22 +901,22 @@ content: |
   You do not need ${ comma_and_list(unwilling_codefs) }'s signatures
   to file the motion.
 
-  * Download and file the motion. You can ask
+  * **Download and file the motion.** You can ask
   ${ comma_and_list(unwilling_codefs) } to sign the paper
   copy. If they do not sign the paper copy, cross out their
   names and file it anyway. Or,
-  * Start the interview again. Use the the 'Restart'
+  * **Start the interview again.** Use the the 'Restart'
   button. You can leave out ${ comma_and_list(unwilling_codefs) }.
   
   % elif len( unwilling_codefs ) > 0:
   You do not need ${ unwilling_codefs[0] }'s signature
   to file the motion.
 
-  * Download and file the motion. You can ask
+  * **Download and file the motion.** You can ask
   ${ unwilling_codefs[0] } to sign the paper
   copy. If they do not sign the paper copy, cross out their
   name and file it anyway. Or,
-  * Start the interview again. Use the the 'Restart'
+  * **Start the interview again.** Use the the 'Restart'
   button. You can leave out ${ unwilling_codefs[0] }.
   
   % endif
