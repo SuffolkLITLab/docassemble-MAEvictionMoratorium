@@ -391,7 +391,7 @@ fields:
   - Middle Name: codefendants[i].name.middle
     required: False
   - Last Name: codefendants[i].name.last
-  - Suffix: users[0].name.suffix
+  - Suffix: codefendants[i].name.suffix
     code: |
       name_suffix()
     required: False
