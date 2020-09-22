@@ -68,6 +68,7 @@ generic object: Individual
 code: |
   x.signature_date = today()
   x.has_signed = True
+  x.signature.set_attributes(private=False, persistent=True)
   store_signature_data( x )
 
   x.after_signature_saved

@@ -142,7 +142,7 @@ def store_signature_data( signer ):
   #signer.signature_date = today()
   #signer.has_signed = True
   # TODO: Set persistance and privacy of signature? Seems to funciton without, or is that in other code somewhere?
-  store_signer_attribute( signer.signature_data_id, signer.id, 'signature', signer.signature.set_attributes(private=False, persistent=True) )
+  store_signer_attribute( signer.signature_data_id, signer.id, 'signature', signer.signature )
   store_signer_attribute( signer.signature_data_id, signer.id, 'signature_date', today() )
   return store_signer_attribute( signer.signature_data_id, signer.id, 'has_signed', True )
   
