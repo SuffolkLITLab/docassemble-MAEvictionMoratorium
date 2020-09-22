@@ -406,11 +406,11 @@ fields:
   - no label: codefendants[i].sign_method
     datatype: radio
     choices:
-      - **Email** ${ codefendants[i] } a link: email
-      - **Text** ${ codefendants[i] } a link: text
+      - __Email__ ${ codefendants[i] } a link: email
+      - __Text__ ${ codefendants[i] } a link: text
       - ${ codefendants[i] } asked me to sign for them.: proxy
       - ${ codefendants[i] } will sign with me at the end of the interview: local
-      - I will print my motion and ${ codefendants[i] } will sign the paper copy.: physical
+      - I will print my motion and ${ codefendants[i] } will sign the paper copy: physical
   - What email should we use to ask for ${ codefendants[i] }'s signature?: codefendants[i].signature_email
     default: ${ codefendants[i].email }
     js show if: |
