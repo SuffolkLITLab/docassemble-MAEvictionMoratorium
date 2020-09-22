@@ -569,6 +569,8 @@ attachment:
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx
   variable name: preview_doc
 ---
+reconsider:
+  - motion_to_dismiss_for_non_essential_eviction
 code: |
   final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction, filename="dismiss-non-essential-eviction.pdf")
   final_form.set_attributes(private=False, persistent=True)
@@ -669,7 +671,7 @@ code: |
 event: send_final_email
 code: |
   if defined( 'users[0].email' ) and users[0].email:
-    final_email_result = send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+    final_email_result = send_email(to=users[0], template=final_email_template, attachments=final_form)
   background_response()
 ---
 id: all signed email template
@@ -782,7 +784,6 @@ reconsider:
   - collect_signer_types
   - get_stored_data
   - all_signatures_in
-  - motion_to_dismiss_for_non_essential_eviction
   - final_form
 question: |
   % if all_signatures_in:
@@ -834,4 +835,4 @@ subquestion: |
   
   ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
   
-attachment code: motion_to_dismiss_for_non_essential_eviction
+attachment code: final_form
