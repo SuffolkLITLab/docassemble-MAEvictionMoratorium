@@ -9,12 +9,15 @@ comment: |
   
   As usual, these can all be customized. It just hopes these help save brain cells.
 ---
+include:
+  - sign_on_device.yml
+---
+metadata:
+  title: Motion to Dismiss a Non-Essential Eviction
+---
 modules:
   - docassemble.VirtualCourtToolbox.misc
   - .signing_party
----
-include:
-  - sign_on_device.yml
 ---
 objects:
   - redis: DARedis
@@ -83,6 +86,7 @@ code: |
 code: |
   long_device_choice_url = interview_url_action( 'get_remote_signature', device_id='tbd', signature_data_id=signature_data_id, party_id=signer.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
+  qr_url = interview_url_action_as_qr( 'get_remote_signature', device_id='tbd', signature_data_id=signature_data_id, party_id=signer.id )
 ---
 ###################
 # Interfacing directly with remote signer interview order code
@@ -182,11 +186,9 @@ generic object: Individual
 code: |
   # TODO: Should this be in sign_on_device.yml?
   # TODO: Send with action arguments (in templates)
-  #if x.send_method == 'text':
-  #  x.send_sms_signature_link
-  #elif x.send_method == 'email':  # Not implemented for MVP
-  #  x.send_email_signature_link
-  x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
+  # No email for MVP?
+  if defined( x.attr_name( 'device_number' )):
+    x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
   x.send_signature_link = True  # Used by sign_on_device.yml
 ---
 id: signature
@@ -227,9 +229,15 @@ subquestion: |
 id: unwilling to sign end
 generic object: Individual
 event: x.unwilling_to_sign_end
+# TODO: Discuss if 'you can come back later' is more or less clear
 question: |
-  Thank you and goodbye
+  You did not sign the motion
+subquestion: |
+  If you change your mind later and want to sign it, go back to the message and click the link again.
+  
+  Thank you and goodbye.
 buttons:
+  - Start again: restart
   - Exit: exit
 ---
 id: unauthorized

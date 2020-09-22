@@ -1,15 +1,18 @@
 ---
 # TODO: Explore new `session_local`, etc. features
 ---
-mandatory: True
-code: |
-  multi_user = True
----
 include:
   - sign_on_device.yml
   - parent_interview_redis_handler.yml
   # The questions below here should supercede the above files
   - docassemble.MAVirtualCourt:basic-questions.yml
+---
+metadata:
+  title: Motion to Dismiss a Non-Essential Eviction
+---
+mandatory: True
+code: |
+  multi_user = True
 ---
 modules:
   - docassemble.base.util
@@ -30,6 +33,7 @@ code: |
       ]
   preferred_court = "Housing Court"
   other_parties.there_are_any = True
+  user_role = 'defendant'
   interview_presets = True
 ---
 mandatory: True
@@ -82,7 +86,12 @@ code: |
   users[0].mobile_number
   other_parties.target_number
   other_parties.gather()
-  courts[0]
+  # `standard_court_choice` does not get defined for in-state users
+  # if they select the `none of the above` option
+  show_choose_a_court
+  if defined('standard_court_choice'): courts[0] = standard_court_choice
+  else: courts[0] = custom_court_choice
+    
   docket_numbers[0]
   
   ready_to_serve
@@ -141,7 +150,7 @@ id: trigger requests for signatures
 code: |
   for remote in remote_signers:
     remote.signature_url_was_sent
-  users[0].was_notified_of_cosigner_messages
+  if len(remote_signers) > 0: trigger_initial_notification
   request_remote_signatures = True
 ---
 code: |
@@ -212,7 +221,7 @@ id: number of landlords
 question:  |
   How many names are on the PLAINTIFF/LANDLORD/OWNER line of your summons and complaint?
 subquestion: |
-  Look at your summons and complaint.
+  Look at your summons and complaint.  Sometimes the name may look like more than one company when its actually only one.
 
   [FILE mtd_landlord_name.png]
 fields: 
@@ -382,8 +391,9 @@ fields:
   - Middle Name: codefendants[i].name.middle
     required: False
   - Last Name: codefendants[i].name.last
-    required: False
   - Suffix: codefendants[i].name.suffix
+    code: |
+      name_suffix()
     required: False
 ---
 id: how to send to codefendant
@@ -435,22 +445,62 @@ template: placeholder_message
 content: |
   We won!
 ---
-id: court question
-sets:
-  - courts[0].name
+id: matching courts choose a court no map
+if: |
+  len(all_matches)
 question: |
-  What court is your case being heard in?
+  What court is your case in?
 subquestion: |
-  Look at your Summons and Complaint to find the name of the court
-  your case was filed in.
-
-  [FILE court-names.png]
+  ${ court_choice_subquestion }
 fields:
-  - Court name: courts[0]
+  - no label: standard_court_choice
+    datatype: object_radio
+    choices: all_matches
+    none of the above: |
+      My case is in another court
+    disable others: True
+    object labeler: |
+      lambda court: court.short_description()
+  - note: |
+      Choose your court below.
+    show if: 
+      variable: standard_court_choice
+      is: null
+  - no label: custom_court_choice
     datatype: object
-    choices: macourts.filter_courts(allowed_courts)
-    default: local_housing_court
-continue button field: ask_court_question    
+    object labeler: |
+      lambda court: court.short_label()
+    choices: macourts
+    show if: 
+      variable: standard_court_choice
+      is: null
+continue button field: show_choose_a_court
+---
+# One reason this would be triggered is if someone had an
+# out-of-state address
+id: empty matches choose a court no map
+if: |
+  # this should only be reached if the user's address is out of state
+  not len(all_matches)
+sets:
+  - standard_court_choice
+question: |
+  What court is your case in?
+subquestion: |
+  ${ court_choice_subquestion }
+fields:
+  - no label: standard_court_choice
+    datatype: object
+    object labeler: |
+      lambda court: court.short_label()
+    choices: macourts
+continue button field: show_choose_a_court
+---
+template: court_choice_subquestion
+content: |
+  Look at your court paperwork. Match the name listed there.
+  
+  [FILE court-names.png]
 ---
 id: ready to serve
 question: |
@@ -460,15 +510,23 @@ subquestion: |
   
   You need to: 
   
-  * Give a copy of your motion to ${other_parties} 
+  * Give a copy of your motion to ${other_parties}. 
   * File your motion with the ${courts[0].name}.
   
   During the pandemic, you can [email the motion](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under)
-  to ${other_parties}'s lawyer. If ${other_parties} does not have a lawyer, you can ask ${other_parties} if you can email it to them. If ${other_parties} says no
+  to ${other_parties}'s lawyer. 
   
-  * Print a copy of the motion.
+  % if other_parties.target_number == 1: 
+  If ${other_parties} does not have a lawyer, you can ask ${other_parties} if you can email the motion.  If ${other_parties} says no,
+  % else:
+  If ${other_parties} do not have a lawyer, you can ask them if you can email the motion.  If ${other_parties} say no,
+  % endif
+  
+  
+  * Print the motion.
   * Mail or hand-deliver it to ${other_parties}.
   
+  Are you ready to serve ${other_parties}?
 fields:
   - no label: ready_to_serve
     datatype: yesnoradio
@@ -488,8 +546,8 @@ fields:
 help:
   label: What are my options?
   content: |
-    If your landlord has a lawyer, you need to get a copy to the
-    lawyer. If they do not, you need to get it to the landlord.
+    If the plaintiff has a lawyer, you need to get a copy to the
+    lawyer. If they do not, you need to get it to the plaintiff.
         
     Read more about your [options to deliver by email](https://www.mass.gov/supreme-judicial-court-rules/supreme-judicial-court-order-concerning-email-service-in-cases-under).    
 ---
@@ -504,7 +562,7 @@ id: docket number
 question: |
   Docket number
 subquestion: |
-  If you know the docket number for this case, enter it below
+  What is the docket number for this case?
 fields:
   - I do not know the docket number: dont_know_docket_number
     datatype: yesno
@@ -515,7 +573,7 @@ help:
     What is a docket number?
   content: |
     The docket number is the number the court uses to track your case.
-    It may be on the notice you got from your landlord. 
+    Look at Docket No. in the top right corner of the Summons and Complaint. That is where to find your docket number. It may be empty.
 validation code: |
   # docket_numbers.there_are_any = not dont_know_docket_number
   if dont_know_docket_number:
@@ -581,6 +639,19 @@ attachment:
   filename: dismiss-non-essential-eviction
   name: Motion to Dismiss - Non-Essential Eviction
 ---
+# Only triggered for signers who user is signing for.
+# Using intrinsic names is not enough.
+id: persons signature
+generic object: Individual
+if: |
+  x in who_proxy_sign_for
+question: |
+  ${ users[0] }, sign with the permisson of ${ x }
+signature: x.signature
+under: |
+  ${ x }
+progress: 99
+---
 include:
   - multipleusers.yml
 ---
@@ -590,8 +661,9 @@ include:
 ---
 # Keep in as the default
 code: |
-  # When the saved redis data will expire
-  remote_siganure_expiration_ms = 1* 6 * 60 * 60 * 1000  # 6hrs
+  # When the saved redis data will expire: days * hours * minutes * seconds
+  # https://docassemble.org/docs/objects.html#DARedis
+  remote_siganure_expiration_ms = 31 * 24 * 60 * 60  # 31 days
 ---
 # Keep in as the default
 code: |
@@ -639,46 +711,81 @@ content: |
 
   [Tap here to sign the document](${ codefendants[i].cosigner_url }).
 ---
-id: notifiy of cosigner links sent
+id: first notifications to user
 code: |
-  if remote_signers.number() > 0 and defined( 'users[0].email' ) and users[0].email:
-    users[0].message_succeeded = send_email(to=users[0], template=initial_email_template)
-  users[0].was_notified_of_cosigner_messages = True
+  background_action('send_initial_notification')
+  trigger_initial_notification = True
 ---
-id: after remote signatures requested
+# Can be done with less nesting, but I find it less readable
+event: send_initial_notification
+code: |
+  if len(remote_signers) > 0 and not task_performed('send_initial_sms'):
+    if defined( 'users[0].device_number' ) and users[0].device_number:
+      send_sms(task='send_initial_sms', to=users[0].device_number, template=initial_sms_template)
+    elif defined( 'users[0].mobile_number' ) and users[0].mobile_number:
+      send_sms(task='send_initial_sms', to=users[0].mobile_number, template=initial_sms_template)
+
+  if not task_performed('send_initial_email'):
+    if defined( 'users[0].email' ) and users[0].email:
+      send_email(task='send_initial_email', to=users[0], template=initial_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+
+  background_response()
+---
+id: cosigner links sent notification sms
+template: initial_sms_template
+content: |
+  ${ users[0] }, your Motion to Dismiss was sent to ${ comma_and_list( remote_signers ) }. See the document at ${ interview_url_action('check_status', party_id=users[0].id) }
+---
+id: cosigner links sent notification email
 template: initial_email_template
 subject: |
   Your Motion to Dismiss was sent to ${ comma_and_list( remote_signers ) }
 content: |
   ${ users[0] },
   
-  % if len( remote_signers ) == 1:
-  We asked ${ comma_and_list( remote_signers ) } to sign your Motion to Dismiss. We will e-mail you when ${ remote_signers } signs it.
-
-  You can also [tap here to check if ${ comma_and_list( remote_signers ) } has signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
-
-  % else:
+  % if len( remote_signers ) > 1:
   We asked ${ comma_and_list( remote_signers ) } to sign your Motion to Dismiss. We will e-mail you when they sign it.
   
   You can also [tap here to check if ${ comma_and_list( remote_signers ) } have signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
+
+  % else:
+  We asked ${ comma_and_list( remote_signers ) } to sign your Motion to Dismiss. We will e-mail you when ${ remote_signers } signs it.
+
+  You can also [tap here to check if ${ comma_and_list( remote_signers ) } has signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   % endif
 ---
-# TODO: Check if user email is going to be required in this flow
 code: |
-  background_action('send_final_email')
-  final_email_sent = True
+  background_action('send_final_notification')
+  trigger_final_notification = True
 ---
-event: send_final_email
+# Can be done with less nesting, but I find it less readable
+event: send_final_notification
 code: |
-  if defined( 'users[0].email' ) and users[0].email:
-    final_email_result = send_email(to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+  if not task_performed('send_final_sms'):
+    if defined( 'users[0].device_number' ) and users[0].device_number:
+      send_sms(task='send_final_sms', to=users[0].device_number, template=final_sms_template)
+    elif defined( 'users[0].mobile_number' ) and users[0].mobile_number:
+      send_sms(task='send_final_sms', to=users[0].mobile_number, template=final_sms_template)
+      
+  if not task_performed('send_final_email'):
+    if defined( 'users[0].email' ) and users[0].email:
+      send_email(task='send_final_email', to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+
   background_response()
 ---
-id: all signed email template
+id: form ready sms
+reconsider:
+  - final_form
+template: final_sms_template
+content: |
+  ${ users[0] }, your Motion to Dismiss a Non-Essential Eviction is ready. See the document at ${ final_form.url_for(external=True) }
+---
+# TODO: The pdf is attached. Do we really need the link?
+id: form ready email
 reconsider:
   - final_form
 template: final_email_template
-subject: Your Eviction Moratorium is ready to print or email
+subject: Your Motion to Dismiss is ready to print or email
 content: |
   ${ users[0] },
 
@@ -707,25 +814,23 @@ code: |
 # Interfacing with code to let user choose which device to sign on
 ######################
 ---
-id: number to text for signature
-generic object: Individual
-question: |
-  Sign on a phone
-subquestion: |
-  What number do you want to test this to for a signature?
-fields:
-  - no label: x.device_number
-    default: ${ showifdef( x.attr_name( 'mobile_number' )) }
+#id: number to text for signature
+#generic object: Individual
+#question: |
+#  Sign on a phone
+#subquestion: |
+#  What number do you want to text this to for a signature?
+#fields:
+#  - no label: x.device_number
+#    default: ${ showifdef( x.attr_name( 'mobile_number' )) }
 ---
 generic object: Individual
 code: |
   # TODO: Should this be in sign_on_device.yml?
   # TODO: Send with action arguments (in templates)
-  #if x.send_method == 'text':
-  #  x.send_sms_signature_link
-  #elif x.send_method == 'email':  # Not implemented for MVP
-  #  x.send_email_signature_link
-  x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
+  # No email for MVP?
+  if defined( x.attr_name( 'device_number' )):
+    x.message_result = send_sms(task='send link to other device', to=x.device_number, template=x.sms_device_template)
   x.send_signature_link = True  # Used by sign_on_device.yml
 ---
 generic object: Individual
@@ -740,6 +845,7 @@ code: |
   # `action` experiments for true device choice begin here
   long_device_choice_url = interview_url_action( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
+  qr_url = interview_url_action_as_qr( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
 ---
 code: |
   signature_data_id = get_random_chars()
@@ -774,7 +880,7 @@ code: |
       all_signatures_in = False
       break
   else:
-    final_email_sent
+    trigger_final_notification
     all_signatures_in = True
   get_status_of_signatures = True
 ---
@@ -788,9 +894,9 @@ reconsider:
   - final_form
 question: |
   % if all_signatures_in:
-  Your Eviction Moratorium is ready to print or email
+  Your Motion to Dismiss is ready to print or email
   % else:
-  Some people still need to sign your Eviction Moratorium
+  Some people still need to sign your Motion to Dismiss
   % endif
 subquestion: |
 
@@ -808,7 +914,7 @@ subquestion: |
     % for signer in codefendants:
     % if defined( signer.attr_name( 'willing_to_sign' )) and signer.willing_to_sign is False:
     <% unwilling_exists = True %>
-    <i class="fa fa-times" aria-hidden="true"></i> ${ signer } does not want to sign[BR]
+    <i class="fa fa-times" aria-hidden="true"></i> ${ signer } refused to sign your motion. We sent it to ${ signer } at **${ showifdef( signer.attr_name('signature_email' )) }${ showifdef(signer.attr_name('signature_number' )) }**. If  ${ signer } does not want to sign the motion, you can still print or download it without  ${ signer }'s signature and file it with the court.[BR]
     % endif
     % endfor
     
@@ -834,6 +940,8 @@ subquestion: |
   <i class="fa fa-pen-alt" aria-hidden="true"></i> ${ signer } will sign on the document when you print it.
   % endfor
   
-  ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='lg') }
+  % if len( remote_signers ) > 0:
+  ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='md') }
+  % endif
   
 attachment code: motion_to_dismiss_for_non_essential_eviction

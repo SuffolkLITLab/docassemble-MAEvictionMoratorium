@@ -1,10 +1,6 @@
 # TODO:
 # - Many screens should be customizable
 # - Should allow a screen after the final screen, so don't use `force_ask()`
-metadata:
-  title: Multiple signatures
-  short: Signature
----
 modules:  
   - docassemble.VirtualCourtToolbox.misc
 ---
