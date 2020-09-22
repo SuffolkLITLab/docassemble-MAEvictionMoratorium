@@ -50,7 +50,7 @@ event: update_stored_data
 # Not quite sure what all to reconsider in this place, honestly
 code: |
   signature_data = redis.get_data( signature_data_id )
-  # recinsider( 'update_custom_redis_data' )  # Maybe
+  # reconsider( 'update_custom_redis_data' )  # Maybe
   # redis.set_data( signature_data_id, signature_data, expire=remote_siganure_expiration_ms )
 ---
 # Updates remote user data for doc and other things
