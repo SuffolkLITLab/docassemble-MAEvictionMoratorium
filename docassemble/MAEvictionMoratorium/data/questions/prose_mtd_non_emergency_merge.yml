@@ -659,9 +659,9 @@ include:
 ---
 # Keep in as the default
 code: |
-  # When the saved redis data will expire
-  # days * hours * minutes * seconds * milliseconds
-  remote_siganure_expiration_ms = 31 * 24 * 60 * 60 * 1000  # 31 days
+  # When the saved redis data will expire: days * hours * minutes * seconds
+  # https://docassemble.org/docs/objects.html#DARedis
+  remote_siganure_expiration_ms = 31 * 24 * 60 * 60  # 31 days
 ---
 # Keep in as the default
 code: |
