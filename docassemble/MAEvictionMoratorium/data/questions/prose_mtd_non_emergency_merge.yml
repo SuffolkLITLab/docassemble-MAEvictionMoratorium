@@ -367,17 +367,23 @@ id: do you have codefendants
 question: |
   Is anyone filing with you?
 subquestion: |
-  Other people listed as DEFENDANT(S)/TENANT(S)/OCCUPANT(S) on your Summons and Complaint can file this Motion to Dismiss with you.
-  
+  Look at the line after DEFENDANT(S)/TENANT(S)/OCCUPANT(S) on your Summons and   Complaint.
+  Anyone else who is named there can file this motion with you.
+
   [FILE Defendants.png]
-  
-  You must get their permission to file with you. Later on, they need to sign the motion. 
-fields: 
+
+  If they are going to file with you, you need their permission because they need to sign the motion too. Is anyone going to file with you?
+fields:
+
   - no label: codefendants.there_are_any
     datatype: radio
     choices:
       - I am filing this motion alone.: False
       - I talked to them and at least one of them wants to file with me.: True
+help:
+  label: Do I have to include anyone?
+  content: |
+    No. You do not need to file this motion with anyone else.
 ---
 id: codefendants
 question: |
