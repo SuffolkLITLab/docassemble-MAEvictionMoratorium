@@ -125,22 +125,20 @@ code: |
 #question: |
 #  x.status
 ---
-id: send_method
-# Do not define `qr_url` as it should need id that can't be made here
-# for now, just get the mobile number
+id: link for mobile
 generic object: Individual
 question: |
   Sign on a phone or tablet
 subquestion: |
-  % if qr_url:
   You can text yourself a link or you can use the QR code.
-  % endif
 fields:
+  - I want you to text me the link: should_text_singature_link
+    datatype: yesnowide
   - Number to text: x.device_number
     default: ${ showifdef( x.attr_name( 'mobile_number' )) }
     required: False
+    show if: should_text_singature_link
   - note: |
-      % if qr_url:
       ---
       
       To use this QR code:
@@ -150,12 +148,9 @@ fields:
       1. Tap the pop-up notification.
       
       <center>
-      ${ qr_url }
+      [QR ${ device_choice_url }]
       </center>
-      % endif
----
-code: |
-  qr_url = False  # Fallback
+continue button field: x.saw_qr_code
 ---
 id: x.wants_to_change_device
 generic object: Individual
