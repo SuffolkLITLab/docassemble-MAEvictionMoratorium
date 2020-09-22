@@ -27,10 +27,11 @@ comment: |
   Predefine some variables we need
 code: |
   allowed_courts = [
-      "Housing Court",    
-      "Boston Municipal Court",
-      "District Court",
-      ]
+    "Housing Court",    
+    "Boston Municipal Court",
+    "District Court",
+    "Superior Court",
+  ]
   preferred_court = "Housing Court"
   other_parties.there_are_any = True
   user_role = 'defendant'
@@ -470,7 +471,7 @@ fields:
     datatype: object
     object labeler: |
       lambda court: court.short_label()
-    choices: macourts
+    choices: macourts.filter_courts(allowed_courts)
     show if: 
       variable: standard_court_choice
       is: null
@@ -493,7 +494,7 @@ fields:
     datatype: object
     object labeler: |
       lambda court: court.short_label()
-    choices: macourts
+    choices: macourts.filter_courts(allowed_courts)
 continue button field: show_choose_a_court
 ---
 template: court_choice_subquestion
