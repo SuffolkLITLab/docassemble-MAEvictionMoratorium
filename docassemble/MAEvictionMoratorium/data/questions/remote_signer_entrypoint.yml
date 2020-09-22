@@ -174,12 +174,6 @@ template: unwilling_sms_template
 content: |
   ${ redis.get_data( signature_data_id )['user_names'] }, ${ signer } will not sign your Motion to Dismiss a Non-Essential Eviction. Tap the link to see your document's status. ${ redis.get_data( signature_data_id )['interview_url'] }
 ---
-code: |
-  user_email = redis.get_data( signature_data_id )['user_email']
----
-code: |
-  user_mobile = redis.get_data( signature_data_id )['user_mobile']
----
 ###################
 # Interfacing directly with script for user choosing other device to sign on
 ##################
