@@ -763,48 +763,48 @@ content: |
   You can also [tap here to check if ${ comma_and_list( remote_signers ) } has signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   % endif
 ---
-code: |
-  background_action('send_final_notification')
-  trigger_final_notification = True
----
-# Can be done with less nesting, but I find it less readable
-event: send_final_notification
-code: |
-  if not task_performed('send_final_sms'):
-    if defined( 'users[0].device_number' ) and users[0].device_number:
-      send_sms(task='send_final_sms', to=users[0].device_number, template=final_sms_template)
-    elif defined( 'users[0].mobile_number' ) and users[0].mobile_number:
-      send_sms(task='send_final_sms', to=users[0].mobile_number, template=final_sms_template)
-      
-  if not task_performed('send_final_email'):
-    if defined( 'users[0].email' ) and users[0].email:
-      send_email(task='send_final_email', to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
-
-  background_response()
----
-id: form ready sms
-reconsider:
-  - final_form
-template: final_sms_template
-content: |
-  ${ users[0] }, your Motion to Dismiss a Non-Essential Eviction is ready. See the document at ${ final_form.url_for(external=True) }
----
-# TODO: The pdf is attached. Do we really need the link?
-id: form ready email
-reconsider:
-  - final_form
-template: final_email_template
-subject: Your Motion to Dismiss is ready to print or email
-content: |
-  ${ users[0] },
-
-  % if codefendants.number() > 0:
-  Your Motion to Dismiss a Non-Essential Eviction was signed by ${ comma_and_list( codefendants ) }.
-  % else:
-  Your Motion to Dismiss a Non-Essential Eviction is ready.
-  % endif
-  
-  You can [tap to see the signed document](${ final_form.url_for(external=True) }).
+#code: |
+#  background_action('send_final_notification')
+#  trigger_final_notification = True
+#---
+## Can be done with less nesting, but I find it less readable
+#event: send_final_notification
+#code: |
+#  if not task_performed('send_final_sms'):
+#    if defined( 'users[0].device_number' ) and users[0].device_number:
+#      send_sms(task='send_final_sms', to=users[0].device_number, template=final_sms_template)
+#    elif defined( 'users[0].mobile_number' ) and users[0].mobile_number:
+#      send_sms(task='send_final_sms', to=users[0].mobile_number, template=final_sms_template)
+#      
+#  if not task_performed('send_final_email'):
+#    if defined( 'users[0].email' ) and users[0].email:
+#      send_email(task='send_final_email', to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+#
+#  background_response()
+#---
+#id: form ready sms
+#reconsider:
+#  - final_form
+#template: final_sms_template
+#content: |
+#  ${ users[0] }, your Motion to Dismiss a Non-Essential Eviction is ready. See the document at ${ final_form.url_for(external=True) }
+#---
+## TODO: The pdf is attached. Do we really need the link?
+#id: form ready email
+#reconsider:
+#  - final_form
+#template: final_email_template
+#subject: Your Motion to Dismiss is ready to print or email
+#content: |
+#  ${ users[0] },
+#
+#  % if codefendants.number() > 0:
+#  Your Motion to Dismiss a Non-Essential Eviction was signed by ${ comma_and_list( codefendants ) }.
+#  % else:
+#  Your Motion to Dismiss a Non-Essential Eviction is ready.
+#  % endif
+#  
+#  You can [tap to see the signed document](${ final_form.url_for(external=True) }).
 ---
 # Must come from an `action`. Needed for security.
 event: check_status
@@ -888,7 +888,7 @@ code: |
       all_signatures_in = False
       break
   else:
-    trigger_final_notification
+    #trigger_final_notification
     all_signatures_in = True
   get_status_of_signatures = True
 ---
