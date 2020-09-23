@@ -655,7 +655,7 @@ generic object: Individual
 if: |
   x in who_proxy_sign_for
 question: |
-  ${ users[0] }, sign with the permisson of ${ x }
+  ${ users[0] }, if you have ${ x }'s permission, sign ${ x }'s name
 signature: x.signature
 under: |
   ${ x }
