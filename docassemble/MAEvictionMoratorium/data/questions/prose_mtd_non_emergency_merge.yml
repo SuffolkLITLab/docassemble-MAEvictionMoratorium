@@ -305,7 +305,7 @@ subquestion: |
   * Until 45 days after the Governor lifts the state of emergency,
   whichever comes first.  
   
-  This is called the eviction moratorium. But you **can** get evicted if you risk the health and safety of someone else by:
+  This is called the eviction moratorium. But you **can** get evicted if you risk the health or safety of someone else by:
   
   * Getting involved in criminal activity, or,
   * Violating your lease.
@@ -315,14 +315,12 @@ continue button field: mtd_intro
 ---
 id: is this risking saftey
 question: |
-  Are you risking someone's health and safety?
-subquestion: |
-  Are you:
+   % if codefendants.number() > 0:
+   Are any of you risking anyone's health or safety?
+   % else:
+   Are you risking anyone's health or safety?
+   % endif
   
-  * Involved in criminal activity, or 
-  * Breaking your lease,
-
-  in a way that risks someone's health and safety?
 fields:
   - no label: eviction_choice
     datatype: radio
@@ -333,17 +331,17 @@ fields:
 template: not_risking_health_and_safety_text
 content: |
   % if codefendants.number() > 0:
-  No, we are not risking someone's health and safety
+  No, we are not risking anyone's health or safety
   % else:
-  No, I am not risking someone's health and safety
+  No, I am not risking anyone's health or safety
   % endif
 ---
 template: yes_risking_health_and_safety_text
 content: |
   % if codefendants.number() > 0:
-  Yes, we are risking someone's health and safety
+  Yes, we are risking someone's health or safety
   % else:
-  Yes, I am risking someone's health and safety
+  Yes, I am risking someone's health or safety
   % endif
 ---
 id: kick out
@@ -351,11 +349,13 @@ event: kick_out
 question: |
   This interview is not for you
 subquestion: |
-  You said your eviction was filed because you risked someone's health and safety.
+  You said your eviction was filed because you risked someone's health or safety.
   
-  In some cases, you can still get the eviction dismissed even if you think you are risking someone's health or safety. 
-  
-  But talk to a lawyer because this makes it complicated.
+   % if codefendants.number() > 0:
+   If you think any of your codefendants risked someone else's health or safety, you can file this motion without them. Tap 'Restart' to go back to the beginning.
+   % endif
+   
+  In some cases, you can still get the eviction dismissed, even if you think you are risking someone's health or safety. Talk to a lawyer if you think you may be risking someone's health or safety.
 
   If you cannot file this motion or [talk to a lawyer](https://masslegalhelp.org/find-legal-aid), you can still fight your eviction case. Create an answer using [this free guided interview tool](https://www.gbls.org/MADE).
 buttons:
