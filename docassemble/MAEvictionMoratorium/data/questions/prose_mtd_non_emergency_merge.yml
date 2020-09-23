@@ -409,16 +409,26 @@ id: how to send to codefendant
 question: |
   How will ${ codefendants[i] } sign this Motion to Dismiss?
 subquestion: |
-  Your codefendants must sign this motion before you give it to the court. How will ${ codefendants[i] } sign this Motion to Dismiss?
+  Your codefendants must sign this motion before you give it to the court. They can sign
+  
+  * on their computer,
+  * on their phone,
+  * ask you to sign for them,
+  * on your computer or phone, or
+  * on paper.
+    
+  If you sign on your computer or phone we will send you a link to draw your signature with your mouse or finger.
+  
+  How are you going to get ${ codefendants[i] }'s signature on this motion?
 fields:
   - no label: codefendants[i].sign_method
     datatype: radio
     choices:
-      - Send a link by **email** so they can draw their signature on a computer or phone screen: email
-      - Send a link by **text** so they can draw their signature on their phone: text
-      - I asked for permission to sign ${ codefendants[i] }'s name on this motion. ${ codefendants[i] } said "yes," so I will sign for ${ codefendants[i] }: proxy
-      - ${ codefendants[i] } is here with me. ${ codefendants[i] } will sign near the end of this interview: local
-      - I will print my motion out when I am done with the interview and ${ codefendants[i] } will sign on the paper copy before I give it to the court: physical
+      - __Email__ ${ codefendants[i] } a link: email
+      - __Text__ ${ codefendants[i] } a link: text
+      - ${ codefendants[i] } asked me to sign for them.: proxy
+      - ${ codefendants[i] } will sign with me at the end of the interview: local
+      - I will print my motion and ${ codefendants[i] } will sign the paper copy: physical
   - What email should we use to ask for ${ codefendants[i] }'s signature?: codefendants[i].signature_email
     default: ${ codefendants[i].email }
     js show if: |
