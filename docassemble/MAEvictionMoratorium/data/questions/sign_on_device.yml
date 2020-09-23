@@ -33,28 +33,18 @@ code: |
   if defined( x.attr_name( 'signature' )):
     x.after_signature
     
-  elif x.wants_to_change_device is True:
-    # Reset and start over again
-    undefine( x.attr_name( 'which_device' ))
-    undefine( x.attr_name( 'send_method' ))
+  elif x.action_after_device_choice == 'wants_computer':
+    x.signature
+  elif x.action_after_device_choice == 'wants_mobile':
     undefine( x.attr_name( 'device_number' ))
     undefine( x.attr_name( 'send_signature_link' ))
-    undefine( x.attr_name( 'wants_to_change_device' ))
-    x.sign_on_device
+    undefine( x.attr_name( 'action_after_device_choice' ))
 
-  # If wants to change device again
+  # Otherwise, let them change the device they want to use
   else:
-    # If they've already signed, just move on?
-    # TODO: Do we want them to be able to choose to re-sign?
-    # Can we remove this now that there's one above?
-    if defined( x.attr_name( 'signature' )):
-      x.after_signature
-
-    # Otherwise, let them change the device they want to use
-    else:
-      x.said_had_signed_on_other_device = True  # For custom waiting screen text
-      undefine( x.attr_name( 'wants_to_change_device' ))
-      x.wait_for_signature
+    x.said_had_signed_on_other_device = True  # For custom waiting screen text
+    undefine( x.attr_name( 'action_after_device_choice' ))
+    x.wait_for_signature
 ---
 # Starting value
 generic object: Individual
@@ -155,10 +145,15 @@ continue button field: x.saw_qr_code
 id: x.wants_to_change_device
 generic object: Individual
 question: |
-  Waiting for signature or change device
+  Did you sign yet?
 subquestion: |
-  What should be the follow-up page/feedback for signature being done?
-field: x.wants_to_change_device
-buttons:
-  - Change my device: True
-  - Check for signature: False
+  We sent a link to ${ x.device_number }.
+  
+  We have not gotten your signature yet.
+fields:
+  - no label: x.action_after_device_choice
+    datatype: radio
+    choices:
+      - I signed: has_signed
+      - I want to sign on my computer: wants_computer
+      - I want to send the link to a different number: wants_mobile
