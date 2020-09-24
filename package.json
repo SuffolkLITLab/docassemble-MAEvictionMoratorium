@@ -1,0 +1,33 @@
+{
+  "name": "docassemble-maevictionmoratorium",
+  "version": "0.1.0",
+  "description": "MA Motion to Dismiss a Non-Essential Eviction",
+  "main": "",
+  "directories": {
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo 'These tests are fake. Use `local`' && mocha tests --timeout 10000",
+    "cucumber": "./node_modules/.bin/cucumber-js tests/features/*.feature",
+    "setup": "node -e 'require(\"./tests/install-branch.js\").setup()'",
+    "takedown": "node -e 'require(\"./tests/install-branch.js\").takedown()'",
+    "local": "npm run setup && npm run cucumber; npm run takedown"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/SuffolkLITLab/docassemble-MAEvictionMoratorium.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/SuffolkLITLab/docassemble-MAEvictionMoratorium/issues"
+  },
+  "homepage": "https://github.com/SuffolkLITLab/docassemble-MAEvictionMoratorium#readme",
+  "dependencies": {
+    "chai": "^4.2.0",
+    "dotenv": "^8.2.0",
+    "mocha": "^7.2.0",
+    "puppeteer": "^3.1.0",
+    "cucumber": "^6.0.5"
+  }
+}
