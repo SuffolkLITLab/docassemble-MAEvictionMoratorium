@@ -42,7 +42,7 @@ regex thoughts: https://stackoverflow.com/questions/171480/regex-grabbing-values
 
 
 const INTERVIEW_URL = interviewConstants.INTERVIEW_URL;
-setDefaultTimeout(120 * 1000);
+setDefaultTimeout(20 * 1000);
 
 let device_touch_map = {
   mobile: 'tap',
@@ -59,7 +59,7 @@ Given(/I start the interview[ on ]?(.*)/, async (optional_device) => {
 
   if (!scope.page) {
     scope.page = await scope.browser.newPage();
-    scope.page.setDefaultTimeout(120 * 1000)
+    scope.page.setDefaultTimeout(20 * 1000)
   }
 
   // Let developer pick mobile device if they want to
@@ -374,13 +374,14 @@ When(/I tap the option with the text "([^"]+)"/, async (label_text) => {
   await scope.afterStep(scope, {waitForShowIf: true});
 });
 
-// 'I choose {string}'?
-When('I tap the {string} option', async (label_text) => {
-  /* taps the first label with the exact `label_text`.
+// 'I choose {string}'? Is this precise enough to avoid dropdown confusion?
+// When('I tap the {string} option', async (label_text) => {
+When('I choose {string}', async (label_text) => {
+  /* Taps the first checkbox/radio/thing with a label that contains `label_text`.
   *    Very limited. Anything more is a future feature.
   */
-  // Page has loaded? Should not wait?
-  let choice = await scope.page.waitForSelector( `label[aria-label*="${ label_text }"]` );
+  await scope.page.waitForSelector('label');
+  let choice = await scope.page.$( `label[aria-label*="${ label_text }"]` );
   await choice[ scope.click_type[ scope.device ]]();
 
   await scope.afterStep(scope, {waitForShowIf: true});
@@ -388,39 +389,44 @@ When('I tap the {string} option', async (label_text) => {
 
 // TODO: Should it be 'containing', or should it be exact? Might be better to be exact.
 // TODO: Should we have a test just for the state of MA to be selected? Much easier... Or states in general
-When('I select the {string} option from the {string} choices', async (choice_text, label_text) => {
-  /* Selects the option having exactly the text `choice_text`
-  * in the <select> with the label "containing" the `label text`.
-  *    Finding one out of a bunch is a future feature.
+// When('I select the {string} option from the {string} choices', async (option_text, label_text) => {
+When(/I select "([^"]+)" from the ?(?:"([^"]+)")? dropdown/, async (option_text, label_text) => {
+  /* Selects the option containing the text `option_text`
+  * in the <select> with the label "containing" the `label_text`.
+  *    Finding one dropdown out of a bunch is a future feature.
   * 
   * Note: `page.select()` is the only way to tap on an element in a <select>
   */
   // Make sure ajax is finished getting the items in the <select>
   await scope.page.waitForSelector('option');
 
-  // The <label> will have the `id` for the <select> we're looking for
-  let [label] = await scope.page.$x(`//label[contains(text(), "${label_text}")]`);
-  let select_id = await scope.page.evaluate(( label ) => {
-    return label.getAttribute('for');
-  }, label);
+  let select, select_id;
+  if ( label_text ) {
+    // The <label> will have the `id` for the <select> we're looking for
+    let [label] = await scope.page.$x(`//label[contains(text(), "${label_text}")]`);
+    select_id = await scope.page.evaluate(( label ) => {
+      return label.getAttribute('for');
+    }, label);
+
+    select = await scope.page.$(`#${ select_id }`);
+  } else {
+    select = await scope.page.$(`select`);
+    let prop_handle = await select.getProperty('id');
+    select_id = await prop_handle.jsonValue();
+  }
 
   // Get the actual option to pick. Can't use `value` here unfortunately as it doesn't reflect the text
-  // Waiting for possible ajax request.
-  let select = await scope.page.waitForSelector(`#${ select_id }`);
-
-  // Get the option with the exactly matching text
-  // Might want to make this flexible for reasons noted at the top of the script
   let option_value = await scope.page.evaluate(( select_elem, option_text ) => {
     let options = select_elem.querySelectorAll( 'option' );
     for ( let option of options ) {
-      if ( option.textContent === option_text ) { return option.getAttribute('value'); }
+      if ( (option.textContent).includes(option_text) ) { return option.getAttribute('value'); }
     }
     return null;
-  }, select, choice_text);
+  }, select, option_text);
 
   // No other way to tap on an element in a <select>
   await scope.page.select(`#${ select_id }`, option_value);
-
+  
   await scope.afterStep(scope, {waitForShowIf: true});
 });
 
@@ -435,6 +441,11 @@ Then('I type {string} in the {string} field', async (value, field_label) => {
   let id = await scope.getTextFieldId(scope, field_label);
   await scope.page.type( '#' + id, value );
 
+  await scope.afterStep(scope, {waitForShowIf: true});
+});
+
+Then('I type {string} in the unlabeled field', async (value) => {
+  let text_field = await scope.page.type( `input[type="text"]`, value );
   await scope.afterStep(scope, {waitForShowIf: true});
 });
 
