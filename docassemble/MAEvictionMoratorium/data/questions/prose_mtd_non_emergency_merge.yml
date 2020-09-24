@@ -432,7 +432,7 @@ fields:
     choices:
       - __Email__ ${ codefendants[i] } a link: email
       - __Text__ ${ codefendants[i] } a link: text
-      - ${ codefendants[i] } asked me to sign for them.: proxy
+      - ${ codefendants[i] } asked me to sign their name for them: proxy
       - ${ codefendants[i] } will sign with me at the end of the interview: local
       - I will print my motion and ${ codefendants[i] } will sign the paper copy: physical
   - What email should we use to ask for ${ codefendants[i] }'s signature?: codefendants[i].signature_email
@@ -671,7 +671,7 @@ generic object: Individual
 if: |
   x in who_proxy_sign_for
 question: |
-  ${ users[0] }, sign with the permisson of ${ x }
+  Sign ${ x }'s name
 signature: x.signature
 under: |
   ${ x }
