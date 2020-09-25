@@ -42,7 +42,7 @@ regex thoughts: https://stackoverflow.com/questions/171480/regex-grabbing-values
 
 
 const INTERVIEW_URL = interviewConstants.INTERVIEW_URL;
-setDefaultTimeout(20 * 1000);
+setDefaultTimeout(50 * 1000);
 
 let device_touch_map = {
   mobile: 'tap',
@@ -59,7 +59,7 @@ Given(/I start the interview[ on ]?(.*)/, async (optional_device) => {
 
   if (!scope.page) {
     scope.page = await scope.browser.newPage();
-    scope.page.setDefaultTimeout(20 * 1000)
+    scope.page.setDefaultTimeout(50 * 1000)
   }
 
   // Let developer pick mobile device if they want to
@@ -304,9 +304,23 @@ When(/I tap the (button|link) "([^"]+)"/, async (elemType, phrase) => {
   let elem;
   if (elemType === 'button') {
     [elem] = await scope.page.$x(`//button/span[contains(text(), "${phrase}")]`);
+    if ( !elem ) {
+      [elem] = await scope.page.$x(`//button[contains(text(), "${phrase}")]`);
+      if ( !elem ) {
+        // This how we'll handle it for now, but oh boy
+        [elem] = await scope.page.$x(`//div[contains(@class, "form-actions")]//a[contains(text(), "${phrase}")]`);
+      }
+    }
   } else {
     [elem] = await scope.page.$x(`//a[contains(text(), "${phrase}")]`);
   }
+
+  // let elem;
+  // if (elemType === 'button') {
+  //   [elem] = await scope.page.$x(`//button/span[contains(text(), "${phrase}")]`);
+  // } else {
+  //   [elem] = await scope.page.$x(`//*[@class="form-actions"]//a[contains(text(), "${phrase}")]`);
+  // }
 
   let winner;
   if (elem) {
@@ -447,6 +461,19 @@ Then('I type {string} in the {string} field', async (value, field_label) => {
 Then('I type {string} in the unlabeled field', async (value) => {
   let text_field = await scope.page.type( `input[type="text"]`, value );
   await scope.afterStep(scope, {waitForShowIf: true});
+});
+
+Then('I sign', async () => {
+// Then('I sign', async () => {
+  let canvas = await scope.page.waitForSelector('canvas');
+  let bounding_box = await canvas.boundingBox();
+
+  await scope.page.mouse.move(bounding_box.x + bounding_box.width / 2, bounding_box.y + bounding_box.height / 2);
+  await scope.page.mouse.down();
+  // await scope.page.mouse.move(1, 1);
+  await scope.page.mouse.up();
+
+  await scope.afterStep(scope);
 });
 
 

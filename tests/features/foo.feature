@@ -35,3 +35,13 @@ Scenario: Shortest path
   Then I tap the button "Next"
   Then I select "Attleboro District Court" from the dropdown
   Then I tap the button "Next"
+  Then I type "111" in the "Docket number" field
+  Then I tap the button "Next"
+  Then I choose "No"
+  Then I tap the button "Next"
+  Then I wait 2 seconds
+  Then I tap the button "Next"
+  Then I tap the button "This computer"
+  Then the question id should be "persons signature"
+  Then I sign
+  Then I tap the button "Next"
