@@ -664,6 +664,12 @@ attachment:
   filename: dismiss-non-essential-eviction
   name: Motion to Dismiss - Non-Essential Eviction
 ---
+attachment: 
+  docx template file: non_essential_eviction_instructions.docx
+  variable name: non_essential_eviction_instructions
+  filename: non-essential-eviction-instructions
+  name: Instructions for Motion to Dismiss Non-Essential Eviction
+---
 # Only triggered for signers who user is signing for.
 # Using intrinsic names is not enough.
 id: persons signature
@@ -917,6 +923,7 @@ reconsider:
   - unwilling_codefs
   - all_signatures_in
   - motion_to_dismiss_for_non_essential_eviction
+  - non_essential_eviction_instructions
   - final_form
 question: |
   % if all_signatures_in:
@@ -966,7 +973,7 @@ subquestion: |
   
   ${ document_icon_template }
   ${ download_next_steps_template }
-  ${ motion_to_dismiss_for_non_essential_eviction.document_buttons_template }
+  ${ non_essential_eviction_instructions.document_buttons_template }
   </div>
   
   <div class="email-pointer row">
@@ -1098,8 +1105,10 @@ content: |
     ${ action_button_html(
       x.pdf.url_for(attachment=True),
       new_window=False,
-      label='Download :file-download:',
-      color="primary"
+      color="primary",
+      
+      label='Download :file-download:'
+      
     ) }
   </div>
   
@@ -1107,8 +1116,10 @@ content: |
     ${ action_button_html(
       x.pdf.url_for(inline=True),
       new_window="True",
-      label='View <i class="far fa-eye"></i>',
-      color="primary"
+      color="primary",
+      
+      label='View <i class="far fa-eye"></i>'
+      
     ) }
   </div>
 ---
