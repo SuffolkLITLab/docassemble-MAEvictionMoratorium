@@ -28,8 +28,8 @@ mandatory: True
 code: |
   multi_user = True
 ---
----
 # Currently getting here with the url in the console of the initial interview
+# This can be customized as well if you want to do different stuff before running the rest
 mandatory: True
 code: |
   get_remote_signature
@@ -71,6 +71,7 @@ generic object: Individual
 code: |
   x.signature_date = today()
   x.has_signed = True
+  x.signature.set_attributes(private=False, persistent=True)
   store_signature_data( x )
 
   x.after_signature_saved
@@ -89,6 +90,7 @@ code: |
 ---
 ###################
 # Interfacing directly with remote signer interview order code
+# Uses custom stored data from the user's interview
 ##################
 ---
 id: willing to sign
@@ -105,14 +107,76 @@ id: x.after_signature_saved
 event: x.after_signature_saved
 generic object: Individual
 code: |
+  # Maybe there's no final notification. They just see
+  # all these notifications.
+  trigger_signature_complete_user_notifications
   x.end
   #x.status
+---
+code: |
+  background_action('send_signature_complete_user_notifications')
+  trigger_signature_complete_user_notifications = True
+---
+event: send_signature_complete_user_notifications
+code: |
+  if task_not_yet_performed('send_signed_email') and redis.get_data( signature_data_id )['user_email']: 
+    send_email(task='send_signed_email', to=(redis.get_data( signature_data_id )['user_email']), template=signed_email_template)
+    
+  if task_not_yet_performed('send_signed_sms') and redis.get_data( signature_data_id )['user_mobile']:
+    send_sms(task='send_signed_sms', to=(redis.get_data( signature_data_id )['user_mobile']), template=signed_sms_template)
+    
+  background_response()
+---
+template: signed_email_template
+subject: |
+  ${ signer } has signed your Motion to Dismiss
+content: |
+  ${ redis.get_data( signature_data_id )['user_names'] },
+
+  ${ signer } has signed your Motion to Dismiss a Non-Essential Eviction. [Tap here to go back to the form and see your document](${ redis.get_data( signature_data_id )['interview_url'] }).
+---
+template: signed_sms_template
+content: |
+  ${ signer.familiar() } has signed your Motion to Dismiss. Use the link to see your document. ${ redis.get_data( signature_data_id )['interview_url'] }
 ---
 id: x.after_unwilling_to_sign_saved
 event: x.after_unwilling_to_sign_saved
 generic object: Individual
 code: |
+  trigger_unwilling_user_notifications
   x.unwilling_to_sign_end
+---
+code: |
+  background_action('send_unwilling_user_notifications')
+  trigger_unwilling_user_notifications = True
+---
+event: send_unwilling_user_notifications
+code: |
+  if task_not_yet_performed('send_unwilling_email') and redis.get_data( signature_data_id )['user_email']:
+    send_email(task='send_unwilling_email', to=(redis.get_data( signature_data_id )['user_email']), template=unwilling_email_template)
+    
+  if task_not_yet_performed('send_unwilling_sms') and redis.get_data( signature_data_id )['user_mobile']:
+    send_sms(task='send_unwilling_sms', to=(redis.get_data( signature_data_id )['user_mobile']), template=unwilling_sms_template)
+    
+  background_response()
+---
+template: unwilling_email_template
+# at ${ signer.signature_email if defined('signer.signature_email') else signer.signature_number } (something complex to show both)
+# TODO: When feature is ready, add that they can edit/resend to cosigner
+subject: |
+  ${ signer } will not sign you Motion to Dismiss
+content: |
+  ${ redis.get_data( signature_data_id )['user_names'] },
+  
+  We sent ${ signer } a link to your Motion to Dismiss a Non-Essential Eviction. They said they would not sign the motion. Call or talk to ${ signer } to find out if the contact information you wrote is correct. If it is wrong, fill out a new form with the correct information.
+
+  If ${ signer } does not want to sign the motion, you can still print or download it without ${ signer }'s signature and file it with the court.
+
+  [Tap here to go back to the form and see your document's status](${ redis.get_data( signature_data_id )['interview_url'] }).
+---
+template: unwilling_sms_template
+content: |
+  ${ signer.familiar() } will not sign your Motion to Dismiss. Use the link to see your document. ${ redis.get_data( signature_data_id )['interview_url'] }
 ---
 ###################
 # Interfacing directly with script for user choosing other device to sign on
@@ -130,7 +194,7 @@ code: |
 id: signature
 generic object: Individual
 question: |
-  Signature ${ x }
+  ${ x }, sign below
 signature: x.signature
 ---
 ###################
@@ -140,7 +204,7 @@ signature: x.signature
 generic object: Individual
 template: x.sms_device_template
 content:
-  You have chosen to sign on this device, ${ x }. ${ device_choice_url }
+  ${ x.familiar() }, use this link to sign. ${ device_choice_url }
 ---
 id: remote signer end
 generic object: Individual

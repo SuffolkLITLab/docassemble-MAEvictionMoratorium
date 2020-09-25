@@ -27,10 +27,11 @@ comment: |
   Predefine some variables we need
 code: |
   allowed_courts = [
-      "Housing Court",    
-      "Boston Municipal Court",
-      "District Court",
-      ]
+    "Housing Court",    
+    "Boston Municipal Court",
+    "District Court",
+    "Superior Court",
+  ]
   preferred_court = "Housing Court"
   other_parties.there_are_any = True
   user_role = 'defendant'
@@ -74,6 +75,7 @@ code: |
   
   codefendants.gather()
   # Set signers that will sign on this device or not
+  all_signers
   who_proxy_sign_for
   who_else_on_device
   local_signers  # codefendants signing on user's device
@@ -106,6 +108,10 @@ code: |
 ---
 code: |
   all_signers = users + codefendants
+---
+reconsider:
+  - all_signers
+code: |
   who_sign_with_pen = [codef for codef in codefendants if codef.sign_method == 'physical']
   all_digital_codefs = [codef for codef in codefendants if codef not in who_sign_with_pen]
   # Get signatures that will taken on this device
@@ -115,6 +121,9 @@ code: |
   # Used in here and for sending out for signatures (multiuser code)
   remote_signers = all_signers.difference(local_signers + who_sign_with_pen)
   collect_signer_types = True
+---
+code: |
+  unwilling_codefs = [signer for signer in codefendants if hasattr(signer, 'willing_to_sign') and signer.willing_to_sign is False]
 ---
 # After the user signs, the links for the co-signers get sent
 event: x.after_signature
@@ -175,7 +184,7 @@ question: |
   ${interview_short_title}: Mass Access Project
 subquestion: |
  
-  The MassAccess Project can help you complete and file court forms in 3 steps:
+  The MassAccess Project can help you complete and download court forms in 3 steps:
   
   Step 1. Answer questions that will fill in your form for you.  
   Step 2. Preview the completed form.  
@@ -296,7 +305,7 @@ subquestion: |
   * Until 45 days after the Governor lifts the state of emergency,
   whichever comes first.  
   
-  This is called the eviction moratorium. But you **can** get evicted if you risk the health and safety of someone else by:
+  This is called the eviction moratorium. But you **can** get evicted if you risk the health or safety of someone else by:
   
   * Getting involved in criminal activity, or,
   * Violating your lease.
@@ -306,14 +315,12 @@ continue button field: mtd_intro
 ---
 id: is this risking saftey
 question: |
-  Are you risking someone's health and safety?
-subquestion: |
-  Are you:
+   % if codefendants.number() > 0:
+   Are any of you risking anyone's health or safety?
+   % else:
+   Are you risking anyone's health or safety?
+   % endif
   
-  * Involved in criminal activity, or 
-  * Breaking your lease,
-
-  in a way that risks someone's health and safety?
 fields:
   - no label: eviction_choice
     datatype: radio
@@ -324,17 +331,17 @@ fields:
 template: not_risking_health_and_safety_text
 content: |
   % if codefendants.number() > 0:
-  No, we are not risking someone's health and safety
+  No, we are not risking anyone's health or safety
   % else:
-  No, I am not risking someone's health and safety
+  No, I am not risking anyone's health or safety
   % endif
 ---
 template: yes_risking_health_and_safety_text
 content: |
   % if codefendants.number() > 0:
-  Yes, we are risking someone's health and safety
+  Yes, we are risking someone's health or safety
   % else:
-  Yes, I am risking someone's health and safety
+  Yes, I am risking someone's health or safety
   % endif
 ---
 id: kick out
@@ -342,11 +349,13 @@ event: kick_out
 question: |
   This interview is not for you
 subquestion: |
-  You said your eviction was filed because you risked someone's health and safety.
+  You said your eviction was filed because you risked someone's health or safety.
   
-  In some cases, you can still get the eviction dismissed even if you think you are risking someone's health or safety. 
-  
-  But talk to a lawyer because this makes it complicated.
+   % if codefendants.number() > 0:
+   If you think any of your codefendants risked someone else's health or safety, you can file this motion without them. Tap 'Restart' to go back to the beginning.
+   % endif
+   
+  In some cases, you can still get the eviction dismissed, even if you think you are risking someone's health or safety. Talk to a lawyer if you think you may be risking someone's health or safety.
 
   If you cannot file this motion or [talk to a lawyer](https://masslegalhelp.org/find-legal-aid), you can still fight your eviction case. Create an answer using [this free guided interview tool](https://www.gbls.org/MADE).
 buttons:
@@ -358,17 +367,23 @@ id: do you have codefendants
 question: |
   Is anyone filing with you?
 subquestion: |
-  Other people listed as DEFENDANT(S)/TENANT(S)/OCCUPANT(S) on your Summons and Complaint can file this Motion to Dismiss with you.
-  
+  Look at the line after DEFENDANT(S)/TENANT(S)/OCCUPANT(S) on your Summons and   Complaint.
+  Anyone else who is named there can file this motion with you.
+
   [FILE Defendants.png]
-  
-  You must get their permission to file with you. Later on, they need to sign the motion. 
-fields: 
+
+  If they are going to file with you, you need their permission because they need to sign the motion too. Is anyone going to file with you?
+fields:
+
   - no label: codefendants.there_are_any
     datatype: radio
     choices:
       - I am filing this motion alone.: False
       - I talked to them and at least one of them wants to file with me.: True
+help:
+  label: Do I have to include anyone?
+  content: |
+    No. You do not need to file this motion with anyone else.
 ---
 id: codefendants
 question: |
@@ -400,16 +415,26 @@ id: how to send to codefendant
 question: |
   How will ${ codefendants[i] } sign this Motion to Dismiss?
 subquestion: |
-  Your codefendants must sign this motion before you give it to the court. How will ${ codefendants[i] } sign this Motion to Dismiss?
+  Your codefendants must sign this motion before you give it to the court. They can sign
+  
+  * on their computer,
+  * on their phone,
+  * ask you to sign for them,
+  * on your computer or phone, or
+  * on paper.
+    
+  If you sign on your computer or phone we will send you a link to draw your signature with your mouse or finger.
+  
+  How are you going to get ${ codefendants[i] }'s signature on this motion?
 fields:
   - no label: codefendants[i].sign_method
     datatype: radio
     choices:
-      - Send a link by **email** so they can draw their signature on a computer or phone screen: email
-      - Send a link by **text** so they can draw their signature on their phone: text
-      - I asked for permission to sign ${ codefendants[i] }'s name on this motion. ${ codefendants[i] } said "yes," so I will sign for ${ codefendants[i] }: proxy
-      - ${ codefendants[i] } is here with me. ${ codefendants[i] } will sign near the end of this interview: local
-      - I will print my motion out when I am done with the interview and ${ codefendants[i] } will sign on the paper copy before I give it to the court: physical
+      - __Email__ ${ codefendants[i] } a link: email
+      - __Text__ ${ codefendants[i] } a link: text
+      - ${ codefendants[i] } asked me to sign their name for them: proxy
+      - ${ codefendants[i] } will sign with me at the end of the interview: local
+      - I will print my motion and ${ codefendants[i] } will sign the paper copy: physical
   - What email should we use to ask for ${ codefendants[i] }'s signature?: codefendants[i].signature_email
     default: ${ codefendants[i].email }
     js show if: |
@@ -470,7 +495,7 @@ fields:
     datatype: object
     object labeler: |
       lambda court: court.short_label()
-    choices: macourts
+    choices: macourts.filter_courts(allowed_courts)
     show if: 
       variable: standard_court_choice
       is: null
@@ -493,7 +518,7 @@ fields:
     datatype: object
     object labeler: |
       lambda court: court.short_label()
-    choices: macourts
+    choices: macourts.filter_courts(allowed_courts)
 continue button field: show_choose_a_court
 ---
 template: court_choice_subquestion
@@ -627,6 +652,8 @@ attachment:
   docx template file: motion_to_dismiss_for_non-essential_eviction.docx
   variable name: preview_doc
 ---
+reconsider:
+  - motion_to_dismiss_for_non_essential_eviction
 code: |
   final_form = pdf_concatenate(motion_to_dismiss_for_non_essential_eviction, filename="dismiss-non-essential-eviction.pdf")
   final_form.set_attributes(private=False, persistent=True)
@@ -644,7 +671,7 @@ generic object: Individual
 if: |
   x in who_proxy_sign_for
 question: |
-  ${ users[0] }, sign with the permisson of ${ x }
+  Sign ${ x }'s name
 signature: x.signature
 under: |
   ${ x }
@@ -670,19 +697,27 @@ code: |
 ---
 reconsider:
   - form_to_sign
+  - final_form
 code: |
   # Whatever info you want to be able to use for the co-signers' interview
   custom_signature_redis_data = {
-    'user_names': str(users),
+    'user_names': comma_and_list(users),
     'preview': form_to_sign,
+    'final_form': final_form,  # only works because it's docx
+    'user_email': users[0].email if defined('users[0].email') else None,
+    'user_mobile': users[0].mobile_number if defined('users[0].mobile_number') else None,
+    'interview_url': shortenMe( interview_url_action('check_status', party_id=users[0].id) ).shortenedURL
   }
+---
+# Possible way to deal with edited answers
+event: update_custom_redis_data
+code: |
+  reconsider( 'custom_signature_redis_data' )
 ---
 id: sms template multiuser
 template: codefendants[i].sms_template
 content: |
-  Dear ${ codefendants[i] },
-  ${ users[0] } filled out a Motion to Dismiss your eviction case. Please review and sign if you want to file it with ${ users[0] }.  
-  ${ codefendants[i].cosigner_url }
+  ${ codefendants[i].familiar() }, please review and sign ${ users[0].familiar() }’s motion about your eviction case. Use this link. ${ codefendants[i].cosigner_url }
 ---
 id: codefendant email
 reconsider:
@@ -722,7 +757,11 @@ code: |
 id: cosigner links sent notification sms
 template: initial_sms_template
 content: |
-  ${ users[0] }, your Motion to Dismiss was sent to ${ comma_and_list( remote_signers ) }. See the document at ${ interview_url_action('check_status', party_id=users[0].id) }
+  % if len(remote_signers) > 1:
+  ${ users[0].familiar() }, we sent your Motion to Dismiss to your codefendants. Use the link to see your document. ${ shortenMe(interview_url_action('check_status', party_id=users[0].id)).shortenedURL }
+  % else:
+  ${ users[0].familiar() }, we sent your Motion to Dismiss to your codefendant. Use the link to see your document. ${ shortenMe(interview_url_action('check_status', party_id=users[0].id)).shortenedURL }
+  % endif
 ---
 id: cosigner links sent notification email
 template: initial_email_template
@@ -742,48 +781,48 @@ content: |
   You can also [tap here to check if ${ comma_and_list( remote_signers ) } has signed the motion](${ interview_url_action('check_status', party_id=users[0].id) }).
   % endif
 ---
-code: |
-  background_action('send_final_notification')
-  trigger_final_notification = True
----
-# Can be done with less nesting, but I find it less readable
-event: send_final_notification
-code: |
-  if not task_performed('send_final_sms'):
-    if defined( 'users[0].device_number' ) and users[0].device_number:
-      send_sms(task='send_final_sms', to=users[0].device_number, template=final_sms_template)
-    elif defined( 'users[0].mobile_number' ) and users[0].mobile_number:
-      send_sms(task='send_final_sms', to=users[0].mobile_number, template=final_sms_template)
-      
-  if not task_performed('send_final_email'):
-    if defined( 'users[0].email' ) and users[0].email:
-      send_email(task='send_final_email', to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
-
-  background_response()
----
-id: form ready sms
-reconsider:
-  - final_form
-template: final_sms_template
-content: |
-  ${ users[0] }, your Motion to Dismiss a Non-Essential Eviction is ready. See the document at ${ final_form.url_for(external=True) }
----
-# TODO: The pdf is attached. Do we really need the link?
-id: form ready email
-reconsider:
-  - final_form
-template: final_email_template
-subject: Your Motion to Dismiss is ready to print or email
-content: |
-  ${ users[0] },
-
-  % if codefendants.number() > 0:
-  Your Motion to Dismiss a Non-Essential Eviction was signed by ${ comma_and_list( codefendants ) }.
-  % else:
-  Your Motion to Dismiss a Non-Essential Eviction is ready.
-  % endif
-  
-  You can [tap to see the signed document](${ final_form.url_for(external=True) }).
+#code: |
+#  background_action('send_final_notification')
+#  trigger_final_notification = True
+#---
+## Can be done with less nesting, but I find it less readable
+#event: send_final_notification
+#code: |
+#  if not task_performed('send_final_sms'):
+#    if defined( 'users[0].device_number' ) and users[0].device_number:
+#      send_sms(task='send_final_sms', to=users[0].device_number, template=final_sms_template)
+#    elif defined( 'users[0].mobile_number' ) and users[0].mobile_number:
+#      send_sms(task='send_final_sms', to=users[0].mobile_number, template=final_sms_template)
+#      
+#  if not task_performed('send_final_email'):
+#    if defined( 'users[0].email' ) and users[0].email:
+#      send_email(task='send_final_email', to=users[0], template=final_email_template, attachments=motion_to_dismiss_for_non_essential_eviction)
+#
+#  background_response()
+#---
+#id: form ready sms
+#reconsider:
+#  - final_form
+#template: final_sms_template
+#content: |
+#  ${ users[0] }, your Motion to Dismiss a Non-Essential Eviction is ready. See the document at ${ final_form.url_for(external=True) }
+#---
+## TODO: The pdf is attached. Do we really need the link?
+#id: form ready email
+#reconsider:
+#  - final_form
+#template: final_email_template
+#subject: Your Motion to Dismiss is ready to print or email
+#content: |
+#  ${ users[0] },
+#
+#  % if codefendants.number() > 0:
+#  Your Motion to Dismiss a Non-Essential Eviction was signed by ${ comma_and_list( codefendants ) }.
+#  % else:
+#  Your Motion to Dismiss a Non-Essential Eviction is ready.
+#  % endif
+#  
+#  You can [tap to see the signed document](${ final_form.url_for(external=True) }).
 ---
 # Must come from an `action`. Needed for security.
 event: check_status
@@ -824,16 +863,13 @@ code: |
 generic object: Individual
 template: x.sms_device_template
 content:
-  ${ x }, tap the link to sign your Motion to Dismiss.
-
-  ${ device_choice_url }
+  ${ x.familiar() }, tap the link to sign your Motion to Dismiss. ${ device_choice_url }
 ---
 generic object: Individual
 code: |
   # `action` experiments for true device choice begin here
   long_device_choice_url = interview_url_action( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
   device_choice_url = shortenMe( long_device_choice_url ).shortenedURL
-  qr_url = interview_url_action_as_qr( 'signature_with_device_choice', device_id='tbd', signature_data_id=signature_data_id, party_id=x.id )
 ---
 code: |
   signature_data_id = get_random_chars()
@@ -858,8 +894,8 @@ code: |
 #################
 id: if all signed send email
 reconsider:
-  - collect_signer_types
   - get_stored_data
+  - collect_signer_types
 # Is requested when people check on the status of the signatures
 code: |
   # Statuses: sent, signed, unwilling, physical
@@ -868,15 +904,17 @@ code: |
       all_signatures_in = False
       break
   else:
-    trigger_final_notification
+    #trigger_final_notification
     all_signatures_in = True
   get_status_of_signatures = True
 ---
+# Each variable is a chunk of text. Be aware of the `if` statements and move things around as you see fit.
 id: signature status
 event: users[0].status
 reconsider:
-  - collect_signer_types
   - get_stored_data
+  - collect_signer_types
+  - unwilling_codefs
   - all_signatures_in
   - motion_to_dismiss_for_non_essential_eviction
   - final_form
@@ -889,47 +927,107 @@ question: |
 subquestion: |
 
   % if all_signatures_in:
-  
-    % if len( all_digital_codefs ) > 1:
-    <i class="fa fa-check" aria-hidden="true"></i> ${ comma_and_list( all_digital_codefs )} have signed.
-    % elif len( all_digital_codefs ) > 0:
-    <i class="fa fa-check" aria-hidden="true"></i> ${ all_digital_codefs[0] } has signed.
-    % endif
-  
+    ${ every_digital_signature_in_template }
+    
   % else:
   
-    <% unwilling_exists = False %>
-    % for signer in codefendants:
-    % if defined( signer.attr_name( 'willing_to_sign' )) and signer.willing_to_sign is False:
-    <% unwilling_exists = True %>
-    <i class="fa fa-times" aria-hidden="true"></i> ${ signer } refused to sign your motion. We sent it to ${ signer } at **${ showifdef( signer.attr_name('signature_email' )) }${ showifdef(signer.attr_name('signature_number' )) }**. If  ${ signer } does not want to sign the motion, you can still print or download it without  ${ signer }'s signature and file it with the court.[BR]
-    % endif
-    % endfor
-    
-    % if unwilling_exists:
+    % if len( unwilling_codefs ) > 0:
+    ${ unwilling_list_template }
+
+    ${ unwilling_instructions }
     ---
     % endif
 
-    % for signer in remote_signers:
-    % if not defined( signer.attr_name( 'signature' )) and (not defined( signer.attr_name( 'willing_to_sign' )) or not signer.willing_to_sign is False):
-    <i class="fa fa-envelope" aria-hidden="true"></i> You sent a message to ${ signer } to sign. They have not signed yet.[BR]
-    % endif
-    % endfor
-  
-    % for signer in codefendants:
-    % if defined( signer.attr_name( 'signature' )):
-    <i class="fa fa-check" aria-hidden="true"></i> ${ signer } has signed[BR]
-    % endif
-    % endfor
+    ${ waiting_list_template }
+
+    ${ signed_list_template }
   
   % endif
   
-  % for signer in who_sign_with_pen:
-  <i class="fa fa-pen-alt" aria-hidden="true"></i> ${ signer } will sign on the document when you print it.
-  % endfor
+  ${ paper_signature_list_template }
   
   % if len( remote_signers ) > 0:
   ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='md') }
   % endif
+
+buttons:
+  - Restart: restart
   
 attachment code: motion_to_dismiss_for_non_essential_eviction
+---
+# Edit below to change the contents of the status page
+---
+template: every_digital_signature_in_template
+content: |
+  % if len( all_digital_codefs ) > 1:
+  :check: ${ comma_and_list( all_digital_codefs )} have signed.
+  % elif len( all_digital_codefs ) > 0:
+  :check: ${ all_digital_codefs[0] } has signed.
+  % endif
+---
+template: unwilling_list_template
+content: |
+  % for signer in unwilling_codefs:
+  :times: ${ signer } refused to sign your motion. We sent 
+  it to ${ signer } at **${ signer.signature_message_endpoint }**.[BR]
+  % endfor
+---
+template: unwilling_instructions
+content: |
+  % if len( unwilling_codefs ) > 1:
+  **You do not need ${ comma_and_list([str(person) + "'s" for person in unwilling_codefs]) } signatures
+  to file the motion. You can:**
+
+  * Download and file the motion. You can ask
+  ${ comma_and_list(unwilling_codefs) } to sign the paper
+  copy. If they do not sign the paper copy, you can cross out their
+  names and file it anyway. **Or,**
+  * Start the interview again. Use the 'Restart'
+  button. You can leave out ${ comma_and_list(unwilling_codefs) }. **Or,**
+  * You can file the motion as it is.
+  
+  % elif len( unwilling_codefs ) > 0:
+  **You do not need ${ unwilling_codefs[0] }'s signature
+  to file the motion. You can:**
+
+  * Download and file the motion. You can ask
+  ${ unwilling_codefs[0] } to sign the paper
+  copy. If they do not sign the paper copy, you can cross out their
+  name and file it anyway. **Or,**
+  * Start the interview again. Use the 'Restart'
+  button. You can leave out ${ unwilling_codefs[0] }. **Or,**
+  * You can file the motion as it is.
+  
+  % endif
+---
+template: waiting_list_template
+content: |
+  % for signer in remote_signers:
+  % if not hasattr(signer, 'signature') and (not hasattr(signer,'willing_to_sign') or not signer.willing_to_sign is False):
+  :envelope: You sent a message to ${ signer } at
+  ${ signer.signature_message_endpoint } to sign the
+  document. They have not signed yet.[BR]
+  % endif
+  % endfor
+---
+template: signed_list_template
+content: |
+  % for signer in codefendants:
+  % if hasattr(signer, 'signature'):
+  :check: ${ signer } has signed[BR]
+  % endif
+  % endfor
+---
+template: paper_signature_list_template
+content: |
+  % for signer in who_sign_with_pen:
+  :pen-alt: ${ signer } will sign on the document when you print it.[BR]
+  % endfor
+---
+# `template` so it gets recalculated each time (I think)
+# Separate so it can be reused and the text for it can be easily edited.
+generic object: Individual
+template: x.signature_message_endpoint
+content: |
+  ${ x.signature_email if x.send_method == "email" else x.signature_number }
+---
