@@ -42,7 +42,7 @@ regex thoughts: https://stackoverflow.com/questions/171480/regex-grabbing-values
 
 
 const INTERVIEW_URL = interviewConstants.INTERVIEW_URL;
-setDefaultTimeout(80 * 1000);
+setDefaultTimeout(120 * 1000);
 
 let device_touch_map = {
   mobile: 'tap',
@@ -59,7 +59,7 @@ Given(/I start the interview[ on ]?(.*)/, async (optional_device) => {
 
   if (!scope.page) {
     scope.page = await scope.browser.newPage();
-    scope.page.setDefaultTimeout(80 * 1000)
+    scope.page.setDefaultTimeout(120 * 1000)
   }
 
   // Let developer pick mobile device if they want to
@@ -97,7 +97,8 @@ When("I do nothing", async () => {
   await scope.afterStep(scope);
 });
 
-Then('I should see the phrase {string}', async (phrase) => {
+// Allow emphasis with capital letters
+Then(/I should see the phrase "([^"]+)"/i, async (phrase) => {
   /* In Chrome, this `innerText` gets only visible text */
   const bodyText = await scope.page.$eval('body', elem => elem.innerText);
   expect(bodyText).to.contain(phrase);
@@ -105,7 +106,8 @@ Then('I should see the phrase {string}', async (phrase) => {
   await scope.afterStep(scope);
 });
 
-Then('I should not see the phrase {string}', async (phrase) => {
+// Allow emphasis with capital letters
+Then(/I should not see the phrase "([^"]+)"/i, async (phrase) => {
   /* In Chrome, this `innerText` gets only visible text */
   const bodyText = await scope.page.$eval('body', elem => elem.innerText);
   expect(bodyText).not.to.contain(phrase);
@@ -376,7 +378,7 @@ When(/I tap the option with the text "([^"]+)"/, async (label_text) => {
   *    its text has to match exactly and it turns out taping labels
   *    works for more than one thing.
   */
-  let choice = await scope.page.waitFor( `label[aria-label*="${ label_text }"]` );
+  let choice = await scope.page.waitForSelector( `label[aria-label*="${ label_text }"]` );
   await choice[ scope.click_type[ scope.device ]]();
 
   await scope.afterStep(scope, {waitForShowIf: true});

@@ -1,10 +1,10 @@
-Feature: Shortest path with all possible information
+Feature: Shortest successful path with all possible information
 
-- [ ] Take the shortest path
-- [ ] Give most info possible
+- [x] Take the shortest path
+- [x] Give most info possible
 - [ ] Check for singulars
 
-Scenario: Shortest path
+Scenario: Shortest successful path
   Given I start the interview
   When I tap the option with the text "I accept"
   When I tap the button "Next"
@@ -16,7 +16,7 @@ Scenario: Shortest path
   Then I tap the button "Next"
   Then I tap the option with the text "I am filing this motion alone."
   Then I tap the button "Next"
-  Then I tap the option with the text "No, I am not risking anyone’s health or safety"
+  Then I tap the option with the text "No, I am not risking someone's health or safety"
   Then I tap the button "Next"
   Then I type "112 Southampton St" in the "Street address" field
   Then I type "1" in the "Unit" field
