@@ -1,0 +1,10 @@
+venv/*
+tests/chromedriver
+*DS_Store*
+*pyc
+*__pycache__*
+node_modules*
+.env
+npm-debug.log
+.history
+error*.jpg
