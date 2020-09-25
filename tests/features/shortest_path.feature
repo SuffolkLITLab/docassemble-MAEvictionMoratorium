@@ -16,7 +16,7 @@ Scenario: Shortest successful path
   Then I tap the button "Next"
   Then I tap the option with the text "I am filing this motion alone."
   Then I tap the button "Next"
-  Then I tap the option with the text "No, I am not risking someone's health or safety"
+  Then I tap the option with the text "No, I am not risking anyone’s health or safety"
   Then I tap the button "Next"
   Then I type "112 Southampton St" in the "Street address" field
   Then I type "1" in the "Unit" field
@@ -31,6 +31,7 @@ Scenario: Shortest successful path
   Then I tap the button "Next"
   Then I do nothing
   Then I tap the button "Next"
+  Then I should see the phrase "What is the plaintiff’s name?"
   Then I type "Landlord 1" in the unlabeled field
   Then I tap the button "Next"
   Then I select "Attleboro District Court" from the dropdown

@@ -14,8 +14,8 @@ Scenario: Single person gets kicked out for harm
   Then I tap the button "Next"
   Then I tap the option with the text "Yes, I am risking someone’s health or safety"
   Then I tap the button "Next"
-  Then I should NOT see the phrase "any of your codefendants"
   Then the question id should be "kick out"
+  Then I should NOT see the phrase "any of your codefendants"
 
 Scenario: Multiple people gets kicked out for harm
   Given I start the interview
