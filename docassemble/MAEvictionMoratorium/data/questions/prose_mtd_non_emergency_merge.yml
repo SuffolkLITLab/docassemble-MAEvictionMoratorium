@@ -990,8 +990,7 @@ subquestion: |
 buttons:
   - Restart: restart
   
-attachment code: |
-  [ motion_to_dismiss_for_non_essential_eviction, motion_to_dismiss_for_non_essential_eviction ]
+attachment code: motion_to_dismiss_for_non_essential_eviction
 css: |
   <style>
     .dal-table {
