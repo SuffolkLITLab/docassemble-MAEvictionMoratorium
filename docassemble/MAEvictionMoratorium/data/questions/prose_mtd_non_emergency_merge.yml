@@ -759,7 +759,11 @@ code: |
 id: cosigner links sent notification sms
 template: initial_sms_template
 content: |
-  ${ users[0] }, your Motion to Dismiss was sent to ${ comma_and_list( remote_signers ) }. See the document at ${ interview_url_action('check_status', party_id=users[0].id) }
+  % if len(remote_signers) > 1:
+  ${ users[0].familiar() }, we sent your Motion to Dismiss to your codefendants. Use the link to see your document. ${ shortenMe(interview_url_action('check_status', party_id=users[0].id)).shortenedURL }
+  % else:
+  ${ users[0].familiar() }, we sent your Motion to Dismiss to your codefendant. Use the link to see your document. ${ shortenMe(interview_url_action('check_status', party_id=users[0].id)).shortenedURL }
+  % endif
 ---
 id: cosigner links sent notification email
 template: initial_email_template

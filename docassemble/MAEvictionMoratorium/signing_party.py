@@ -85,7 +85,7 @@ def set_signer_attributes( signer, signature_data_id, party_id ):
   
   if party_data:
     signer.valid = True
-    signer.name.first = party_data['name']
+    signer.name = party_data['name']
     signer.has_signed = party_data['has_signed']
     signer.was_willing = party_data['willing_to_sign']
     #for key, value in party_data.items():

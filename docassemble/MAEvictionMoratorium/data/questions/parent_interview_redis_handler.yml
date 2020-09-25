@@ -37,7 +37,7 @@ code: |
   parties = {}
   for signer in all_signers:
     parties[ signer.id ] = {
-      "has_signed": False, "willing_to_sign": None, "name": str( signer )
+      "has_signed": False, "willing_to_sign": None, "name": signer.name
     }
   signature_data[ 'parties' ] = parties
   

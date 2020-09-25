@@ -137,7 +137,7 @@ content: |
 ---
 template: signed_sms_template
 content: |
-  ${ redis.get_data( signature_data_id )['user_names'] }, ${ signer } has signed your Motion to Dismiss. Use the link to see your document. ${ redis.get_data( signature_data_id )['interview_url'] }
+  ${ signer.familiar() } has signed your Motion to Dismiss. Use the link to see your document. ${ redis.get_data( signature_data_id )['interview_url'] }
 ---
 id: x.after_unwilling_to_sign_saved
 event: x.after_unwilling_to_sign_saved
@@ -176,7 +176,7 @@ content: |
 ---
 template: unwilling_sms_template
 content: |
-  ${ redis.get_data( signature_data_id )['user_names'] }, ${ signer } will not sign your Motion to Dismiss a Non-Essential Eviction. Tap the link to see your document's status. ${ redis.get_data( signature_data_id )['interview_url'] }
+  ${ signer.familiar() } will not sign your Motion to Dismiss. Use the link to see your document. ${ redis.get_data( signature_data_id )['interview_url'] }
 ---
 ###################
 # Interfacing directly with script for user choosing other device to sign on
