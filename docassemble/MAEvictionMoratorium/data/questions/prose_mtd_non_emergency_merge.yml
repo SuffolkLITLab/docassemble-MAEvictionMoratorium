@@ -863,7 +863,7 @@ code: |
 generic object: Individual
 template: x.sms_device_template
 content:
-  ${ x }, tap the link to sign your Motion to Dismiss. ${ device_choice_url }
+  ${ x.familiar() }, tap the link to sign your Motion to Dismiss. ${ device_choice_url }
 ---
 generic object: Individual
 code: |
