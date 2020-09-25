@@ -42,7 +42,7 @@ regex thoughts: https://stackoverflow.com/questions/171480/regex-grabbing-values
 
 
 const INTERVIEW_URL = interviewConstants.INTERVIEW_URL;
-setDefaultTimeout(50 * 1000);
+setDefaultTimeout(80 * 1000);
 
 let device_touch_map = {
   mobile: 'tap',
@@ -59,7 +59,7 @@ Given(/I start the interview[ on ]?(.*)/, async (optional_device) => {
 
   if (!scope.page) {
     scope.page = await scope.browser.newPage();
-    scope.page.setDefaultTimeout(50 * 1000)
+    scope.page.setDefaultTimeout(80 * 1000)
   }
 
   // Let developer pick mobile device if they want to
@@ -308,19 +308,13 @@ When(/I tap the (button|link) "([^"]+)"/, async (elemType, phrase) => {
       [elem] = await scope.page.$x(`//button[contains(text(), "${phrase}")]`);
       if ( !elem ) {
         // This how we'll handle it for now, but oh boy
+        // Possibly look into https://stackoverflow.com/a/56044998/14144258
         [elem] = await scope.page.$x(`//div[contains(@class, "form-actions")]//a[contains(text(), "${phrase}")]`);
       }
     }
   } else {
     [elem] = await scope.page.$x(`//a[contains(text(), "${phrase}")]`);
   }
-
-  // let elem;
-  // if (elemType === 'button') {
-  //   [elem] = await scope.page.$x(`//button/span[contains(text(), "${phrase}")]`);
-  // } else {
-  //   [elem] = await scope.page.$x(`//*[@class="form-actions"]//a[contains(text(), "${phrase}")]`);
-  // }
 
   let winner;
   if (elem) {

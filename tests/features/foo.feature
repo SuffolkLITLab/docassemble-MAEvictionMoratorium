@@ -42,6 +42,6 @@ Scenario: Shortest path
   Then I wait 2 seconds
   Then I tap the button "Next"
   Then I tap the button "This computer"
-  Then the question id should be "persons signature"
   Then I sign
-  Then I tap the button "Next"
+  When I tap the button "Next"
+  Then the question id should be "signature status"
