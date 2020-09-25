@@ -717,7 +717,7 @@ code: |
 id: sms template multiuser
 template: codefendants[i].sms_template
 content: |
-  ${ codefendants[i].familiar() }, please review and sign ${ users[0].familiar() }’s Motion to Dismiss. Use this link. ${ codefendants[i].cosigner_url }
+  ${ codefendants[i].familiar() }, please review and sign ${ users[0].familiar() }’s motion about your eviction case. Use this link. ${ codefendants[i].cosigner_url }
 ---
 id: codefendant email
 reconsider:
