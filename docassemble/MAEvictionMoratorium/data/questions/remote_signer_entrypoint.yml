@@ -204,7 +204,7 @@ signature: x.signature
 generic object: Individual
 template: x.sms_device_template
 content:
-  You have chosen to sign on this device, ${ x }. ${ device_choice_url }
+  ${ x.familiar() }, use this link to sign. ${ device_choice_url }
 ---
 id: remote signer end
 generic object: Individual
