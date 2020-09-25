@@ -975,7 +975,7 @@ content: |
 template: unwilling_instructions
 content: |
   % if len( unwilling_codefs ) > 1:
-  **You do not need ${ comma_and_list(unwilling_codefs) }'s signatures
+  **You do not need ${ comma_and_list([str(person) + "'s" for person in unwilling_codefs]) } signatures
   to file the motion. You can:**
 
   * Download and file the motion. You can ask
