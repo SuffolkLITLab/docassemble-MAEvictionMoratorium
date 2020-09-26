@@ -1,8 +1,6 @@
 Feature: Shortest successful path with all possible information
 
-- [x] Take the shortest path
-- [x] Give most info possible
-- [ ] Check for singulars
+- [x] Take the shortest path, give most info possible, check for singulars
 
 Think this is missing some kind of singluar check for the landlord
 
