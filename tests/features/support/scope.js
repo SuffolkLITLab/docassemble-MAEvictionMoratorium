@@ -1,11 +1,11 @@
 module.exports = {
   getTextFieldId: async function getTextFieldId(scope, field_label) {
+    /* Get the ID of the text field with the name containing `label_name` */
     // make sure at least one is on screen
-    await scope.page.waitFor('label[class*="datext"]');
+    await scope.page.waitFor('#daquestion .da-form-label');
 
-    let field_id = await scope.page.$$eval('label[class*="datext"]', (elements, field_label) => {
-      let elems_array = Array.from( elements );
-      for ( let elem of elems_array ) {
+    let field_id = await scope.page.$$eval('#daquestion .da-form-label', (elements, field_label) => {
+      for ( let elem of elements ) {
         if (( elem.innerText ).includes( field_label )) {
           return elem.getAttribute( 'for' );
         }

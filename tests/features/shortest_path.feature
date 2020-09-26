@@ -4,6 +4,8 @@ Feature: Shortest successful path with all possible information
 - [x] Give most info possible
 - [ ] Check for singulars
 
+Think this is missing some kind of singluar check for the landlord
+
 Scenario: Shortest successful path
   Given I start the interview
   When I tap the option with the text "I accept"
@@ -24,8 +26,8 @@ Scenario: Shortest successful path
   Then I select "Massachusetts" from the "State" dropdown
   Then I type "02118" in the "Zip" field
   Then I tap the button "Next"
-  Then I type "201 555-0123" in the "Mobile number" field
-  Then I type "202 555-0123" in the "Other phone number" field
+  Then I type "101 555-1111" in the "Mobile number" field
+  Then I type "102 555-2222" in the "Other phone number" field
   Then I type "user@example.com" in the "Email address" field
   Then I type "Semaphore" in the "Other ways to reach you" field
   Then I tap the button "Next"
