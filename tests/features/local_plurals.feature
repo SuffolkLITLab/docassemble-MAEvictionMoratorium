@@ -8,6 +8,7 @@ signing on their own devices.
 - [x] User signs for two codefendants
 - [x] Two codefendants will sign on paper
 - [x] Codefendants each have all info and different info
+- [x] Check for correct proxy signature langauge
 
 Scenario: Multiple local signers and landlords
   Given I start the interview
