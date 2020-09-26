@@ -401,8 +401,8 @@ When('I choose {string}', async (label_text) => {
 // TODO: Should we have a test just for the state of MA to be selected? Much easier... Or states in general
 // When('I select the {string} option from the {string} choices', async (option_text, label_text) => {
 When(/I select "([^"]+)" from the ?(?:"([^"]+)")? dropdown/, async (option_text, label_text) => {
-  /* Selects the option containing the text `option_text`
-  * in the <select> with the label "containing" the `label_text`.
+  /* Selects the option containing the text `option_text` in, if specified
+  *    the <select> with the label "containing" the `label_text`.
   *    Finding one dropdown out of a bunch is a future feature.
   * 
   * Note: `page.select()` is the only way to tap on an element in a <select>
