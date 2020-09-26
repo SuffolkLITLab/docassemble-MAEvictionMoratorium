@@ -9,7 +9,7 @@ signing on their own devices.
 - [x] Two codefendants will sign on paper
 - [x] Codefendants each have all info and different info
 
-Scenario: Shortest successful path
+Scenario: Multiple local signers and landlords
   Given I start the interview
   When I tap the option with the text "I accept"
   When I tap the button "Next"
