@@ -130,14 +130,19 @@ Scenario: Multiple local signers and landlords
   Then I do nothing
   Then I tap the button "Next"
   Then I tap the button "This computer"
+  Then I should see the phrase "Ulli U. User Jr,"
   Then I sign
   When I tap the button "Next"
+  Then I should see the phrase "Sign C1 C. Codef Jr’s name"
   Then I sign
   When I tap the button "Next"
+  Then I should see the phrase "Sign C2 C. Codef II’s name"
   Then I sign
   When I tap the button "Next"
+  Then I should see the phrase "C3 C. Codef III,"
   Then I sign
   When I tap the button "Next"
+  Then I should see the phrase "C4 C. Codef IV,"
   Then I sign
   When I tap the button "Next"
   Then I should see the phrase "C1 C. Codef Jr, C2 C. Codef II, C3 C. Codef III, and C4 C. Codef IV have signed"
