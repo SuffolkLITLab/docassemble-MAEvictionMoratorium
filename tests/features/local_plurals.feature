@@ -2,12 +2,12 @@ Feature: Multiple codefendants and landlords signing in
 different ways with different info. Excludes codefendants
 signing on their own devices.
 
-- [ ] Multiple codefendants
-- [ ] Multiple landlords
-- [ ] Two codefendants sign on user's device
-- [ ] User signs for two codefendants
-- [ ] Two codefendants will sign on paper
-- [ ] Codefendants each have all info and different info
+- [x] Multiple codefendants
+- [x] Multiple landlords
+- [x] Two codefendants sign on user's device
+- [x] User signs for two codefendants
+- [x] Two codefendants will sign on paper
+- [x] Codefendants each have all info and different info
 
 Scenario: Shortest successful path
   Given I start the interview
