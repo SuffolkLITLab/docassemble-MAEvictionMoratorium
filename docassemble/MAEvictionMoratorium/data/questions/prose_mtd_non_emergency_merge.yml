@@ -664,6 +664,12 @@ attachment:
   filename: dismiss-non-essential-eviction
   name: Motion to Dismiss - Non-Essential Eviction
 ---
+attachment: 
+  docx template file: non_essential_eviction_instructions.docx
+  variable name: non_essential_eviction_instructions
+  filename: non-essential-eviction-instructions
+  name: Instructions for Motion to Dismiss Non-Essential Eviction
+---
 # Only triggered for signers who user is signing for.
 # Using intrinsic names is not enough.
 id: persons signature
@@ -917,10 +923,11 @@ reconsider:
   - unwilling_codefs
   - all_signatures_in
   - motion_to_dismiss_for_non_essential_eviction
+  - non_essential_eviction_instructions
   - final_form
 question: |
   % if all_signatures_in:
-  Your Motion to Dismiss is ready to print or email
+  Your Motion to Dismiss is ready
   % else:
   Some people still need to sign your Motion to Dismiss
   % endif
@@ -935,7 +942,7 @@ subquestion: |
     ${ unwilling_list_template }
 
     ${ unwilling_instructions }
-    ---
+    <hr/>
     % endif
 
     ${ waiting_list_template }
@@ -949,11 +956,50 @@ subquestion: |
   % if len( remote_signers ) > 0:
   ${ action_button_html('javascript:daShowSpinner();daRefreshSubmit()', label='Check again <i class="fas fa-sync-alt"></i>', size='md') }
   % endif
+  
+  % if codefendants.number() > 0:
+  <hr/>
+  % endif
+  
+  <div class="dal-table">
+  <div class="form row">
+  
+  ${ document_icon_template }
+  ${ download_form_template }
+  ${ motion_to_dismiss_for_non_essential_eviction.document_buttons_template }
+  
+  </div>
+  <div class="next-steps row">
+  
+  ${ document_icon_template }
+  ${ download_next_steps_template }
+  ${ non_essential_eviction_instructions.document_buttons_template }
+  </div>
+  
+  <div class="email-pointer row">
+  <div class="instructions col-auto p-1">:envelope:</div>
+  <div class="instructions col-10 p-1">
+  
+  Scroll down to email the document to someone
+  
+  </div>
+  </div>
+  
+  </div>
 
 buttons:
   - Restart: restart
   
 attachment code: motion_to_dismiss_for_non_essential_eviction
+css: |
+  <style>
+    .dal-table {
+      /* background: rgb(220, 220, 220);*/
+      padding-top: .3em;
+      border-radius: 3px;
+      margin-bottom: 1em;
+    }
+  </style>
 ---
 # Edit below to change the contents of the status page
 ---
@@ -1030,4 +1076,49 @@ generic object: Individual
 template: x.signature_message_endpoint
 content: |
   ${ x.signature_email if x.send_method == "email" else x.signature_number }
+---
+template: download_form_template
+content: |
+  <div class="descriptor col-6 p-1">
+  
+  Motion to Dismiss Non-Essential Eviction
+  
+  </div>
+---
+template: download_next_steps_template
+content: |
+  <div class="descriptor col-6 p-1">
+  
+  Instructions
+  
+  </div>
+---
+template: document_icon_template
+content: |
+    <div class="type-icon col-auto p-1">:file:</div>
+---
+generic object: DAFileCollection
+template: x.document_buttons_template
+content: |
+  <div class="download-doc col-auto p-1">
+    ${ action_button_html(
+      x.pdf.url_for(attachment=True),
+      new_window=False,
+      color="primary",
+      
+      label='Download :file-download:'
+      
+    ) }
+  </div>
+  
+  <div class="see-doc col-auto p-1">
+    ${ action_button_html(
+      x.pdf.url_for(inline=True),
+      new_window="True",
+      color="primary",
+      
+      label='View <i class="far fa-eye"></i>'
+      
+    ) }
+  </div>
 ---
