@@ -70,6 +70,13 @@ const scope = require('./scope');
 // @step(r'If I see it, I will tap the link "([^"]+)"')
 // I tap the ${ description } link "([^"]+)"
 
+// @step(r'I tap the button "([^"]+)"')
+// I tap "([^"]+)" (can this be a button or link or anything?) (Include 1st, 2nd, etc?)
+
+// @step(r'I tap the "([^"]+)" button')
+// @step(r'I tap the link "([^"]+)"')
+//* Maybe go with 'I tap'? Is that possible? Maybe we should stick to the script.
+
 
 // =========================
 // Interactive
@@ -88,13 +95,6 @@ const scope = require('./scope');
 // I type "([^"]*)" in the ${ description } textarea
 
 //* I clear the textarea?
-
-// @step(r'I tap the button "([^"]+)"')
-// I tap "([^"]+)" (can this be a button or link or anything?) (Include 1st, 2nd, etc?)
-
-// @step(r'I tap the "([^"]+)" button')
-// @step(r'I tap the link "([^"]+)"')
-//* Maybe go with 'I tap'? Is that possible? Maybe we should stick to the script.
 
 // @step(r'I select "([^"]+)" from the menu')
 // @step(r'I go to the help screen')
