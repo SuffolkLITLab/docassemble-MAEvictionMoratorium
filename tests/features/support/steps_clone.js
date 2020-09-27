@@ -14,10 +14,10 @@ const scope = require('./scope');
 // =========================
 // Contstants
 // =========================
-//* ordinal_to_integer = {first: 1, ...}
-//* decriptor = '?"?(?:the (first|second|[^"]+))"?' //(approximately)
+let ordinal_to_integer = {first: 0, second: 1, third: 2, fourth: 3, fifth: 4, sixth: 5, seventh: 6, eighth: 7, ninth: 8, tenth: 9, };
+let specified = '?"?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"[^"]+)?"?';
+let click_with = { mobile: 'tap', pc: 'click', };
 //* non-capturing capturing group expression for single or double quotes?
-//* {pc: 'click', mobile: 'tap'}
 
 
 // =========================
