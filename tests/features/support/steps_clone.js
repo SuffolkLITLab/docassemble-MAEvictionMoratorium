@@ -37,11 +37,12 @@ let click_with = { mobile: 'tap', pc: 'click', };
 
 // @step(r'I start the interview "([^"]+)"')
 // I start the interview file "([^"]+)" on mobile
-// I go to "([^"]*)" on mobile/a phone/a computer/a pc/a tablet???
+// I open the interview file ?"?([^"]+)"?( on mobile/a phone/a computer/a pc/a tablet???)
+/I open the interview file ?"?([^"]+)"?[ on ]?(.*)/
 
 
 // =========================
-// Observational
+// Observational/Passive
 // =========================
 //x @step(r'I wait forever')
 //x @step(r'I should see "([^"]+)" as the title of the page')
@@ -51,25 +52,43 @@ let click_with = { mobile: 'tap', pc: 'click', };
 //x @step(r'I screenshot the page')
 
 // @step(r'I wait (\d+) seconds?')
+// Need to see if it's possible to remove the need for this on most occasions
+When(/I wait (\d\.?\d?+) seconds?/, async (seconds) => {
+  await scope.afterStep(scope, {waitForTimeout: (parseFloat(seconds) * 1000)});
+});
 
-// the term "([^"]+)" exists
+/* Here to make writing tests more comfortable. */
+When("I do nothing", async () => { await scope.afterStep(scope); });
 
-// @step(r'I should see the phrase "([^"]+)"')
+// I should see the term "([^"]+)"
 
-// @step(r'I should not see the phrase "([^"]+)"')
+Then(/I (should|should not) see the phrase "([^"]+)"/i, async (expectation, phrase) => {
+  /* Allows emphasis with capital letters. Note: In Chrome, this `innerText` gets only visible text */
+  const bodyText = await scope.page.$eval('body', elem => elem.innerText);
+  if ( expectation === 'should' ) { expect(bodyText).to.contain(phrase); }
+  else { expect(bodyText).not.to.contain(phrase); }
+
+  await scope.afterStep(scope);
+});
 
 // For things that have double quotes in them
-// @step("I should see the phrase '([^']+)'")
+Then(/I (should|should not) see the phrase '([^']+)'/i, async (expectation, phrase) => {
+  /* Allows emphasis with capital letters. Note: In Chrome, this `innerText` gets only visible text */
+  const bodyText = await scope.page.$eval('body', elem => elem.innerText);
+  if ( expectation === 'should' ) { expect(bodyText).to.contain(phrase); }
+  else { expect(bodyText).not.to.contain(phrase); }
 
-// @step("I should not see the phrase '([^']+)'")
+  await scope.afterStep(scope);
+});
 
 
 // =========================
 // Navigational
 // =========================
 // @step(r'If I see it, I will tap the link "([^"]+)"')
-// I tap the ${ description } link "([^"]+)"
+// I tap the ${ specified } link "([^"]+)"
 
+// Also sometimes not navigational
 // @step(r'I tap the button "([^"]+)"')
 // I tap "([^"]+)" (can this be a button or link or anything?) (Include 1st, 2nd, etc?)
 
@@ -92,7 +111,7 @@ let click_with = { mobile: 'tap', pc: 'click', };
 // (I|They) sign
 
 // @step(r'I set the text area to "([^"]*)"')
-// I type "([^"]*)" in the ${ description } textarea
+// I type "([^"]*)" in the ${ specified } textarea
 
 //* I clear the textarea?
 
