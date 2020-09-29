@@ -167,6 +167,9 @@ let ordinal = '?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tent
 // `the first "blah" checkbox in "" is checked`
 // `the ordinal "blah" in "blah" is checked`
 // Haven't figured out ordinal for group label yet
+
+
+// Allow "checkbox" and "radio"? Why would they be called the same thing?
 let the_checkbox_is_as_expected = new RegExp(`the ${ ordinal } ?(?:"([^"]+)")? checkbox ?(?:in "([^"]+)")? is (checked|unchecked)`);
 Then(the_checkbox_is_as_expected, async (ordinal, label_text, group_label, expected_status) => {
   /* Examples of use:
@@ -177,7 +180,8 @@ Then(the_checkbox_is_as_expected, async (ordinal, label_text, group_label, expec
   * 1. the third checkbox in "Which service" is checked
   * 1. the "My court" checkbox in "Which service" is checked
   * 1. the third "My court" checkbox in "Which service" is checked
-  * combos: 1; 2; 3; 1 2; 1 3; 2 3; 1 2 3
+  * 1. the checkbox is unchecked
+  * combos: 1; 2; 3; 1 2; 1 3; 2 3; 1 2 3; 0
   */
 
   ordinal = ordinal || 'first';
