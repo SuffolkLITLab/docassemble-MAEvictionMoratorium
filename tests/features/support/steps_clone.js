@@ -112,6 +112,8 @@ Then('I will be told an answer is invalid', async () => {
   await scope.afterStep(scope);
 });
 
+// @step(r'I should see that "([^"]+)" is "([^"]+)"')  //* What do? Anything with label
+
 // "" is selected/picked?
 // "the first "blah" checkbox is checked"
 let the_checkbox_is_as_expected = new RegExp(`the ${ specified } checkbox is (checked|unchecked)`);
@@ -181,7 +183,9 @@ Then(the_checkbox_is_as_expected, async (label_text, expected_status) => {
 // =========================
 // Navigational
 // =========================
-// @step(r'If I see it, I will tap the link "([^"]+)"')
+//x @step(r'I exit by taping "([^"]+)"')
+//x @step(r'If I see it, I will tap the link "([^"]+)"')
+
 // I tap the ${ specified } link "([^"]+)"
 
 // Also sometimes not navigational
@@ -202,30 +206,11 @@ Then(the_checkbox_is_as_expected, async (label_text, expected_status) => {
 // =========================
 //x @step(r'I upload the file "([^"]*)"')
 //x @step(r'I reload the screen')
+//x @step(r'I select "([^"]+)" from the menu')
 //x @step(r'I tap the back button')
 //x @step(r'I tap the question back button')
 //x @step(r'I tap the (first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) link "([^"]+)"')
 //x @step(r'I tap the final link "([^"]+)"')
-
-// I tap the defined text link {string}
-
-// @step(r'I tap inside the signature area')
-// (I|They) sign
-
-// @step(r'I set the text area to "([^"]*)"')
-// I type "([^"]*)" in the ${ specified } textarea
-
-//* I clear the textarea?
-
-// @step(r'I select "([^"]+)" from the menu')
-// @step(r'I go to the help screen')
-// Still 'I tap'? A possible alterntive to it if someone's really struggling to make the text match?
-
-// @step(r'I go back to the question screen')
-
-// Combine these two
-// @step(r'I set "([^"]+)" to "([^"]*)"')
-// @step(r'I set the (first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) "([^"]+)" to "([^"]*)"')
 
 // @step(r'I select "([^"]+)" in the combobox')
 
@@ -242,13 +227,20 @@ Then(the_checkbox_is_as_expected, async (label_text, expected_status) => {
 // @step(r'I choose "([^"]+)"')  //* dropdown
 // I choose "([^"]+)" from the ${ descriptor } dropdown
 
-// @step(r'I should see that "([^"]+)" is "([^"]+)"')  //* What do? Anything with label
+// Combine these two. They're both text fields. The end behavior is a little different for some reason.
+// @step(r'I set "([^"]+)" to "([^"]*)"')
+// @step(r'I set the (first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) "([^"]+)" to "([^"]*)"')
 
 // @step(r'I set the text box to "([^"]*)"')
 // @step(r'I set text box ([0-9]+) to "([^"]*)"')  //* combined with above
 // I type "([^"]*)" ?(?:in)? (?:the)? ?("([^"]*)")? (?:text box)?
 
-// I clear the textbox
+//* I clear the textbox?
+
+// @step(r'I set the text area to "([^"]*)"')
+// I type "([^"]*)" in the ${ specified } textarea
+
+//* I clear the textarea?
 
 //* Radio buttons or checkboxes
 // @step(r'I tap the "([^"]+)" option under "([^"]+)"')
@@ -256,11 +248,16 @@ Then(the_checkbox_is_as_expected, async (label_text, expected_status) => {
 // @step(r'I tap the option "([^"]+)" under "([^"]+)"')
 // @step(r'I tap the option "([^"]+)"')
 
-// @step(r'I exit by taping "([^"]+)"')
-
 // @step(r'I unfocus')  //* Not sure of this one
 // I tap somewhere else?
 
+// I tap the defined text link {string}  // I tap the term?
 
+// @step(r'I go to the help screen')
+// Still 'I tap'? A possible alterntive to it if someone's really struggling to make the text match?
 
+// @step(r'I go back to the question screen')
+
+// @step(r'I tap inside the signature area')
+// (I|They) sign
 

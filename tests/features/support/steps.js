@@ -44,14 +44,12 @@ regex thoughts: https://stackoverflow.com/questions/171480/regex-grabbing-values
 const INTERVIEW_URL = interviewConstants.INTERVIEW_URL;
 setDefaultTimeout(120 * 1000);
 
-let device_touch_map = {
+let click_with = {
   mobile: 'tap',
   pc: 'click',
 };
 
 Given(/I start the interview[ on ]?(.*)/, async (optional_device) => {
-  scope.click_type = device_touch_map;  // changing vocab
-
   // If there is no browser open, start a new one
   if (!scope.browser) {
     scope.browser = await scope.driver.launch({ headless: !process.env.DEBUG });
@@ -71,6 +69,8 @@ Given(/I start the interview[ on ]?(.*)/, async (optional_device) => {
     await scope.page.setUserAgent("Mozilla/5.0 (Macintosh; Intel Mac OS X 10_12_6) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/65.0.3312.0 Safari/537.36");
     scope.device = 'pc';
   }
+
+  scope.activate = click_with[ scope.device ];
 
   // Then go to the given page
   await scope.page.goto(INTERVIEW_URL, {waitUntil: 'domcontentloaded'});
@@ -332,7 +332,7 @@ When(/I tap the (button|link) "([^"]+)"/, async (elemType, phrase) => {
     winner = await Promise.race([
       Promise.all([  // Error loads page, so no need to detect
         // Click with no navigation will end immediately
-        elem[ scope.click_type[ scope.device ]](),
+        elem[ scope.activate ](),
         scope.page.waitForNavigation({waitUntil: 'domcontentloaded'}),
       ]),
       scope.page.waitForSelector('.alert-danger'),
@@ -360,7 +360,7 @@ When('I tap the defined text link {string}', async (phrase) => {
   /* Not sure what 'defined' means here. Maybe for terms? */
   const [link] = await scope.page.$x(`//a[contains(text(), "${phrase}")]`);
   if (link) {
-    await link[ scope.click_type[ scope.device ]]();
+    await link[ scope.activate ]();
   } else {
     // Is this needed or will it cause an error anyway?
     if (process.env.DEBUG) {
@@ -388,7 +388,7 @@ When(/I tap the option with the text "([^"]+)"/, async (label_text) => {
   *    works for more than one thing.
   */
   let choice = await scope.page.waitForSelector( `label[aria-label*="${ label_text }"]` );
-  await choice[ scope.click_type[ scope.device ]]();
+  await choice[ scope.activate ]();
 
   await scope.afterStep(scope, {waitForShowIf: true});
 });
@@ -401,7 +401,7 @@ When('I choose {string}', async (label_text) => {
   */
   await scope.page.waitForSelector('label');
   let choice = await scope.page.$( `label[aria-label*="${ label_text }"]` );
-  await choice[ scope.click_type[ scope.device ]]();
+  await choice[ scope.activate ]();
 
   await scope.afterStep(scope, {waitForShowIf: true});
 });
