@@ -2,7 +2,7 @@ const putils = require('./puppeteer-utils');
 
 // Each repo has its own interview that it's testing
 // We'll deal with multiple urls when it becomes an issue
-let filename = 'prose_mtd_non_emergency_merge';  // Easier to edit
+let filename = 'motion_to_dismiss_non_essential_eviction';  // Easier to edit
 const INTERVIEW_URL_START = process.env.INTERVIEW_URL || `${putils.BASE_INTERVIEW_URL}%3A`;
 const INTERVIEW_URL = process.env.INTERVIEW_URL || `${INTERVIEW_URL_START}${filename}.yml`;
 
