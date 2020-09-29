@@ -169,6 +169,14 @@ Then(the_checkbox_is_as_expected, async (label_text, expected_status) => {
 
 // `the third "blah" checkbox in "bleh" is checked`
 
+// I arrive at the next page
+
+// I (don't|can't) continue
+
+// the link "([^"]+)" should lead to "([^"]+)"
+
+// the link "([^"]+)" should open in (a new window|the same window)
+
 
 // =========================
 // Navigational
@@ -184,6 +192,10 @@ Then(the_checkbox_is_as_expected, async (label_text, expected_status) => {
 // @step(r'I tap the link "([^"]+)"')
 //* Maybe go with 'I tap'? Is that possible? Maybe we should stick to the script.
 
+// the link "([^"]+)" should open a working page
+
+// I tap the (button|link) "([^"]+)"
+
 
 // =========================
 // Interactive
@@ -194,6 +206,8 @@ Then(the_checkbox_is_as_expected, async (label_text, expected_status) => {
 //x @step(r'I tap the question back button')
 //x @step(r'I tap the (first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth) link "([^"]+)"')
 //x @step(r'I tap the final link "([^"]+)"')
+
+// I tap the defined text link {string}
 
 // @step(r'I tap inside the signature area')
 // (I|They) sign

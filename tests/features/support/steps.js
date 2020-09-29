@@ -157,6 +157,12 @@ Then('I will be told an answer is invalid', async () => {
 });
 
 
+// TODO:
+// Just realized it's much more likely that the group name will be
+// repeated than that the choice name will be repeated. Or maybe
+// they're both equally likely to be repeated, but writing about the
+// ordinal of the group would probably be more comfortable for a human.
+// Need to think about this.
 let ordinal_to_integer = {
   first: 0, second: 1, third: 2, fourth: 3, fifth: 4,
   sixth: 5, seventh: 6, eighth: 7, ninth: 8, tenth: 9,
@@ -272,59 +278,6 @@ Then(/the link "([^"]+)" should open in (a new window|the same window)/, async (
   await scope.afterStep(scope);
 });
 
-// // FEATURE IN DEVELOPMENT. A FOOL'S ERRAND
-// let number_map = {first: 0, second: 1, third: 2, fourth: 3, fifth: 4, sixth: 5, seventh: 6, eighth: 7, ninth: 8, tenth: 9, };
-// let specified = '?"?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"[^"]+)?"?';
-// let prohibited_choice_words = `I should not see the options? "([^"]+)" ?(?:in the ${specified} choice list)?`;
-// let prohibited_choice_words_regex = new RegExp(prohibited_choice_words);
-// Then(prohibited_choice_words_regex, async (prohibited, specifier) => {
-//   /* In development.
-//   *
-//   * Checks that `prohibited` does not appear in the text of the
-//   *    the list of options in the <select> with the label "containing" the `label text`.
-//   *    Only checks the first <select>.
-//   *
-//   * @param prohibited {string} String, possibly containing commas and ', or' to
-//   *    denote multiple phrases, that should not appear in the options.
-//   * @param specifier {string} Text that is in the label of the <select>
-//   */
-//   // Make sure ajax is finished getting the items in the <select>
-//   await scope.page.waitForSelector('option');
-
-//   let options = await scope.page.$$(`option`);
-//   if ( specifier ) {
-//     // If they want to check a specific set of options
-
-//     // The <label> will have the `id` for the <select> we're looking for
-//     let [label] = await scope.page.$x(`//label[contains(text(), "${specifier}")]`);
-//     if ( !label ) {
-//       [label] = await scope.page.$x(`//label//a[contains(text(), "${specifier}")]`);
-//     }
-
-//     let select_id = await scope.page.evaluate(( label ) => {
-//       return label.getAttribute('for');
-//     }, label);
-
-//     options = await scope.page.$$(`*[id*='${ select_id }'] option`);
-//   }
-
-//   let phrases = prohibited.split(', ');
-//   // Take 'or' off of the last item if it's there.
-//   let last_phrase = phrases.pop();
-//   last_phrase = last_phrase.replace(/^or /, '');
-//   phrases.push( last_phrase );
-
-//   for (let option in options) {
-//     let prop_handle = await option.getProperty( 'textContent' );
-//     let option_text = await prop_handle.jsonValue();
-//     for (let phrase in phrases) {
-//       expect( option_text ).not.to.contain( phrase );
-//     }
-//   }
-
-//   await scope.afterStep(scope);
-// });
-
 
 
 //#####################################
@@ -358,6 +311,7 @@ When(/I tap the (button|link) "([^"]+)"/, async (elemType, phrase) => {
   *    navigation, validation error, page error, just a click. */
   let start_url = await scope.page.url()
 
+  // Making this a race would probably be more simple
   let elem;
   if (elemType === 'button') {
     [elem] = await scope.page.$x(`//button/span[contains(text(), "${phrase}")]`);
