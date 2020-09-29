@@ -156,23 +156,126 @@ Then('I will be told an answer is invalid', async () => {
   await scope.afterStep(scope);
 });
 
-Then(/the checkbox with "([^"]+)" is (checked|unchecked)/, async (label_text, expected_status) => {
-  /* Tests whether the first "checkbox" label "containing"
-  *    the "label text" is of the "checked" status given.
-  *    Anything more complex will be a future feature.
-  * 
-  * "checkbox": label that contains checkbox-like behavior.
-  */
-  let checkbox = await scope.page.waitFor( `label[aria-label*="${ label_text }"]` );
-  let is_checked = await scope.page.evaluate( async(elem, label_text) => {
-    return elem.getAttribute('aria-checked') === 'true';
-  }, checkbox, label_text );
 
+let ordinal_to_integer = {
+  first: 0, second: 1, third: 2, fourth: 3, fifth: 4,
+  sixth: 5, seventh: 6, eighth: 7, ninth: 8, tenth: 9,
+  '1st': 0, '2nd': 1, '3rd': 2, '4th': 3, '5th': 4,
+  '6th': 5, '7th': 6, '8th': 7, '9th': 8,'10th': 9,
+};
+let ordinal = '?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)?';
+// `the first "blah" checkbox in "" is checked`
+// `the ordinal "blah" in "blah" is checked`
+// Haven't figured out ordinal for group label yet
+let the_checkbox_is_as_expected = new RegExp(`the ${ ordinal } ?(?:"([^"]+)")? checkbox ?(?:in "([^"]+)")? is (checked|unchecked)`);
+Then(the_checkbox_is_as_expected, async (ordinal, label_text, group_label, expected_status) => {
+  /* Examples of use:
+  * 1. the third checkbox is checked
+  * 1. the "My court" checkbox is unchecked
+  * 1. the checkbox in "Which service" is checked
+  * 1. the third "My court" checkbox is checked
+  * 1. the third checkbox in "Which service" is checked
+  * 1. the "My court" checkbox in "Which service" is checked
+  * 1. the third "My court" checkbox in "Which service" is checked
+  * combos: 1; 2; 3; 1 2; 1 3; 2 3; 1 2 3
+  */
+
+  ordinal = ordinal || 'first';
+  label_text = label_text || '';
+  group_label = group_label || '';
+
+  let index = ordinal_to_integer[ ordinal ];
+
+  // If possible, get the group to which this checkbox belongs
+  // Only handles one group for now
+  let group_id_elem = null;
+  let group_name = null;
+  if ( group_label ) {
+
+    // Example: `//*[@id="daform"]//label[contains(text(), "serve")][1]`
+    let identifier_xpath = `//*[@id="daform"]//label[contains(text(), "${ group_label }")][1]`;
+    [group_id_elem] = await scope.page.$x( identifier_xpath );
+
+    if ( !group_id_elem ) {
+      throw `I did not find "${ group_label }"`;
+    } else {
+      group_name = await group_id_elem.evaluate(( elem ) => elem.getAttribute('for'));
+    }
+  }
+
+
+  // Get all the labels (with the right text and index) (maybe with a name)
+  // Otherwise get the first label
+
+
+  // labels for choices
+  let label_xpath = `//*[@id="daform"]//label[@role="checkbox" or @role="radio"]`;
+  // Labels for a group of items end in the group name plus _0, _1, etc.
+  // Ex: `[contains(@for, "X2ZpZWxkXzA_")]`
+  if ( group_name ) { label_xpath += `[contains(@for, "${ group_name }_")]` }
+  // These labels don't have text, their descendants do. Dig down in all
+  // the labels to look for the text, then for those that match, come back out
+  // and pick up that label. Ex: `//*[contains(text(), "My case")]/ancestor-or-self::label`
+  if ( label_text ) { label_xpath += `//*[contains(text(), "${ label_text }")]/ancestor-or-self::label` }
+  // The index to identify just one. It's 1-indexed. xpath still makes an array. Ex: `[1]`
+  label_xpath += `[${ index + 1 }]`;
+  // ex: `//*[@id="daform"]//label[@role="checkbox" or @role="radio"][contains(@for, "X2ZpZWxkXzA_")]//*[contains(text(), "My case")]/ancestor-or-self::label[1]`
+
+  // // Get the element itself
+  // // Example `//*[@id="daform"]//label[@role="checkbox" or @role="radio"][@name="How will you serve"]//*[contains(text(), "email")]/ancestor-or-self::label`
+  // let label_xpath = `//*[@id="daform"]//label[@role="checkbox" or @role="radio"]`;
+  // if ( group_name ) { label_xpath += `[@name="${ group_name }"]`; }
+  // if ( label_text ) { label_xpath += `//*[contains(text(), "${ label_text }")]/ancestor-or-self::label`; }
+  // label_xpath += `[${ index + 1 }]`;
+  // console.log(label_xpath);
+  // let [elem] = await scope.page.$x( label_xpath );
+
+
+  // // Get the first input (possibly of a specific name)
+  // // that can identify the related labels
+  // let input_selector = `#daform input`;
+  // if ( group_name ) { input_selector += `[name*="${ group_name }"]`; }
+  // let input_elem = await scope.page.$( input_selector );
+  // if ( group_name && !input_elem ) { throw `I did not find the choice "${ group_name }"`; }
+  // // Get the `for` attribute value for the right labels
+  // let label_for = await input_elem.evaluate(( elem ) => elem.getAttribute('id'));
+
+  // // Of the matching labels, get the one with the right text
+  // let label_xpath = `//*[@id="daform"]//*[@for="${ label_for }"]`
+  // if ( label_text ) { label_xpath += `//*[contains(text(), "${ label_text }")]/ancestor-or-self::label`; }
+  // label_xpath += `[${ index + 1 }]`;
+  // console.log(label_xpath);
+
+  let [elem] = await scope.page.$x( label_xpath );
+
+  // See if it's checked or not
+  let is_checked = await elem.evaluate((elem) => {
+    // return elem.innerHTML;
+    return elem.getAttribute('aria-checked') === 'true';
+  });
   let what_it_should_be = expected_status === 'checked';
   expect( is_checked ).to.equal( what_it_should_be );
 
   await scope.afterStep(scope);
 });
+
+// Then(/the checkbox with "([^"]+)" is (checked|unchecked)/, async (label_text, expected_status) => {
+//   /* Tests whether the first "checkbox" label "containing"
+//   *    the "label text" is of the "checked" status given.
+//   *    Anything more complex will be a future feature.
+//   * 
+//   * "checkbox": label that contains checkbox-like behavior.
+//   */
+//   let checkbox = await scope.page.waitFor( `label[aria-label*="${ label_text }"]` );
+//   let is_checked = await scope.page.evaluate( async(elem, label_text) => {
+//     return elem.getAttribute('aria-checked') === 'true';
+//   }, checkbox, label_text );
+
+//   let what_it_should_be = expected_status === 'checked';
+//   expect( is_checked ).to.equal( what_it_should_be );
+
+//   await scope.afterStep(scope);
+// });
 
 Then('I arrive at the next page', async () => {
   /* Tests for detection of url change from button or link tap.
@@ -217,58 +320,58 @@ Then(/the link "([^"]+)" should open in (a new window|the same window)/, async (
   await scope.afterStep(scope);
 });
 
-// FEATURE IN DEVELOPMENT. A FOOL'S ERRAND
-let number_map = {first: 0, second: 1, third: 2, fourth: 3, fifth: 4, sixth: 5, seventh: 6, eighth: 7, ninth: 8, tenth: 9, };
-let specified = '?"?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"[^"]+)?"?';
-let prohibited_choice_words = `I should not see the options? "([^"]+)" ?(?:in the ${specified} choice list)?`;
-let prohibited_choice_words_regex = new RegExp(prohibited_choice_words);
-Then(prohibited_choice_words_regex, async (prohibited, specifier) => {
-  /* In development.
-  *
-  * Checks that `prohibited` does not appear in the text of the
-  *    the list of options in the <select> with the label "containing" the `label text`.
-  *    Only checks the first <select>.
-  *
-  * @param prohibited {string} String, possibly containing commas and ', or' to
-  *    denote multiple phrases, that should not appear in the options.
-  * @param specifier {string} Text that is in the label of the <select>
-  */
-  // Make sure ajax is finished getting the items in the <select>
-  await scope.page.waitForSelector('option');
+// // FEATURE IN DEVELOPMENT. A FOOL'S ERRAND
+// let number_map = {first: 0, second: 1, third: 2, fourth: 3, fifth: 4, sixth: 5, seventh: 6, eighth: 7, ninth: 8, tenth: 9, };
+// let specified = '?"?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth|"[^"]+)?"?';
+// let prohibited_choice_words = `I should not see the options? "([^"]+)" ?(?:in the ${specified} choice list)?`;
+// let prohibited_choice_words_regex = new RegExp(prohibited_choice_words);
+// Then(prohibited_choice_words_regex, async (prohibited, specifier) => {
+//   /* In development.
+//   *
+//   * Checks that `prohibited` does not appear in the text of the
+//   *    the list of options in the <select> with the label "containing" the `label text`.
+//   *    Only checks the first <select>.
+//   *
+//   * @param prohibited {string} String, possibly containing commas and ', or' to
+//   *    denote multiple phrases, that should not appear in the options.
+//   * @param specifier {string} Text that is in the label of the <select>
+//   */
+//   // Make sure ajax is finished getting the items in the <select>
+//   await scope.page.waitForSelector('option');
 
-  let options = await scope.page.$$(`option`);
-  if ( specifier ) {
-    // If they want to check a specific set of options
+//   let options = await scope.page.$$(`option`);
+//   if ( specifier ) {
+//     // If they want to check a specific set of options
 
-    // The <label> will have the `id` for the <select> we're looking for
-    let [label] = await scope.page.$x(`//label[contains(text(), "${specifier}")]`);
-    if ( !label ) {
-      [label] = await scope.page.$x(`//label//a[contains(text(), "${specifier}")]`);
-    }
+//     // The <label> will have the `id` for the <select> we're looking for
+//     let [label] = await scope.page.$x(`//label[contains(text(), "${specifier}")]`);
+//     if ( !label ) {
+//       [label] = await scope.page.$x(`//label//a[contains(text(), "${specifier}")]`);
+//     }
 
-    let select_id = await scope.page.evaluate(( label ) => {
-      return label.getAttribute('for');
-    }, label);
+//     let select_id = await scope.page.evaluate(( label ) => {
+//       return label.getAttribute('for');
+//     }, label);
 
-    options = await scope.page.$$(`*[id*='${ select_id }'] option`);
-  }
+//     options = await scope.page.$$(`*[id*='${ select_id }'] option`);
+//   }
 
-  let phrases = prohibited.split(', ');
-  // Take 'or' off of the last item if it's there.
-  let last_phrase = phrases.pop();
-  last_phrase = last_phrase.replace(/^or /, '');
-  phrases.push( last_phrase );
+//   let phrases = prohibited.split(', ');
+//   // Take 'or' off of the last item if it's there.
+//   let last_phrase = phrases.pop();
+//   last_phrase = last_phrase.replace(/^or /, '');
+//   phrases.push( last_phrase );
 
-  for (let option in options) {
-    let prop_handle = await option.getProperty( 'textContent' );
-    let option_text = await prop_handle.jsonValue();
-    for (let phrase in phrases) {
-      expect( option_text ).not.to.contain( phrase );
-    }
-  }
+//   for (let option in options) {
+//     let prop_handle = await option.getProperty( 'textContent' );
+//     let option_text = await prop_handle.jsonValue();
+//     for (let phrase in phrases) {
+//       expect( option_text ).not.to.contain( phrase );
+//     }
+//   }
 
-  await scope.afterStep(scope);
-});
+//   await scope.afterStep(scope);
+// });
 
 
 
