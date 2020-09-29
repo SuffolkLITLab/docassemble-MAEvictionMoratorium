@@ -164,15 +164,12 @@ let ordinal_to_integer = {
   '6th': 5, '7th': 6, '8th': 7, '9th': 8,'10th': 9,
 };
 let ordinal = '?(first|second|third|fourth|fifth|sixth|seventh|eighth|ninth|tenth)?';
-// `the first "blah" checkbox in "" is checked`
-// `the ordinal "blah" in "blah" is checked`
 // Haven't figured out ordinal for group label yet
-
-
 // Allow "checkbox" and "radio"? Why would they be called the same thing?
 let the_checkbox_is_as_expected = new RegExp(`the ${ ordinal } ?(?:"([^"]+)")? checkbox ?(?:in "([^"]+)")? is (checked|unchecked)`);
 Then(the_checkbox_is_as_expected, async (ordinal, label_text, group_label, expected_status) => {
-  /* Examples of use:
+  /* Non-dropdown non-combobox choices
+  * Examples of use:
   * 1. the third checkbox is checked
   * 1. the "My court" checkbox is unchecked
   * 1. the checkbox in "Which service" is checked
@@ -181,21 +178,20 @@ Then(the_checkbox_is_as_expected, async (ordinal, label_text, group_label, expec
   * 1. the "My court" checkbox in "Which service" is checked
   * 1. the third "My court" checkbox in "Which service" is checked
   * 1. the checkbox is unchecked
-  * combos: 1; 2; 3; 1 2; 1 3; 2 3; 1 2 3; 0
+  * combos: none; a; b; c; a b; a c; b c; a b c;
   */
-
+  // Defaults
   ordinal = ordinal || 'first';
   label_text = label_text || '';
   group_label = group_label || '';
 
   let index = ordinal_to_integer[ ordinal ];
 
-  // If possible, get the group to which this checkbox belongs
+  // If possible, get the group to which this choice belongs
   // Only handles one group for now
   let group_id_elem = null;
   let group_name = null;
   if ( group_label ) {
-
     // Example: `//*[@id="daform"]//label[contains(text(), "serve")][1]`
     let identifier_xpath = `//*[@id="daform"]//label[contains(text(), "${ group_label }")][1]`;
     [group_id_elem] = await scope.page.$x( identifier_xpath );
@@ -206,11 +202,6 @@ Then(the_checkbox_is_as_expected, async (ordinal, label_text, group_label, expec
       group_name = await group_id_elem.evaluate(( elem ) => elem.getAttribute('for'));
     }
   }
-
-
-  // Get all the labels (with the right text and index) (maybe with a name)
-  // Otherwise get the first label
-
 
   // labels for choices
   let label_xpath = `//*[@id="daform"]//label[@role="checkbox" or @role="radio"]`;
@@ -225,31 +216,6 @@ Then(the_checkbox_is_as_expected, async (ordinal, label_text, group_label, expec
   label_xpath += `[${ index + 1 }]`;
   // ex: `//*[@id="daform"]//label[@role="checkbox" or @role="radio"][contains(@for, "X2ZpZWxkXzA_")]//*[contains(text(), "My case")]/ancestor-or-self::label[1]`
 
-  // // Get the element itself
-  // // Example `//*[@id="daform"]//label[@role="checkbox" or @role="radio"][@name="How will you serve"]//*[contains(text(), "email")]/ancestor-or-self::label`
-  // let label_xpath = `//*[@id="daform"]//label[@role="checkbox" or @role="radio"]`;
-  // if ( group_name ) { label_xpath += `[@name="${ group_name }"]`; }
-  // if ( label_text ) { label_xpath += `//*[contains(text(), "${ label_text }")]/ancestor-or-self::label`; }
-  // label_xpath += `[${ index + 1 }]`;
-  // console.log(label_xpath);
-  // let [elem] = await scope.page.$x( label_xpath );
-
-
-  // // Get the first input (possibly of a specific name)
-  // // that can identify the related labels
-  // let input_selector = `#daform input`;
-  // if ( group_name ) { input_selector += `[name*="${ group_name }"]`; }
-  // let input_elem = await scope.page.$( input_selector );
-  // if ( group_name && !input_elem ) { throw `I did not find the choice "${ group_name }"`; }
-  // // Get the `for` attribute value for the right labels
-  // let label_for = await input_elem.evaluate(( elem ) => elem.getAttribute('id'));
-
-  // // Of the matching labels, get the one with the right text
-  // let label_xpath = `//*[@id="daform"]//*[@for="${ label_for }"]`
-  // if ( label_text ) { label_xpath += `//*[contains(text(), "${ label_text }")]/ancestor-or-self::label`; }
-  // label_xpath += `[${ index + 1 }]`;
-  // console.log(label_xpath);
-
   let [elem] = await scope.page.$x( label_xpath );
 
   // See if it's checked or not
@@ -262,24 +228,6 @@ Then(the_checkbox_is_as_expected, async (ordinal, label_text, group_label, expec
 
   await scope.afterStep(scope);
 });
-
-// Then(/the checkbox with "([^"]+)" is (checked|unchecked)/, async (label_text, expected_status) => {
-//   /* Tests whether the first "checkbox" label "containing"
-//   *    the "label text" is of the "checked" status given.
-//   *    Anything more complex will be a future feature.
-//   * 
-//   * "checkbox": label that contains checkbox-like behavior.
-//   */
-//   let checkbox = await scope.page.waitFor( `label[aria-label*="${ label_text }"]` );
-//   let is_checked = await scope.page.evaluate( async(elem, label_text) => {
-//     return elem.getAttribute('aria-checked') === 'true';
-//   }, checkbox, label_text );
-
-//   let what_it_should_be = expected_status === 'checked';
-//   expect( is_checked ).to.equal( what_it_should_be );
-
-//   await scope.afterStep(scope);
-// });
 
 Then('I arrive at the next page', async () => {
   /* Tests for detection of url change from button or link tap.
