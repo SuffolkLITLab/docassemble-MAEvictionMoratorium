@@ -53,7 +53,7 @@ setup(name='docassemble.MAEvictionMoratorium',
       url='https://docassemble.org',
       packages=find_packages(),
       namespace_packages=['docassemble'],
-      install_requires=['docassemble.VirtualCourtToolbox'],
+      install_requires=[],
       zip_safe=False,
       package_data=find_package_data(where='docassemble/MAEvictionMoratorium/', package='docassemble.MAEvictionMoratorium'),
      )
